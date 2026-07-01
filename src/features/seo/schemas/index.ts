@@ -1,0 +1,2 @@
+// seo schemas placeholder
+export {};

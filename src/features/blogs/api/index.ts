@@ -1,0 +1,2 @@
+// blogs api placeholder
+export {};

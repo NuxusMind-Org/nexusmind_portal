@@ -1,0 +1,2 @@
+// seo api placeholder
+export {};

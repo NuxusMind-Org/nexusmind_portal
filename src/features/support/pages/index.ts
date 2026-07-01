@@ -1,0 +1,2 @@
+// support pages placeholder
+export {};

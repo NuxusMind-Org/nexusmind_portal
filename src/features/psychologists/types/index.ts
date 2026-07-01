@@ -1,0 +1,2 @@
+// psychologists types placeholder
+export {};

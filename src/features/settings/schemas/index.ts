@@ -1,0 +1,2 @@
+// settings schemas placeholder
+export {};

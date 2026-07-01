@@ -1,0 +1,2 @@
+// authentication constants placeholder
+export {};

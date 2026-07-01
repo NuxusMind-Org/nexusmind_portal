@@ -1,0 +1,2 @@
+// organizations pages placeholder
+export {};

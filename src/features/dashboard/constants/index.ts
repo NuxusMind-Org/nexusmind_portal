@@ -1,0 +1,2 @@
+// dashboard constants placeholder
+export {};

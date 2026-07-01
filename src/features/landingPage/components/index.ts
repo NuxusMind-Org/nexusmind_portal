@@ -1,0 +1,2 @@
+// landingPage components placeholder
+export {};

@@ -1,0 +1,2 @@
+// dashboard hooks placeholder
+export {};

@@ -1,0 +1,2 @@
+// patients types placeholder
+export {};

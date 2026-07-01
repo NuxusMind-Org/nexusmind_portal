@@ -1,0 +1,2 @@
+// blogs types placeholder
+export {};

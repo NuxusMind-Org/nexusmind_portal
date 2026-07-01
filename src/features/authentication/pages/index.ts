@@ -1,0 +1,2 @@
+// authentication pages placeholder
+export {};

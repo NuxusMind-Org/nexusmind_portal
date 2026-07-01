@@ -1,0 +1,2 @@
+// psychologists schemas placeholder
+export {};

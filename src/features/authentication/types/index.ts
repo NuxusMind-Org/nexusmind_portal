@@ -1,0 +1,2 @@
+// authentication types placeholder
+export {};

@@ -1,0 +1,2 @@
+// blogs constants placeholder
+export {};

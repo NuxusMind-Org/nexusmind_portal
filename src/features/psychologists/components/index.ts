@@ -1,0 +1,2 @@
+// psychologists components placeholder
+export {};

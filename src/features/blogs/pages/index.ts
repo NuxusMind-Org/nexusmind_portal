@@ -1,0 +1,2 @@
+// blogs pages placeholder
+export {};

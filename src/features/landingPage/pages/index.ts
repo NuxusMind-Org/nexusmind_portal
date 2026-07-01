@@ -1,0 +1,2 @@
+// landingPage pages placeholder
+export {};

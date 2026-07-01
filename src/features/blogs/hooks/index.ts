@@ -1,0 +1,2 @@
+// blogs hooks placeholder
+export {};

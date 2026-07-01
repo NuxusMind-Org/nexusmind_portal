@@ -1,0 +1,2 @@
+// seo hooks placeholder
+export {};

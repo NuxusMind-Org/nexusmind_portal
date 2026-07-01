@@ -1,0 +1,2 @@
+// blogs schemas placeholder
+export {};

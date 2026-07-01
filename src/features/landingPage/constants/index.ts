@@ -1,0 +1,2 @@
+// landingPage constants placeholder
+export {};

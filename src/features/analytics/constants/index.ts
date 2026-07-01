@@ -1,0 +1,2 @@
+// analytics constants placeholder
+export {};

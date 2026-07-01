@@ -1,0 +1,2 @@
+// analytics pages placeholder
+export {};

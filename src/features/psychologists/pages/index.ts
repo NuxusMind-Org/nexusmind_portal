@@ -1,0 +1,2 @@
+// psychologists pages placeholder
+export {};

@@ -1,0 +1,2 @@
+// landingPage hooks placeholder
+export {};

@@ -1,0 +1,2 @@
+// reports pages placeholder
+export {};

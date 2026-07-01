@@ -1,0 +1,2 @@
+// notifications pages placeholder
+export {};

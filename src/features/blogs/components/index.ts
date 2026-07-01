@@ -1,0 +1,2 @@
+// blogs components placeholder
+export {};

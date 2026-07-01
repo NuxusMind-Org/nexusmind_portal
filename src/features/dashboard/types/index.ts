@@ -1,0 +1,2 @@
+// dashboard types placeholder
+export {};

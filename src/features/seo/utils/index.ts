@@ -1,0 +1,2 @@
+// seo utils placeholder
+export {};

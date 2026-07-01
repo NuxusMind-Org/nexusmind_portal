@@ -1,0 +1,2 @@
+// seo components placeholder
+export {};
