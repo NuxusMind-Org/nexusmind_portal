@@ -18,6 +18,10 @@ const resources = {
         clinicalOverview: "Here is your clinical overview for today.",
         todaysSessions: "Today's Sessions",
         moreThanYesterday: "2 more than yesterday",
+        weeklySessions: "Weekly Sessions",
+        moreThanLastWeek: "4 more than last week",
+        monthlySessions: "Monthly Sessions",
+        moreThanLastMonth: "10 more than last month",
         publishedBlogs: "Published Blogs",
         readLatestBlogs: "Read latest clinical posts",
         currentDateTime: "Current Date & Time",
@@ -34,7 +38,10 @@ const resources = {
         highPriority: "high priority",
         nextTomorrow: "next: tomorrow",
         viewAllPatients: "View All Patients",
-        blogsNotification: "Opening latest clinical research & blog directory..."
+        blogsNotification: "Opening latest clinical research & blog directory...",
+        personalNotes: "Personal Notes",
+        addNotePlaceholder: "Add a quick note...",
+        clearAllNotes: "Clear All Notes"
       },
       patients: {
         directory: "Patients Directory",
@@ -73,6 +80,16 @@ const resources = {
       },
       nav: {
         seoManagement: "SEO"
+      },
+      auth: {
+        signIn: "Sign in",
+        emailLabel: "Email",
+        passwordLabel: "Password",
+        passwordPlaceholder: "At least 8 characters",
+        forgotPassword: "FORGOT PASSWORD ?",
+        noAccount: "Don't have an account ?",
+        signUp: "Sign up",
+        emailPlaceholder: "xxxxxxxxxx"
       }
     }
   },
@@ -92,6 +109,10 @@ const resources = {
         clinicalOverview: "Bu gün üçün kliniki icmalınız.",
         todaysSessions: "Bu günkü sessiyalar",
         moreThanYesterday: "dünənkindən 2 çox",
+        weeklySessions: "Həftəlik Sessiyalar",
+        moreThanLastWeek: "ötən həftədən 4 çox",
+        monthlySessions: "Aylıq Sessiyalar",
+        moreThanLastMonth: "ötən aydan 10 çox",
         publishedBlogs: "Dərc Olunmuş Bloqlar",
         readLatestBlogs: "Son kliniki yazıları oxu",
         currentDateTime: "Cari Tarix və Saat",
@@ -108,7 +129,10 @@ const resources = {
         highPriority: "yüksək prioritet",
         nextTomorrow: "növbəti: sabah",
         viewAllPatients: "Bütün Pasiyentləri Göstər",
-        blogsNotification: "Son kliniki araşdırmalar və bloq kataloqu açılır..."
+        blogsNotification: "Son kliniki araşdırmalar və bloq kataloqu açılır...",
+        personalNotes: "Şəxsi Qeydlər",
+        addNotePlaceholder: "Tez bir qeyd yazın...",
+        clearAllNotes: "Bütün Qeydləri Sil"
       },
       patients: {
         directory: "Pasiyent Kataloqu",
@@ -147,6 +171,16 @@ const resources = {
       },
       nav: {
         seoManagement: "SEO"
+      },
+      auth: {
+        signIn: "Daxil ol",
+        emailLabel: "E-poçt",
+        passwordLabel: "Şifrə",
+        passwordPlaceholder: "Ən az 8 simvol",
+        forgotPassword: "ŞİFRƏNİ UNUTMUSAN ?",
+        noAccount: "Hesabın yoxdur ?",
+        signUp: "Qeydiyyatdan keç",
+        emailPlaceholder: "xxxxxxxxxx"
       }
     }
   },
@@ -166,6 +200,10 @@ const resources = {
         clinicalOverview: "Ваш клинический обзор на сегодня.",
         todaysSessions: "Сегодняшние сессии",
         moreThanYesterday: "на 2 больше, чем вчера",
+        weeklySessions: "Сессии на неделю",
+        moreThanLastWeek: "на 4 больше, чем на прошлой неделе",
+        monthlySessions: "Сессии на месяц",
+        moreThanLastMonth: "на 10 больше, чем в прошлом месяце",
         publishedBlogs: "Опубликованные блоги",
         readLatestBlogs: "Читать последние клинические статьи",
         currentDateTime: "Текущие дата и время",
@@ -182,7 +220,10 @@ const resources = {
         highPriority: "высокий приоритет",
         nextTomorrow: "следующая: завтра",
         viewAllPatients: "Показать всех пациентов",
-        blogsNotification: "Открытие каталога клинических исследований и блогов..."
+        blogsNotification: "Открытие каталога клинических исследований и блогов...",
+        personalNotes: "Личные заметки",
+        addNotePlaceholder: "Добавить быструю заметку...",
+        clearAllNotes: "Очистить все заметки"
       },
       patients: {
         directory: "Справочник пациентов",
@@ -221,6 +262,16 @@ const resources = {
       },
       nav: {
         seoManagement: "SEO"
+      },
+      auth: {
+        signIn: "Войти",
+        emailLabel: "Электронная почта",
+        passwordLabel: "Пароль",
+        passwordPlaceholder: "Не менее 8 символов",
+        forgotPassword: "ЗАБЫЛИ ПАРОЛЬ ?",
+        noAccount: "Нет аккаунта ?",
+        signUp: "Зарегистрироваться",
+        emailPlaceholder: "xxxxxxxxxx"
       }
     }
   },
@@ -240,6 +291,10 @@ const resources = {
         clinicalOverview: "Bugün için klinik özetiniz.",
         todaysSessions: "Bugünkü Seanslar",
         moreThanYesterday: "dünden 2 fazla",
+        weeklySessions: "Haftalık Seanslar",
+        moreThanLastWeek: "geçen haftadan 4 fazla",
+        monthlySessions: "Aylık Seanslar",
+        moreThanLastMonth: "geçen aydan 10 fazla",
         publishedBlogs: "Yayınlanan Bloglar",
         readLatestBlogs: "En son klinik yazıları oku",
         currentDateTime: "Geçerli Tarih ve Saat",
@@ -256,7 +311,10 @@ const resources = {
         highPriority: "yüksek öncelikli",
         nextTomorrow: "sonraki: yarın",
         viewAllPatients: "Tüm Hastaları Görüntüle",
-        blogsNotification: "En son klinik makaleler ve blog dizini açılıyor..."
+        blogsNotification: "En son klinik makaleler ve blog dizini açılıyor...",
+        personalNotes: "Kişisel Notlar",
+        addNotePlaceholder: "Hızlıca bir not ekle...",
+        clearAllNotes: "Tüm Notları Temizle"
       },
       patients: {
         directory: "Hasta Dizini",
@@ -295,6 +353,16 @@ const resources = {
       },
       nav: {
         seoManagement: "SEO"
+      },
+      auth: {
+        signIn: "Giriş yap",
+        emailLabel: "E-posta",
+        passwordLabel: "Şifre",
+        passwordPlaceholder: "En az 8 karakter",
+        forgotPassword: "ŞİFREMİ UNUTTUNUZ MU ?",
+        noAccount: "Hesabınız yok mu ?",
+        signUp: "Kayıt ol",
+        emailPlaceholder: "xxxxxxxxxx"
       }
     }
   }

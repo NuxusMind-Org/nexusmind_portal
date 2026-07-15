@@ -13,7 +13,6 @@ import {
   ArrowRight,
   Calendar,
   MoreHorizontal,
-  BookOpen,
   Clock,
   AlertCircle,
   Star,
@@ -500,6 +499,15 @@ export default function DashboardOverview() {
   const [sessionActive, setSessionActive] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
+  
+  // New States
+  const [scheduleTab, setScheduleTab] = useState<'today' | 'week' | 'month'>('today')
+  const [notes, setNotes] = useState([
+    { id: 'n1', text: 'S. Miller: CBT progress review & exercises', time: 'Today, 2:30 PM' },
+    { id: 'n2', text: 'Prepare intake summary for M. Davis', time: 'Today, 10:15 AM' },
+    { id: 'n3', text: 'Follow up on child therapy feedback with parents', time: 'Yesterday' }
+  ])
+  const [newNoteText, setNewNoteText] = useState('')
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -513,12 +521,45 @@ export default function DashboardOverview() {
     setTimeout(() => setFeedbackMsg(null), 3000)
   }
 
-  const handleBlogsClick = () => {
-    triggerFeedback(t('dashboard.blogsNotification'))
+  // New Note handlers
+  const handleAddNote = () => {
+    if (!newNoteText.trim()) return
+    const newNote = {
+      id: `n_${Date.now()}`,
+      text: newNoteText.trim(),
+      time: 'Just now'
+    }
+    setNotes([newNote, ...notes])
+    setNewNoteText('')
+    triggerFeedback('Note added successfully.')
   }
 
+  const handleDeleteNote = (id: string) => {
+    setNotes(notes.filter(note => note.id !== id))
+    triggerFeedback('Note deleted.')
+  }
+
+  const weeklySessions = [
+    { id: 'w1', patientName: 'Emma Thompson', time: '09:00 AM', type: 'CBT Follow-up', status: 'Completed', dateLabel: 'Mon 09:00' },
+    { id: 'w2', patientName: 'Michael Davis', time: '11:00 AM', type: 'Intake Assessment', status: 'Waiting', dateLabel: 'Mon 11:00' },
+    { id: 'w3', patientName: 'Sarah Miller', time: '03:00 PM', type: 'CBT Follow-up', status: 'Scheduled', dateLabel: 'Mon 15:00' },
+    { id: 'w4', patientName: 'John Larson', time: '10:00 AM', type: 'Anxiety Treatment', status: 'Scheduled', dateLabel: 'Thu 10:00' },
+    { id: 'w5', patientName: 'Alice Chen', time: '02:00 PM', type: 'Grief Integration', status: 'Scheduled', dateLabel: 'Fri 14:00' },
+  ]
+
+  const monthlySessions = [
+    { id: 'm1', patientName: 'Emma Thompson', time: '09:00 AM', type: 'CBT Follow-up', status: 'Completed', dateLabel: 'Jul 5' },
+    { id: 'm2', patientName: 'Michael Davis', time: '11:00 AM', type: 'Intake Assessment', status: 'Waiting', dateLabel: 'Jul 5' },
+    { id: 'm3', patientName: 'Sarah Miller', time: '03:00 PM', type: 'CBT Follow-up', status: 'Scheduled', dateLabel: 'Jul 5' },
+    { id: 'm4', patientName: 'John Larson', time: '10:00 AM', type: 'Anxiety Treatment', status: 'Scheduled', dateLabel: 'Jul 8' },
+    { id: 'm5', patientName: 'Alice Chen', time: '02:00 PM', type: 'Grief Integration', status: 'Scheduled', dateLabel: 'Jul 9' },
+    { id: 'm6', patientName: 'Oliver Queen', time: '01:00 PM', type: 'Trauma recovery', status: 'Scheduled', dateLabel: 'Jul 10' },
+    { id: 'm7', patientName: 'Tony Stark', time: '09:00 AM', type: 'Post-trauma management', status: 'Scheduled', dateLabel: 'Jul 15' },
+    { id: 'm8', patientName: 'Peter Parker', time: '04:00 PM', type: 'Identity Counselling', status: 'Scheduled', dateLabel: 'Jul 18' },
+  ]
+
   const renderPsychologistDashboard = () => (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Dynamic Header */}
       <div>
         <h2 className="text-3xl font-extrabold text-white tracking-tight">{t('dashboard.goodMorning', { name: profile?.name || 'Dr. Mercer' })}</h2>
@@ -535,72 +576,119 @@ export default function DashboardOverview() {
         </div>
       )}
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Card 1: Today's Sessions */}
-        <div className="bg-[#141521] border border-[#222437] p-6 rounded-xl shadow-md space-y-4 hover:border-[#323652] transition-all flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('dashboard.todaysSessions')}</span>
-            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
-              <Calendar className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-3xl font-extrabold text-white">6</h3>
-            <p className="text-xs font-semibold text-emerald-400 mt-2 flex items-center gap-1">
-              <span>&uarr;</span> {t('dashboard.moreThanYesterday')}
-            </p>
-          </div>
-        </div>
-
-        {/* Card 2: Today's Published Blogs */}
-        <div 
-          onClick={handleBlogsClick}
-          className="bg-[#141521] border border-[#222437] p-6 rounded-xl shadow-md space-y-4 hover:border-[#323652] transition-all flex flex-col justify-between cursor-pointer group"
-        >
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-violet-400 transition-colors">{t('dashboard.publishedBlogs')}</span>
-            <div className="p-2 bg-blue-500/10 text-blue-400 rounded-lg border border-blue-500/20">
-              <BookOpen className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-3xl font-extrabold text-white">4</h3>
-            <p className="text-xs font-semibold text-blue-400 mt-2 flex items-center gap-1">
-              <span>&rarr;</span> {t('dashboard.readLatestBlogs')}
-            </p>
-          </div>
-        </div>
-
-        {/* Card 3: Live Date & Clock */}
-        <div className="bg-[#141521] border border-[#222437] p-6 rounded-xl shadow-md space-y-4 hover:border-[#323652] transition-all flex flex-col justify-between">
-          <div className="flex justify-between items-start">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('dashboard.currentDateTime')}</span>
-            <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20">
-              <Clock className="w-4.5 h-4.5" />
-            </div>
-          </div>
-          <div>
-            <h3 className="text-2xl font-extrabold text-white tracking-tight">
-              {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
-            </h3>
-            <p className="text-xs font-semibold text-purple-400 mt-2">
-              {currentTime.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
-            </p>
-          </div>
-        </div>
-      </div>
-
       {/* Schedule & Notes Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Left Column (Timeline & Notes) */}
+        {/* Left Column (Timeline/Schedule card) */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Today's Schedule Card */}
           <div className="bg-[#141521] border border-[#222437] rounded-xl shadow-md p-6 space-y-6">
+            
+            {/* Header: Session Counts / View Selector Tabs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-[#222437] pb-6">
+              
+              {/* Tab 1: Today */}
+              <div 
+                onClick={() => setScheduleTab('today')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                  scheduleTab === 'today' 
+                    ? 'bg-[#1b1c2b] border-emerald-500/50 shadow-[0_4px_12px_rgba(16,185,129,0.08)]' 
+                    : 'bg-[#141521] border-[#222437] hover:border-[#323652]'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <span className={`text-[9px] font-bold uppercase tracking-widest ${
+                    scheduleTab === 'today' ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-400'
+                  }`}>
+                    {t('dashboard.todaysSessions')}
+                  </span>
+                  <div className={`p-1.5 rounded-lg border ${
+                    scheduleTab === 'today' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : 'bg-slate-800/40 text-slate-400 border-transparent group-hover:border-slate-700'
+                  }`}>
+                    <Calendar className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-2xl font-extrabold text-white">6</h3>
+                  <p className="text-[10px] font-semibold text-emerald-400 mt-1 flex items-center gap-1">
+                    <span>↑</span> {t('dashboard.moreThanYesterday')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tab 2: Week */}
+              <div 
+                onClick={() => setScheduleTab('week')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                  scheduleTab === 'week' 
+                    ? 'bg-[#1b1c2b] border-violet-500/50 shadow-[0_4px_12px_rgba(124,58,237,0.08)]' 
+                    : 'bg-[#141521] border-[#222437] hover:border-[#323652]'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <span className={`text-[9px] font-bold uppercase tracking-widest ${
+                    scheduleTab === 'week' ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-400'
+                  }`}>
+                    {t('dashboard.weeklySessions')}
+                  </span>
+                  <div className={`p-1.5 rounded-lg border ${
+                    scheduleTab === 'week' 
+                      ? 'bg-violet-500/10 text-violet-400 border-violet-500/20' 
+                      : 'bg-slate-800/40 text-slate-400 border-transparent group-hover:border-slate-700'
+                  }`}>
+                    <Calendar className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-2xl font-extrabold text-white">18</h3>
+                  <p className="text-[10px] font-semibold text-violet-400 mt-1 flex items-center gap-1">
+                    <span>↑</span> {t('dashboard.moreThanLastWeek')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tab 3: Month */}
+              <div 
+                onClick={() => setScheduleTab('month')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                  scheduleTab === 'month' 
+                    ? 'bg-[#1b1c2b] border-blue-500/50 shadow-[0_4px_12px_rgba(59,130,246,0.08)]' 
+                    : 'bg-[#141521] border-[#222437] hover:border-[#323652]'
+                }`}
+              >
+                <div className="flex justify-between items-start">
+                  <span className={`text-[9px] font-bold uppercase tracking-widest ${
+                    scheduleTab === 'month' ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-400'
+                  }`}>
+                    {t('dashboard.monthlySessions')}
+                  </span>
+                  <div className={`p-1.5 rounded-lg border ${
+                    scheduleTab === 'month' 
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                      : 'bg-slate-800/40 text-slate-400 border-transparent group-hover:border-slate-700'
+                  }`}>
+                    <Calendar className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-2xl font-extrabold text-white">72</h3>
+                  <p className="text-[10px] font-semibold text-blue-400 mt-1 flex items-center gap-1">
+                    <span>↑</span> {t('dashboard.moreThanLastMonth')}
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('dashboard.todaysSchedule')}</h4>
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                {scheduleTab === 'today' && t('dashboard.todaysSchedule')}
+                {scheduleTab === 'week' && t('dashboard.weeklySessions')}
+                {scheduleTab === 'month' && t('dashboard.monthlySessions')}
+              </h4>
               <button className="text-xs font-bold text-teal-400 hover:text-teal-300 transition-colors uppercase tracking-wider cursor-pointer">
                 {t('dashboard.viewFullCalendar')}
               </button>
@@ -611,60 +699,223 @@ export default function DashboardOverview() {
               {/* Vertical Line */}
               <div className="absolute left-[3.25rem] top-4 bottom-4 w-0.5 bg-[#222437]"></div>
 
-              {/* Session 1 */}
-              <div className="flex gap-4 items-start relative">
-                <div className="w-10 text-slate-400 text-xs font-bold pt-3 text-right shrink-0">09:00</div>
-                <div className="relative flex items-center justify-center pt-3 z-10 shrink-0">
-                  <div className="w-3.5 h-3.5 rounded-full border-4 border-[#141521] bg-slate-500"></div>
-                </div>
-                <div className="flex-1 bg-[#1b1c2b] border border-[#222437] p-4 rounded-xl flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-white text-sm">E. Thompson</h4>
-                    <p className="text-xs text-slate-400 mt-1">CBT Follow-up</p>
-                  </div>
-                  <span className="text-xs font-bold text-slate-400 bg-slate-800/80 border border-slate-700/50 px-3 py-1 rounded-full">
-                    {t('dashboard.completed')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Session 2 */}
-              <div className="flex gap-4 items-start relative">
-                <div className="w-10 text-slate-400 text-xs font-bold pt-3 text-right shrink-0">11:00</div>
-                <div className="relative flex items-center justify-center pt-3 z-10 shrink-0">
-                  <div className="w-3.5 h-3.5 rounded-full border-4 border-[#141521] bg-violet-500"></div>
-                </div>
-                <div className={`flex-1 bg-[#181926] border-2 ${sessionActive ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-violet-500/50'} p-5 rounded-xl space-y-4`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-bold text-white text-base">M. Davis</h4>
-                      <p className="text-xs text-slate-400 mt-1">Intake Assessment</p>
+              {scheduleTab === 'today' && (
+                <>
+                  {/* Session 1 */}
+                  <div className="flex gap-4 items-start relative animate-fade-in">
+                    <div className="w-10 text-slate-400 text-xs font-bold pt-3 text-right shrink-0">09:00</div>
+                    <div className="relative flex items-center justify-center pt-3 z-10 shrink-0">
+                      <div className="w-3.5 h-3.5 rounded-full border-4 border-[#141521] bg-slate-500"></div>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      {sessionActive ? t('dashboard.sessionActive') : t('dashboard.waiting')}
-                    </span>
+                    <div className="flex-1 bg-[#1b1c2b] border border-[#222437] p-4 rounded-xl flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">E. Thompson</h4>
+                        <p className="text-xs text-slate-400 mt-1">CBT Follow-up</p>
+                      </div>
+                      <span className="text-xs font-bold text-slate-400 bg-slate-800/80 border border-slate-700/50 px-3 py-1 rounded-full">
+                        {t('dashboard.completed')}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <button 
-                      onClick={() => setSessionActive(!sessionActive)}
-                      className={`px-4 py-2 ${sessionActive ? 'bg-emerald-600 hover:bg-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.25)]' : 'bg-violet-600 hover:bg-violet-500 shadow-[0_4px_12px_rgba(124,58,237,0.25)]'} text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer`}
-                    >
-                      {sessionActive ? t('dashboard.endSession') : t('dashboard.joinRoom')}
-                    </button>
-                    <button className="px-4 py-2 bg-[#141521] hover:bg-[#1a1c2d] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
-                      {t('dashboard.reviewFile')}
-                    </button>
+
+                  {/* Session 2 */}
+                  <div className="flex gap-4 items-start relative animate-fade-in">
+                    <div className="w-10 text-slate-400 text-xs font-bold pt-3 text-right shrink-0">11:00</div>
+                    <div className="relative flex items-center justify-center pt-3 z-10 shrink-0">
+                      <div className="w-3.5 h-3.5 rounded-full border-4 border-[#141521] bg-violet-500"></div>
+                    </div>
+                    <div className={`flex-1 bg-[#181926] border-2 ${sessionActive ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.05)]' : 'border-violet-500/50'} p-5 rounded-xl space-y-4`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-bold text-white text-base">M. Davis</h4>
+                          <p className="text-xs text-slate-400 mt-1">Intake Assessment</p>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                          {sessionActive ? t('dashboard.sessionActive') : t('dashboard.waiting')}
+                        </span>
+                      </div>
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => setSessionActive(!sessionActive)}
+                          className={`px-4 py-2 ${sessionActive ? 'bg-emerald-600 hover:bg-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.25)]' : 'bg-violet-600 hover:bg-violet-500 shadow-[0_4px_12px_rgba(124,58,237,0.25)]'} text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer`}
+                        >
+                          {sessionActive ? t('dashboard.endSession') : t('dashboard.joinRoom')}
+                        </button>
+                        <button className="px-4 py-2 bg-[#141521] hover:bg-[#1a1c2d] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
+                          {t('dashboard.reviewFile')}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </>
+              )}
+
+              {scheduleTab === 'week' && (
+                <>
+                  {weeklySessions.map((session) => (
+                    <div key={session.id} className="flex gap-4 items-start relative animate-fade-in">
+                      <div className="w-10 text-slate-400 text-[10px] font-bold pt-3.5 text-right shrink-0 leading-tight">
+                        {session.dateLabel.split(' ')[0]}
+                        <br />
+                        <span className="text-slate-500 font-semibold">{session.dateLabel.split(' ')[1]}</span>
+                      </div>
+                      <div className="relative flex items-center justify-center pt-3 z-10 shrink-0">
+                        <div className={`w-3.5 h-3.5 rounded-full border-4 border-[#141521] ${
+                          session.status === 'Completed' ? 'bg-slate-500' : 'bg-violet-500'
+                        }`}></div>
+                      </div>
+                      <div className="flex-1 bg-[#1b1c2b] border border-[#222437] p-4 rounded-xl flex items-center justify-between">
+                        <div>
+                          <h4 className="font-bold text-white text-sm">{session.patientName}</h4>
+                          <p className="text-xs text-slate-400 mt-1">{session.type}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                            session.status === 'Completed'
+                              ? 'text-slate-400 bg-slate-800/80 border border-slate-700/50'
+                              : 'text-violet-400 bg-violet-500/10 border border-violet-500/20'
+                          }`}>
+                            {session.status === 'Completed' ? t('dashboard.completed') : t('dashboard.waiting')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {scheduleTab === 'month' && (
+                <>
+                  {monthlySessions.map((session) => (
+                    <div key={session.id} className="flex gap-4 items-start relative animate-fade-in">
+                      <div className="w-10 text-slate-400 text-[10px] font-bold pt-3.5 text-right shrink-0 leading-tight">
+                        {session.dateLabel}
+                        <br />
+                        <span className="text-slate-500 font-semibold">{session.time}</span>
+                      </div>
+                      <div className="relative flex items-center justify-center pt-3 z-10 shrink-0">
+                        <div className={`w-3.5 h-3.5 rounded-full border-4 border-[#141521] ${
+                          session.status === 'Completed' ? 'bg-slate-500' : 'bg-violet-500'
+                        }`}></div>
+                      </div>
+                      <div className="flex-1 bg-[#1b1c2b] border border-[#222437] p-4 rounded-xl flex items-center justify-between">
+                        <div>
+                          <h4 className="font-bold text-white text-sm">{session.patientName}</h4>
+                          <p className="text-xs text-slate-400 mt-1">{session.type}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                            session.status === 'Completed'
+                              ? 'text-slate-400 bg-slate-800/80 border border-slate-700/50'
+                              : 'text-violet-400 bg-violet-500/10 border border-violet-500/20'
+                          }`}>
+                            {session.status === 'Completed' ? t('dashboard.completed') : t('dashboard.waiting')}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
             </div>
           </div>
         </div>
 
-        {/* Right Column (Active Patients) */}
+        {/* Right Column (Clock, Notes, Active Patients) */}
         <div className="space-y-6">
           
+          {/* Card: Live Date & Clock */}
+          <div className="bg-[#141521] border border-[#222437] p-6 rounded-xl shadow-md space-y-4 hover:border-[#323652] transition-all flex flex-col justify-between">
+            <div className="flex justify-between items-start">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('dashboard.currentDateTime')}</span>
+              <div className="p-2 bg-purple-500/10 text-purple-400 rounded-lg border border-purple-500/20">
+                <Clock className="w-4.5 h-4.5" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-2xl font-extrabold text-white tracking-tight">
+                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+              </h3>
+              <p className="text-xs font-semibold text-purple-400 mt-2">
+                {currentTime.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+              </p>
+            </div>
+          </div>
+
+          {/* Personal Notes Card */}
+          <div className="bg-[#141521] border border-[#222437] rounded-xl shadow-md p-6 flex flex-col justify-between min-h-[380px] overflow-hidden">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('dashboard.personalNotes')}</h4>
+                <button className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer">
+                  <MoreHorizontal className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Add Note Input Row */}
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newNoteText}
+                  onChange={(e) => setNewNoteText(e.target.value)}
+                  placeholder={t('dashboard.addNotePlaceholder')}
+                  className="flex-1 bg-[#1b1c2b] border border-[#222437] rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500/70 transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddNote()
+                  }}
+                />
+                <button 
+                  onClick={handleAddNote}
+                  className="px-3.5 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold transition-all cursor-pointer"
+                >
+                  +
+                </button>
+              </div>
+
+              {/* Notes List */}
+              <div className="space-y-4 max-h-[180px] overflow-y-auto pr-1 scrollbar-thin">
+                {notes.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic py-2">No notes saved.</p>
+                ) : (
+                  notes.map((note) => (
+                    <div key={note.id} className="flex items-center justify-between gap-3 group border-b border-[#222437]/45 pb-3 last:border-0 last:pb-0">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-violet-600/10 to-indigo-600/10 border border-violet-500/20 flex items-center justify-center font-bold text-xs text-violet-400">
+                            📝
+                          </div>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-white line-clamp-1">{note.text}</h5>
+                          <p className="text-[10px] text-slate-500 font-semibold mt-0.5">{note.time}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="text-slate-500 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-[10px] font-bold uppercase tracking-wider pr-1"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Clear All Notes Footer Button */}
+            <button 
+              onClick={() => {
+                setNotes([])
+                triggerFeedback('All notes cleared.')
+              }}
+              className="w-full py-2.5 border border-[#2e3146] hover:bg-[#1c1d2c] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer mt-6"
+            >
+              {t('dashboard.clearAllNotes')}
+            </button>
+          </div>
+
           {/* Active Patients Card */}
           <div className="bg-[#141521] border border-[#222437] rounded-xl shadow-md p-6 flex flex-col justify-between min-h-[380px] overflow-hidden">
             <div className="space-y-6">
