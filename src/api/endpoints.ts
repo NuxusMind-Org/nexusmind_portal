@@ -1,28 +1,71 @@
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh',
-    ME: '/auth/me',
+    SUPER_ADMIN_LOGIN: '/auth/super-admin-login',
+    BPM_LOGIN: '/auth/bpm-login',
+    DOCTOR_LOGIN: '/auth/doctor-login',
+    DOCTOR_PANEL_LOGIN: '/auth/doctor-panel-login',
+    PATIENT_LOGIN: '/auth/login',
+    CHANGE_PASSWORD: '/auth/change-password',
+    ADD_PATIENT: '/auth/add',
+    PATIENT_BY_ID: (id: number | string) => `/auth/${id}`,
+    PATIENT_MOOD: (patientId: number | string) => `/auth/${patientId}/mood`,
   },
-  TENANTS: {
-    BASE: '/organizations',
-    DETAIL: (id: string) => `/organizations/${id}`,
+  XEBER: {
+    BASE: '/xeber',
+    BY_ID: (id: number | string) => `/xeber/${id}`,
   },
-  USERS: {
-    BASE: '/users',
-    DETAIL: (id: string) => `/users/${id}`,
+  MEQALE: {
+    BASE: '/meqale',
+    BY_ID: (id: number | string) => `/meqale/${id}`,
   },
-  PATIENTS: {
-    BASE: '/patients',
-    DETAIL: (id: string) => `/patients/${id}`,
+  BLOG: {
+    BASE: '/blog',
+    BY_ID: (id: number | string) => `/blog/${id}`,
   },
-  PSYCHOLOGISTS: {
-    BASE: '/psychologists',
-    DETAIL: (id: string) => `/psychologists/${id}`,
+  GALLERY: {
+    BASE: '/gallery',
+    BY_ID: (id: number | string) => `/gallery/${id}`,
   },
-  SESSIONS: {
-    BASE: '/sessions',
-    DETAIL: (id: string) => `/sessions/${id}`,
+  TRAININGS: {
+    BASE: '/trainings',
+    BY_ID: (id: number | string) => `/trainings/${id}`,
+    REGISTER: (id: number | string) => `/trainings/${id}/register`,
+  },
+  NEXUSMIND_ADMIN: {
+    PATIENTS: '/nexusmind/patients',
+    DOCTORS: '/nexusmind/doctors',
+    DELETE_DOCTOR: (id: number | string) => `/nexusmind/doctors/${id}`,
+    DELETE_BPM: (id: number | string) => `/nexusmind/bpm/${id}`,
+  },
+  BPM_ADMIN: {
+    PATIENTS: '/bpm/patients',
+    DOCTORS: '/bpm/doctors',
+  },
+  DOCTORS: {
+    REGISTER: '/doctors/register',
+  },
+  PROFILE: {
+    STATUS: '/profile/status',
+    PASSWORD: '/profile/password',
+    NAME: '/profile/name',
+    LANGUAGE: '/profile/language',
+    EMAIL: '/profile/email',
+    TWO_FACTOR: '/profile/2fa',
+    PHOTO: '/profile/photo',
+  },
+  OTP: {
+    VERIFY: '/otp/verify',
+  },
+  ONBOARDING: {
+    SUBMIT: '/onboarding/submit',
+  },
+  JOURNAL: {
+    SAVE_TODAY: '/journal',
+  },
+  SEO: {
+    SCRIPTS: '/seo/scripts',
+    ROBOTS: '/seo/robots',
+    SITEMAP: '/seo/sitemap',
+    LLMS: '/seo/llms',
   },
 } as const

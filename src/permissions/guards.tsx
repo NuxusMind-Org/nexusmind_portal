@@ -1,3 +1,4 @@
+import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useUserStore } from '../store/userStore'
@@ -17,22 +18,27 @@ export function GuestGuard() {
 
 interface RoleGuardProps {
   allowedRoles: RoleType[]
+  children?: React.ReactNode
 }
 
-export function RoleGuard({ allowedRoles }: RoleGuardProps) {
+export function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
   const profile = useUserStore((state) => state.profile)
 
   if (!profile) return <Navigate to="/login" replace />
   
   const hasRole = allowedRoles.includes(profile.role as RoleType)
-  return hasRole ? <Outlet /> : <Navigate to="/unauthorized" replace />
+  if (!hasRole) return <Navigate to="/unauthorized" replace />
+
+  return children ? <>{children}</> : <Outlet />
 }
 
 interface PermissionGuardProps {
   permission: PermissionType
+  children?: React.ReactNode
 }
 
-export function PermissionGuard({ permission }: PermissionGuardProps) {
+export function PermissionGuard({ permission, children }: PermissionGuardProps) {
   const { hasPermission } = useHasPermission()
-  return hasPermission(permission) ? <Outlet /> : <Navigate to="/unauthorized" replace />
+  if (!hasPermission(permission)) return <Navigate to="/unauthorized" replace />
+  return children ? <>{children}</> : <Outlet />
 }

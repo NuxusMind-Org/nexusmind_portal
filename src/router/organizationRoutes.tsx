@@ -1,10 +1,13 @@
 import type { RouteObject } from 'react-router-dom'
 import DashboardLayout from '../layouts/DashboardLayout'
 import { RoleGuard } from '../permissions/guards'
-import SeoManagement from '../features/seo/pages/SeoManagement'
 import PsychologistsList from '../features/psychologists/pages/PsychologistsList'
 import OrgPatientsList from '../features/patients/pages/OrgPatientsList'
-import OrgAnalytics from '../features/analytics/pages/OrgAnalytics'
+import XeberManagement from '../features/xeber/pages/XeberManagement'
+import MeqaleManagement from '../features/meqale/pages/MeqaleManagement'
+import BlogManagement from '../features/blogs/pages/BlogManagement'
+import GalleryManagement from '../features/gallery/pages/GalleryManagement'
+import SeoManagement from '../features/seo/pages/SeoManagement'
 
 export const organizationRoutes: RouteObject = {
   path: 'org',
@@ -14,16 +17,20 @@ export const organizationRoutes: RouteObject = {
       element: <DashboardLayout />,
       children: [
         {
-          path: 'users',
-          element: <div>Org Users Page Placeholder</div>,
+          path: 'xeber',
+          element: <XeberManagement />,
         },
         {
-          path: 'settings',
-          element: <div>Org Settings Page Placeholder</div>,
+          path: 'meqale',
+          element: <MeqaleManagement />,
         },
         {
-          path: 'seo',
-          element: <SeoManagement />,
+          path: 'blogs',
+          element: <BlogManagement />,
+        },
+        {
+          path: 'gallery',
+          element: <GalleryManagement />,
         },
         {
           path: 'psychologists',
@@ -34,11 +41,14 @@ export const organizationRoutes: RouteObject = {
           element: <OrgPatientsList />,
         },
         {
-          path: 'analytics',
-          element: <OrgAnalytics />,
+          path: 'seo',
+          element: (
+            <RoleGuard allowedRoles={['org_admin']}>
+              <SeoManagement />
+            </RoleGuard>
+          ),
         },
       ],
     },
   ],
 }
-

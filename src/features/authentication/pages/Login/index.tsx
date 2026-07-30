@@ -7,8 +7,13 @@ import { useTranslation } from 'react-i18next'
 
 import { useAuthStore } from '../../../../store/authStore'
 import { useUserStore } from '../../../../store/userStore'
+import { authService } from '../../../../api/services/authService'
 import { loginSchema, type LoginFields } from '../../schemas/loginSchema'
-import { MOCK_USERS } from '../../constants/mockUsers'
+import { parseJwt } from '../../../../utils/jwt'
+import { normalizeRole } from '../../../../constants/roles'
+import type { AuthResponse } from '../../../../types/portalDtos'
+
+type RoleCandidate = 'SUPER_ADMIN' | 'BPM' | 'DOCTOR'
 
 export default function Login() {
   const { t } = useTranslation()
@@ -28,32 +33,91 @@ export default function Login() {
   } = useForm<LoginFields>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
     },
   })
 
+  const attemptLoginByRole = async (role: RoleCandidate, credentials: LoginFields): Promise<{ res: AuthResponse; roleUsed: string }> => {
+    const payload = { username: credentials.username, password: credentials.password }
+    let res: AuthResponse
+
+    switch (role) {
+      case 'SUPER_ADMIN':
+        res = await authService.superAdminLogin(payload)
+        break
+      case 'BPM':
+        res = await authService.bpmLogin(payload)
+        break
+      case 'DOCTOR':
+        res = await authService.doctorPanelLogin(payload)
+        break
+    }
+
+    return { res, roleUsed: role }
+  }
+
   const onSubmit = async (data: LoginFields) => {
     setIsLoading(true)
     setApiError(null)
-    
+
     try {
-      // Simulate API network call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      
-      const mockUser = MOCK_USERS[data.email.toLowerCase()]
-      
-      if (mockUser && data.password === 'Password123!') {
-        setToken(mockUser.token)
-        setTenantId(mockUser.profile.tenantId)
-        setProfile(mockUser.profile)
-        
-        navigate('/dashboard')
-      } else {
-        setApiError('Invalid credentials. Try: superadmin@nexusmind.com, orgadmin@nexusmind.com, or psychologist@nexusmind.com with password Password123!')
+      let authResult: { res: AuthResponse; roleUsed: string } | null = null
+      const candidateRoles: RoleCandidate[] = ['SUPER_ADMIN', 'BPM', 'DOCTOR']
+      let lastErr: any = null
+
+      // Auto-detect role by attempting endpoints sequentially
+      for (const candidate of candidateRoles) {
+        try {
+          authResult = await attemptLoginByRole(candidate, data)
+          if (authResult?.res) break
+        } catch (err) {
+          lastErr = err
+        }
       }
-    } catch (error) {
-      setApiError('An unexpected server error occurred. Please try again.')
+
+      if (!authResult && lastErr) {
+        throw lastErr
+      }
+
+      if (!authResult) {
+        throw new Error('Authentication failed. Invalid username or password.')
+      }
+
+      const { res, roleUsed } = authResult
+      const token = res.token || res.accessToken || (typeof res === 'string' ? res : '')
+
+      if (!token) {
+        throw new Error('Invalid token received from server.')
+      }
+
+      // Parse claims from JWT token
+      const claims = parseJwt(token)
+      const rawRole = res.role || claims?.role || (claims?.roles && claims.roles[0]) || roleUsed
+      const normalizedRole = normalizeRole(rawRole)
+
+      // Store Auth token and Tenant ID
+      setToken(token)
+      setTenantId(claims?.tenantId || null)
+
+      // Store User Profile
+      setProfile({
+        id: claims?.sub || String(Date.now()),
+        name: claims?.username || data.username,
+        email: claims?.email || `${data.username}@nexusmind.com`,
+        role: normalizedRole,
+        permissions: [],
+        tenantId: claims?.tenantId || null,
+      })
+
+      navigate('/dashboard')
+    } catch (error: any) {
+      console.error('Login error:', error)
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Invalid username or password. Please verify your credentials.'
+      setApiError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -64,12 +128,15 @@ export default function Login() {
       {/* Left Pane: Form */}
       <div className="p-8 sm:p-12 md:p-14 lg:p-16 flex flex-col justify-center min-h-[500px] md:min-h-[580px]">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10 md:mb-12">
+        <div className="flex items-center gap-3 mb-8">
           <img src="/nexusMindLogoMin.png" alt="NexusMind Logo" className="h-[41.4px] w-auto" />
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-white mb-8 tracking-tight">{t('auth.signIn')}</h1>
+        <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">{t('auth.signIn')}</h1>
+        <p className="text-xs text-slate-400 font-medium mb-8">
+          Access your NexusMind Portal account with your role credentials.
+        </p>
 
         {/* API Error Message */}
         {apiError && (
@@ -80,24 +147,24 @@ export default function Login() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Email Input */}
+          {/* Username Input */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block" htmlFor="email">
-              {t('auth.emailLabel')}
+            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block" htmlFor="username">
+              Username
             </label>
             <input
-              id="email"
+              id="username"
               type="text"
-              placeholder={t('auth.emailPlaceholder')}
+              placeholder="Enter your username"
               disabled={isLoading}
               className={`w-full px-4 py-3 rounded-xl bg-[#2a2c4e] border text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-200 ${
-                errors.email ? 'border-rose-500/70 focus:ring-rose-500/30 focus:border-rose-500' : 'border-white/10 hover:border-white/20'
+                errors.username ? 'border-rose-500/70 focus:ring-rose-500/30 focus:border-rose-500' : 'border-white/10 hover:border-white/20'
               }`}
-              {...register('email')}
+              {...register('username')}
             />
-            {errors.email && (
+            {errors.username && (
               <span className="text-xs text-rose-400 font-medium block mt-1">
-                {errors.email.message}
+                {errors.username.message}
               </span>
             )}
           </div>
@@ -121,7 +188,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors cursor-pointer"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -133,7 +200,7 @@ export default function Login() {
             )}
           </div>
 
-          {/* Forgot Password Link (aligned right) */}
+          {/* Forgot Password Link */}
           <div className="text-right">
             <Link
               to="/forgot-password"
@@ -159,7 +226,6 @@ export default function Login() {
             )}
           </button>
         </form>
-
       </div>
 
       {/* Right Pane: Image */}

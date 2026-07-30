@@ -1,2 +1,1 @@
-// profile api placeholder
-export {};
+export { profileService } from '../../../api/services/profileService'

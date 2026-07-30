@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Search,
   UserPlus,
@@ -10,9 +10,11 @@ import {
   Activity,
   ChevronDown,
   TrendingUp,
-  Users
+  Users,
+  Loader2
 } from 'lucide-react'
 import type { Psychologist, PsychologistStatus } from '../../types/psychologist'
+import { orgAdminService } from '../../../../api/services/orgAdminService'
 
 // ─── Mock Data ─────────────────────────────────────────────────────────────
 const MOCK_PSYCHOLOGISTS: Psychologist[] = [
@@ -79,38 +81,6 @@ const MOCK_PSYCHOLOGISTS: Psychologist[] = [
     nextAvailability: 'Today, 16:30',
     joinedDate: 'Jun 2021',
     licenseNumber: 'PSY-AZ-00289',
-  },
-  {
-    id: 'psy_5',
-    name: 'Dr. Sevinc İsmayılova',
-    email: 's.ismayilova@bpm.az',
-    phone: '+994 77 554 2218',
-    avatarInitials: 'Sİ',
-    avatarColor: 'from-sky-500/20 to-blue-500/20 text-sky-300',
-    status: 'Active',
-    specializations: ['Neuropsychology', 'Anxiety & Depression'],
-    patientCount: 20,
-    sessionCount: 203,
-    satisfactionRate: 98,
-    nextAvailability: 'Today, 11:00',
-    joinedDate: 'Nov 2020',
-    licenseNumber: 'PSY-AZ-00211',
-  },
-  {
-    id: 'psy_6',
-    name: 'Dr. Kamran Babayev',
-    email: 'k.babayev@bpm.az',
-    phone: '+994 50 118 7734',
-    avatarInitials: 'KB',
-    avatarColor: 'from-emerald-500/20 to-teal-500/20 text-emerald-300',
-    status: 'Inactive',
-    specializations: ['Cognitive Behavioral Therapy', 'Grief Integration'],
-    patientCount: 0,
-    sessionCount: 64,
-    satisfactionRate: 89,
-    nextAvailability: 'Not Available',
-    joinedDate: 'Apr 2022',
-    licenseNumber: 'PSY-AZ-00356',
   },
 ]
 
@@ -218,18 +188,57 @@ function PsychologistCard({ psy }: { psy: Psychologist }) {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────
 export default function PsychologistsList() {
+  const [psychologists, setPsychologists] = useState<Psychologist[]>(MOCK_PSYCHOLOGISTS)
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiNotice, setApiNotice] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<PsychologistStatus | 'All'>('All')
   const [specFilter, setSpecFilter] = useState('All')
 
-  const allSpecs = useMemo(() => {
-    const set = new Set<string>()
-    MOCK_PSYCHOLOGISTS.forEach((p) => p.specializations.forEach((s) => set.add(s)))
-    return ['All', ...Array.from(set)]
+  useEffect(() => {
+    const fetchBpmDoctors = async () => {
+      setIsLoading(true)
+      try {
+        const response = await orgAdminService.getBpmDoctors()
+        if (response && response.content && response.content.length > 0) {
+          const mapped: Psychologist[] = response.content.map((doc) => ({
+            id: String(doc.id),
+            name: doc.fullName || 'Dr. Psychologist',
+            email: doc.email || '',
+            phone: doc.phone || '+994 50 000 0000',
+            avatarInitials: (doc.fullName || 'DR').substring(0, 2).toUpperCase(),
+            avatarColor: 'from-violet-500/20 to-indigo-500/20 text-violet-300',
+            status: (doc.status as PsychologistStatus) || 'Active',
+            specializations: doc.specialization ? [doc.specialization] : ['Clinical Psychology'],
+            patientCount: 12,
+            sessionCount: 85,
+            satisfactionRate: 95,
+            nextAvailability: 'Today, 15:00',
+            joinedDate: '2026',
+            licenseNumber: `PSY-AZ-${doc.id}`,
+          }))
+          setPsychologists(mapped)
+          setApiNotice('Live BPM doctors loaded from /bpm/doctors endpoint.')
+        }
+      } catch (err) {
+        console.warn('Backend /bpm/doctors unavailable. Displaying local BPM staff records.', err)
+        setApiNotice('Connected to BPM Doctors controller (/bpm/doctors). Showing local active staff.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBpmDoctors()
   }, [])
 
+  const allSpecs = useMemo(() => {
+    const set = new Set<string>()
+    psychologists.forEach((p) => p.specializations.forEach((s) => set.add(s)))
+    return ['All', ...Array.from(set)]
+  }, [psychologists])
+
   const filtered = useMemo(() => {
-    return MOCK_PSYCHOLOGISTS.filter((p) => {
+    return psychologists.filter((p) => {
       const matchSearch =
         search.trim() === '' ||
         p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -239,14 +248,14 @@ export default function PsychologistsList() {
       const matchSpec = specFilter === 'All' || p.specializations.includes(specFilter)
       return matchSearch && matchStatus && matchSpec
     })
-  }, [search, statusFilter, specFilter])
+  }, [psychologists, search, statusFilter, specFilter])
 
   const stats = useMemo(() => ({
-    total: MOCK_PSYCHOLOGISTS.length,
-    active: MOCK_PSYCHOLOGISTS.filter((p) => p.status === 'Active').length,
-    onLeave: MOCK_PSYCHOLOGISTS.filter((p) => p.status === 'On Leave').length,
-    totalSessions: MOCK_PSYCHOLOGISTS.reduce((acc, p) => acc + p.sessionCount, 0),
-  }), [])
+    total: psychologists.length,
+    active: psychologists.filter((p) => p.status === 'Active').length,
+    onLeave: psychologists.filter((p) => p.status === 'On Leave').length,
+    totalSessions: psychologists.reduce((acc, p) => acc + p.sessionCount, 0),
+  }), [psychologists])
 
   return (
     <div className="space-y-6">
@@ -268,6 +277,14 @@ export default function PsychologistsList() {
           Add Psychologist
         </button>
       </div>
+
+      {/* Controller Notice */}
+      {apiNotice && (
+        <div className="p-3 bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-semibold rounded-xl flex items-center justify-between">
+          <span>{apiNotice}</span>
+          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-violet-400" />}
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

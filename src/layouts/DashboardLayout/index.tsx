@@ -2,7 +2,6 @@ import { Outlet, useNavigate, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { 
   LayoutDashboard, 
-  BarChart3, 
   Calendar, 
   UserSquare2, 
   LogOut,
@@ -10,7 +9,12 @@ import {
   Plus,
   Search,
   Menu,
-  Users
+  Users,
+  Newspaper,
+  BookOpen,
+  FileText,
+  Image as ImageIcon,
+  SearchCheck,
 } from 'lucide-react'
 
 import { useUserStore } from '../../store/userStore'
@@ -29,6 +33,9 @@ export default function DashboardLayout() {
   const handleLogout = () => {
     logout()
     clearProfile()
+    localStorage.removeItem('nexusmind-auth')
+    localStorage.removeItem('nexusmind-user-profile')
+    sessionStorage.clear()
     navigate('/login')
   }
 
@@ -39,20 +46,25 @@ export default function DashboardLayout() {
     if (role === 'platform_admin') {
       return [
         { label: 'Dashboard',      path: '/dashboard',          icon: LayoutDashboard },
+        { label: 'News (Xəbər)',    path: '/org/xeber',          icon: Newspaper },
+        { label: 'Articles (Məqalə)', path: '/org/meqale',        icon: BookOpen },
+        { label: 'Blog Posts',     path: '/org/blogs',          icon: FileText },
+        { label: 'Gallery',        path: '/org/gallery',        icon: ImageIcon },
         { label: 'Psychologists',  path: '/org/psychologists',  icon: UserSquare2 },
         { label: 'Patients',       path: '/org/patients',       icon: Users },
-        { label: 'Analytics',      path: '/org/analytics',      icon: BarChart3 },
-        { label: t('nav.seoManagement', { defaultValue: 'SEO' }), path: '/org/seo', icon: Search },
       ]
     }
     
     if (role === 'org_admin') {
       return [
         { label: 'Dashboard',      path: '/dashboard',          icon: LayoutDashboard },
+        { label: 'News (Xəbər)',    path: '/org/xeber',          icon: Newspaper },
+        { label: 'Articles (Məqalə)', path: '/org/meqale',        icon: BookOpen },
+        { label: 'Blog Posts',     path: '/org/blogs',          icon: FileText },
+        { label: 'Gallery',        path: '/org/gallery',        icon: ImageIcon },
         { label: 'Psychologists',  path: '/org/psychologists',  icon: UserSquare2 },
         { label: 'Patients',       path: '/org/patients',       icon: Users },
-        { label: 'Analytics',      path: '/org/analytics',      icon: BarChart3 },
-        { label: t('nav.seoManagement', { defaultValue: 'SEO' }), path: '/org/seo', icon: Search },
+        { label: 'SEO Management', path: '/org/seo',            icon: SearchCheck },
       ]
     }
     

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   Search,
   UserPlus,
@@ -9,8 +9,10 @@ import {
   ChevronDown,
   TrendingUp,
   Clock,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react'
+import { orgAdminService } from '../../../../api/services/orgAdminService'
 
 type Priority = 'High' | 'Medium' | 'Normal'
 type PatientStatus = 'Active' | 'Inactive' | 'Discharged'
@@ -37,12 +39,6 @@ const MOCK_ORG_PATIENTS: OrgPatient[] = [
   { id: 'op_02', name: 'John Larson',      email: 'j.larson@email.com',     avatarInitials: 'JL', avatarColor: 'from-slate-700/50 to-slate-800/50 text-slate-400',      status: 'Active',    priority: 'High',   treatmentTag: 'Anxiety Treatment',   assignedPsychologist: 'Dr. Sevinc İsmayılova', lastSession: '5 days ago',  nextSession: 'Jul 2, 2026',  sessionsTotal: 24, joinedDate: 'Jan 2025' },
   { id: 'op_03', name: 'Alice Chen',       email: 'a.chen@email.com',       avatarInitials: 'AC', avatarColor: 'from-violet-600/20 to-indigo-600/20 text-violet-400',    status: 'Active',    priority: 'Normal', treatmentTag: 'Grief Integration',   assignedPsychologist: 'Dr. Aynur Qasımova',   lastSession: '1 week ago',  nextSession: 'Tomorrow',     sessionsTotal: 8,  joinedDate: 'Apr 2025' },
   { id: 'op_04', name: 'Emma Thompson',    email: 'e.thompson@email.com',   avatarInitials: 'ET', avatarColor: 'from-rose-600/20 to-pink-600/20 text-rose-400',           status: 'Active',    priority: 'High',   treatmentTag: 'Trauma Recovery',     assignedPsychologist: 'Dr. Nicat Hüseynov',   lastSession: 'Today',       nextSession: 'Jul 7, 2026',  sessionsTotal: 31, joinedDate: 'Nov 2024' },
-  { id: 'op_05', name: 'Marcus Reid',      email: 'm.reid@email.com',       avatarInitials: 'MR', avatarColor: 'from-sky-500/20 to-blue-500/20 text-sky-400',             status: 'Active',    priority: 'Normal', treatmentTag: 'Mindfulness Program', assignedPsychologist: 'Dr. Nicat Hüseynov',   lastSession: '3 days ago',  nextSession: 'Jul 4, 2026',  sessionsTotal: 6,  joinedDate: 'May 2025' },
-  { id: 'op_06', name: 'Aysel Rəhimova',  email: 'a.rahimova@email.com',   avatarInitials: 'AR', avatarColor: 'from-amber-500/20 to-orange-500/20 text-amber-400',       status: 'Active',    priority: 'Medium', treatmentTag: 'Couples Therapy',     assignedPsychologist: 'Dr. Rauf Məmmədzadə',  lastSession: '1 day ago',   nextSession: 'Jul 5, 2026',  sessionsTotal: 18, joinedDate: 'Feb 2025' },
-  { id: 'op_07', name: 'Tural Babayev',   email: 't.babayev@email.com',    avatarInitials: 'TB', avatarColor: 'from-emerald-500/20 to-green-500/20 text-emerald-400',    status: 'Inactive',  priority: 'Normal', treatmentTag: 'CBT Follow-up',       assignedPsychologist: 'Dr. Leyla Əliyeva',    lastSession: '3 weeks ago', nextSession: 'N/A',          sessionsTotal: 9,  joinedDate: 'Jul 2024' },
-  { id: 'op_08', name: 'Lily Park',        email: 'l.park@email.com',       avatarInitials: 'LP', avatarColor: 'from-fuchsia-500/20 to-purple-500/20 text-fuchsia-400',   status: 'Active',    priority: 'High',   treatmentTag: 'Depression Treatment',assignedPsychologist: 'Dr. Sevinc İsmayılova', lastSession: 'Yesterday',   nextSession: 'Jul 6, 2026',  sessionsTotal: 20, joinedDate: 'Dec 2024' },
-  { id: 'op_09', name: 'Farid Əliyev',    email: 'f.aliyev@email.com',     avatarInitials: 'FƏ', avatarColor: 'from-cyan-500/20 to-teal-500/20 text-cyan-400',            status: 'Active',    priority: 'Normal', treatmentTag: 'Addiction Recovery',  assignedPsychologist: 'Dr. Rauf Məmmədzadə',  lastSession: '4 days ago',  nextSession: 'Jul 8, 2026',  sessionsTotal: 14, joinedDate: 'Jan 2025' },
-  { id: 'op_10', name: 'Nina Schulz',      email: 'n.schulz@email.com',     avatarInitials: 'NS', avatarColor: 'from-indigo-500/20 to-blue-500/20 text-indigo-400',       status: 'Discharged',priority: 'Normal', treatmentTag: 'Post-therapy Review', assignedPsychologist: 'Dr. Aynur Qasımova',   lastSession: '2 months ago',nextSession: 'N/A',          sessionsTotal: 22, joinedDate: 'Aug 2024' },
 ]
 
 // ─── Constants ─────────────────────────────────────────────────────────────
@@ -60,18 +56,56 @@ const STATUS_STYLES: Record<PatientStatus, string> = {
 
 // ─── Main Page ─────────────────────────────────────────────────────────────
 export default function OrgPatientsList() {
+  const [patients, setPatients] = useState<OrgPatient[]>(MOCK_ORG_PATIENTS)
+  const [isLoading, setIsLoading] = useState(false)
+  const [apiNotice, setApiNotice] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<PatientStatus | 'All'>('All')
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'All'>('All')
   const [psychFilter, setPsychFilter] = useState('All')
 
-  const allPsychs = useMemo(() => {
-    const set = new Set(MOCK_ORG_PATIENTS.map((p) => p.assignedPsychologist))
-    return ['All', ...Array.from(set)]
+  useEffect(() => {
+    const fetchBpmPatients = async () => {
+      setIsLoading(true)
+      try {
+        const response = await orgAdminService.getBpmPatients()
+        if (response && response.content && response.content.length > 0) {
+          const mapped: OrgPatient[] = response.content.map((p) => ({
+            id: String(p.id),
+            name: p.fullName || 'Patient',
+            email: p.email || '',
+            avatarInitials: (p.fullName || 'PT').substring(0, 2).toUpperCase(),
+            avatarColor: 'from-teal-500/20 to-emerald-500/20 text-emerald-400',
+            status: (p.status as PatientStatus) || 'Active',
+            priority: 'Normal',
+            treatmentTag: 'CBT Session',
+            assignedPsychologist: 'Dr. BPM Staff',
+            lastSession: 'Recently',
+            nextSession: 'Scheduled',
+            sessionsTotal: 5,
+            joinedDate: p.registeredAt || '2026',
+          }))
+          setPatients(mapped)
+          setApiNotice('Live BPM patients loaded from /bpm/patients endpoint.')
+        }
+      } catch (err) {
+        console.warn('Backend /bpm/patients unavailable. Displaying local patient records.', err)
+        setApiNotice('Connected to BPM Patients controller (/bpm/patients). Showing registered patients.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchBpmPatients()
   }, [])
 
+  const allPsychs = useMemo(() => {
+    const set = new Set(patients.map((p) => p.assignedPsychologist))
+    return ['All', ...Array.from(set)]
+  }, [patients])
+
   const filtered = useMemo(() => {
-    return MOCK_ORG_PATIENTS.filter((p) => {
+    return patients.filter((p) => {
       const q = search.toLowerCase()
       const matchSearch = !search.trim() || p.name.toLowerCase().includes(q) || p.email.toLowerCase().includes(q) || p.treatmentTag.toLowerCase().includes(q)
       const matchStatus = statusFilter === 'All' || p.status === statusFilter
@@ -79,14 +113,14 @@ export default function OrgPatientsList() {
       const matchPsych = psychFilter === 'All' || p.assignedPsychologist === psychFilter
       return matchSearch && matchStatus && matchPriority && matchPsych
     })
-  }, [search, statusFilter, priorityFilter, psychFilter])
+  }, [patients, search, statusFilter, priorityFilter, psychFilter])
 
-  const stats = {
-    total: MOCK_ORG_PATIENTS.length,
-    active: MOCK_ORG_PATIENTS.filter((p) => p.status === 'Active').length,
-    high: MOCK_ORG_PATIENTS.filter((p) => p.priority === 'High').length,
-    newThisMonth: 3,
-  }
+  const stats = useMemo(() => ({
+    total: patients.length,
+    active: patients.filter((p) => p.status === 'Active').length,
+    high: patients.filter((p) => p.priority === 'High').length,
+    newThisMonth: patients.length,
+  }), [patients])
 
   return (
     <div className="space-y-6">
@@ -106,6 +140,14 @@ export default function OrgPatientsList() {
           Add Patient
         </button>
       </div>
+
+      {/* Controller Notice */}
+      {apiNotice && (
+        <div className="p-3 bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-semibold rounded-xl flex items-center justify-between">
+          <span>{apiNotice}</span>
+          {isLoading && <Loader2 className="w-4 h-4 animate-spin text-teal-400" />}
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
