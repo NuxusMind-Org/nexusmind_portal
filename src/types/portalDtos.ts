@@ -47,6 +47,47 @@ export interface VerifyOtpRequest {
   otp: string
 }
 
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordWithOtpRequest {
+  email?: string
+  phone?: string
+  otp: string
+  newPassword: string
+}
+
+// Site Settings DTOs
+export interface SiteSettingsRequestDto {
+  siteName?: string
+  siteDescription?: string
+  logoUrl?: string
+  faviconUrl?: string
+  contactEmail?: string
+  contactPhone?: string
+  footerText?: string
+  maintenanceMode?: boolean
+  socialLinks?: Record<string, string>
+  [key: string]: any
+}
+
+export interface SiteSettingsResponseDto {
+  id?: number
+  siteName?: string
+  siteDescription?: string
+  logoUrl?: string
+  faviconUrl?: string
+  contactEmail?: string
+  contactPhone?: string
+  footerText?: string
+  maintenanceMode?: boolean
+  socialLinks?: Record<string, string>
+  updatedAt?: string
+  [key: string]: any
+}
+
+
 // Content DTOs (Xeber, Meqale, Blog, Gallery)
 export interface ContentSection {
   title?: string

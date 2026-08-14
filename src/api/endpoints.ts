@@ -6,6 +6,8 @@ export const API_ENDPOINTS = {
     DOCTOR_PANEL_LOGIN: '/auth/doctor-panel-login',
     PATIENT_LOGIN: '/auth/login',
     CHANGE_PASSWORD: '/auth/change-password',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
     ADD_PATIENT: '/auth/add',
     PATIENT_BY_ID: (id: number | string) => `/auth/${id}`,
     PATIENT_MOOD: (patientId: number | string) => `/auth/${patientId}/mood`,
@@ -53,6 +55,9 @@ export const API_ENDPOINTS = {
     TWO_FACTOR: '/profile/2fa',
     PHOTO: '/profile/photo',
   },
+  SITE_SETTINGS: {
+    BASE: '/admin/site-settings',
+  },
   OTP: {
     VERIFY: '/otp/verify',
   },
@@ -69,3 +74,4 @@ export const API_ENDPOINTS = {
     LLMS: '/seo/llms',
   },
 } as const
+

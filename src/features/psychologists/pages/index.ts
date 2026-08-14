@@ -1,2 +1,3 @@
-// psychologists pages placeholder
-export {};
+export * from './PsychologistsList';
+export * from './PsychologistDashboard';
+export * from './PsychologistCalendar';

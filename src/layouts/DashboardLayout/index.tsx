@@ -70,9 +70,10 @@ export default function DashboardLayout() {
     
     if (role === 'psychologist') {
       return [
-        { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-        { label: 'Patients List', path: '/psy/patients', icon: UserSquare2 },
+        { label: 'Panel', path: '/psy', icon: LayoutDashboard },
+        { label: 'Calendar', path: '/psy/calendar', icon: Calendar },
         { label: 'Therapy Sessions', path: '/psy/sessions', icon: Calendar },
+        { label: 'Patients List', path: '/psy/patients', icon: UserSquare2 },
       ]
     }
     
@@ -81,8 +82,12 @@ export default function DashboardLayout() {
 
   const navItems = getNavItems()
 
-  const getNavLabel = (label: string) => {
+    const getNavLabel = (label: string) => {
     switch (label) {
+      case 'Panel':
+        return t('common.panel', { defaultValue: 'Panel' })
+      case 'Calendar':
+        return t('common.calendar', { defaultValue: 'Calendar' })
       case 'Dashboard':
         return t('common.dashboard')
       case 'Patients List':
@@ -116,12 +121,14 @@ export default function DashboardLayout() {
         </div>
 
         {/* New Session Button */}
-        <div className="px-4 py-4">
-          <button className="w-full py-2.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs tracking-wide uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_12px_rgba(124,58,237,0.25)]">
-            <Plus className="w-4 h-4" />
-            <span>New Session</span>
-          </button>
-        </div>
+        {profile?.role !== 'psychologist' && (
+          <div className="px-4 py-4">
+            <button className="w-full py-2.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs tracking-wide uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_12px_rgba(124,58,237,0.25)]">
+              <Plus className="w-4 h-4" />
+              <span>New Session</span>
+            </button>
+          </div>
+        )}
 
         {/* Navigation Links */}
         <nav className="px-3 space-y-1">

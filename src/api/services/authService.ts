@@ -6,6 +6,8 @@ import type {
   AuthResponse,
   ChangePasswordRequest,
   VerifyOtpRequest,
+  ForgotPasswordRequest,
+  ResetPasswordWithOtpRequest,
 } from '../../types/portalDtos'
 
 export const authService = {
@@ -45,9 +47,22 @@ export const authService = {
     return response.data
   },
 
+  // Request Password Reset OTP
+  forgotPassword: async (data: ForgotPasswordRequest): Promise<string> => {
+    const response = await api.post<string>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, data)
+    return response.data
+  },
+
+  // Reset Password using OTP
+  resetPassword: async (data: ResetPasswordWithOtpRequest): Promise<string> => {
+    const response = await api.post<string>(API_ENDPOINTS.AUTH.RESET_PASSWORD, data)
+    return response.data
+  },
+
   // Verify OTP
   verifyOtp: async (data: VerifyOtpRequest): Promise<string> => {
     const response = await api.post<string>(API_ENDPOINTS.OTP.VERIFY, data)
     return response.data
   },
 }
+

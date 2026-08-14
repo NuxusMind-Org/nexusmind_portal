@@ -8,3 +8,6 @@ export { profileService } from './services/profileService'
 export { patientService } from './services/patientService'
 export { doctorService } from './services/doctorService'
 export { utilityService } from './services/utilityService'
+export { siteSettingsService } from './services/siteSettingsService'
+export { seoService } from './services/seoService'
+

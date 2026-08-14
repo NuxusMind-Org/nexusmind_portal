@@ -38,12 +38,27 @@ Used for credential validation and JWT token issuance across roles.
 | `POST` | `/auth/bpm-login` | BPM Admin authentication | `AdminLoginRequest` | `AuthResponse` | `nexusmind_portal` |
 | `POST` | `/auth/super-admin-login` | NexusMind Super Admin authentication | `AdminLoginRequest` | `AuthResponse` | `nexusmind_portal` |
 | `POST` | `/auth/doctor-login` | Doctor / Psychologist authentication | `LoginRequest` | `AuthResponse` | `nexusmind_portal` |
+| `POST` | `/auth/doctor-panel-login` | Doctor Panel authentication | `AdminLoginRequest` | `AuthResponse` | `nexusmind_portal` |
 | `POST` | `/auth/login` | Patient authentication | `LoginRequest` | `AuthResponse` | `nexusmind_web` |
 | `PUT` | `/auth/change-password` | Change account password | `ChangePasswordRequest` | `string` | Both |
+| `POST` | `/auth/forgot-password` | Request password reset OTP | `ForgotPasswordRequest` | `string` | Both |
+| `POST` | `/auth/reset-password` | Reset password using OTP | `ResetPasswordWithOtpRequest` | `string` | Both |
 
 ---
 
-### 2.2. Content Controllers (Xeber, Meqale, Blog, Gallery)
+### 2.2. Site Settings Controller (`site-settings-controller`)
+
+Used by Platform & Admin roles for global portal settings management.
+
+| Method | Endpoint | Description | Request Body Schema | Response Schema | Portal Scope |
+|---|---|---|---|---|---|
+| `GET` | `/admin/site-settings` | Fetch platform site settings | - | `SiteSettingsResponseDto` | `nexusmind_portal` |
+| `PUT` | `/admin/site-settings` | Update platform site settings | `SiteSettingsRequestDto` | `SiteSettingsResponseDto` | `nexusmind_portal` |
+
+---
+
+### 2.3. Content Controllers (Xeber, Meqale, Blog, Gallery)
+
 
 Provides public viewing for visitors and CRUD capabilities for organization admins.
 
