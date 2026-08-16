@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 type ViewMode = 'day' | 'week' | 'month';
 
 export default function Schedule() {
-  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<ViewMode>('day');
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate] = useState(new Date());
 
   // Static mock sessions
   const mockSessions = [

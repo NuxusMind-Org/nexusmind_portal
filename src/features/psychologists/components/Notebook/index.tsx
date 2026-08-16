@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Save, FileText, CheckCircle2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 export default function Notebook() {
-  const { t } = useTranslation();
   const [note, setNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);

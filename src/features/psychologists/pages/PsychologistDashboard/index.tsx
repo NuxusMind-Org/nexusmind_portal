@@ -1,11 +1,8 @@
-import { useTranslation } from 'react-i18next';
 import Schedule from '../../components/Schedule';
 import Notebook from '../../components/Notebook';
 import ClockWidget from '../../components/ClockWidget';
 
 export function PsychologistDashboard() {
-  const { t } = useTranslation();
-
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1600px] mx-auto h-full flex flex-col relative">
       {/* Background ambient glow */}

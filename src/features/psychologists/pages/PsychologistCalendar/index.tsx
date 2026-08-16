@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { Calendar as CalendarIcon, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import dayjs from 'dayjs';
@@ -7,7 +6,6 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 dayjs.extend(isoWeek);
 
 export function PsychologistCalendar() {
-  const { t } = useTranslation();
   const [selectedHours, setSelectedHours] = useState<Record<string, boolean>>({});
   const [currentWeekStart, setCurrentWeekStart] = useState(dayjs().startOf('isoWeek'));
 

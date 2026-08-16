@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 
 export default function ClockWidget() {
-  const { t } = useTranslation();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
