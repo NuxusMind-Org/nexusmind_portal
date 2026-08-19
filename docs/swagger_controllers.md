@@ -25,6 +25,7 @@ This document provides a comprehensive overview of all backend REST API controll
 | **Appointments (`/appointments`)** | Read-Only | Read-Only | Full Access | Full Access |
 | **BPM Operations (`/bpm/*`)** | Read-Only / Manage | `GET /patients`, `GET /doctors` | No Access | No Access |
 | **NexusMind Operations (`/nexusmind/*`)** | Patients & Doctors Management | No Access | No Access | No Access |
+| **Doctor Working Hours (`/doctors/*/working-hours*`)** | Read-Only | No Access | Manage (`/me`) | Read (`/available`) |
 
 ---
 
@@ -170,9 +171,9 @@ Managed primarily by **Psychologists** and Organization Admins.
 
 ---
 
-### 2.10. Doctor Controllers (`doctor-controller` & `doctor-profile-controller`)
+### 2.10. Doctor Controllers (`doctor-controller`, `doctor-profile-controller`, & `working-hour-controller`)
 
-Handles doctor profiles, registration, and patient associations.
+Handles doctor profiles, registration, working hours, and patient associations.
 
 #### Doctor Controller
 - `POST /doctors/register` - Doctor account registration (`DoctorRegisterDto` -> `string`)
@@ -182,6 +183,14 @@ Handles doctor profiles, registration, and patient associations.
 #### Doctor Profile Controller
 - `GET /doctors` - Get all doctor profiles (`DoctorDto[]`)
 - `GET /doctors/{id}` - Get doctor profile by ID (`DoctorDto`)
+
+#### Working Hour Controller
+- `GET /doctors/me/working-hours/template` - Get my schedule (`from`, `to` -> response schema TBD)
+- `POST /doctors/me/working-hours/template` - Save my schedule (`SaveScheduleRequest` -> `200 OK`)
+  - Request body: `{ "days": [{ "dayOfWeek": "MONDAY", "hours": [9, 10, 11] }, ...] }`
+  - `dayOfWeek`: one of `MONDAY | TUESDAY | WEDNESDAY | THURSDAY | FRIDAY | SATURDAY | SUNDAY`
+  - `hours`: array of integers (0–23) representing available hours
+- `GET /doctors/{doctorId}/working-hours/available` - Get available slots for a doctor (`from`, `to` -> `AvailableSlotDto[]`)
 
 ---
 
@@ -238,6 +247,7 @@ The frontend Portal consumes DTO types defined in [src/types/portalDtos.ts](file
 - `GalleryItemRequest` / `GalleryItemResponse`
 - `TrainingRequest` / `TrainingResponse`
 - `DoctorDto` / `DoctorRegisterDto` / `DoctorEntity` / `DoctorResponseDto`
+- `AvailableSlotDto` / `SaveScheduleRequest` / `DaySchedule`
 - `PasientRegisterDto` / `PasientRegisterEntity`
 - `AuthResponse` / `AdminLoginRequest` / `LoginRequest`
 - `AppointmentDto` / `CreateAppointmentRequest` / `SessionNoteDto`

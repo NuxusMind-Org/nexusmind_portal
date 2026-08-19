@@ -45,6 +45,8 @@ export const API_ENDPOINTS = {
   },
   DOCTORS: {
     REGISTER: '/doctors/register',
+    WORKING_HOURS_ME: '/doctors/me/working-hours/template',
+    WORKING_HOURS_AVAILABLE: (doctorId: number | string) => `/doctors/${doctorId}/working-hours/available`,
   },
   PROFILE: {
     STATUS: '/profile/status',

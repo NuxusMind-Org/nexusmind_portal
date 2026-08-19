@@ -236,6 +236,21 @@ export interface TrainingResponse {
   registeredCount?: number
 }
 
+// Doctor Working Hours DTOs
+export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
+
+export interface DaySchedule {
+  dayOfWeek: DayOfWeek
+  hours: number[]
+}
+
+export interface SaveScheduleRequest {
+  days: DaySchedule[]
+}
+
+// GET response from /doctors/me/working-hours/template mirrors the POST body
+export type WorkingHoursResponse = SaveScheduleRequest
+
 // Patient & Doctor DTOs
 export type PatientMood = 'SAD' | 'HAPPY' | 'TIRED' | 'CALM' | 'NORMAL'
 

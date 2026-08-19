@@ -1,18 +1,53 @@
-import { Calendar as CalendarIcon, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar as CalendarIcon, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import { doctorService } from '../../../../api';
+import type { SaveScheduleRequest, DaySchedule, DayOfWeek } from '../../../../types/portalDtos';
 
 dayjs.extend(isoWeek);
 
 export function PsychologistCalendar() {
   const [selectedHours, setSelectedHours] = useState<Record<string, boolean>>({});
   const [currentWeekStart, setCurrentWeekStart] = useState(dayjs().startOf('isoWeek'));
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const hours = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+  const hours = Array.from({ length: 24 }).map((_, i) => i);
 
   // Generate the 7 days of the currently selected week
   const weekDays = Array.from({ length: 7 }).map((_, i) => currentWeekStart.add(i, 'day'));
+
+  // Fetch saved working hours on mount and whenever the week view changes,
+  // mapping dayOfWeek names back to the concrete dates of the visible week.
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      setIsLoading(true);
+      try {
+        const response = await doctorService.getMyWorkingHours();
+        const newSelected: Record<string, boolean> = {};
+
+        (response.days ?? []).forEach(({ dayOfWeek, hours }) => {
+          // Find the day in the current week that matches this dayOfWeek name
+          const day = weekDays.find(
+            d => d.format('dddd').toUpperCase() === dayOfWeek
+          );
+          if (!day || !hours?.length) return;
+          const dateStr = day.format('YYYY-MM-DD');
+          hours.forEach(hour => {
+            newSelected[`${dateStr}-${hour}`] = true;
+          });
+        });
+
+        setSelectedHours(newSelected);
+      } catch (error) {
+        console.error('Failed to fetch working hours:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSchedule();
+  }, [currentWeekStart]);
 
   const toggleHour = (dateStr: string, hour: number) => {
     const key = `${dateStr}-${hour}`;
@@ -27,6 +62,41 @@ export function PsychologistCalendar() {
   const nextWeek = () => setCurrentWeekStart(prev => prev.add(1, 'week'));
   const prevWeek = () => setCurrentWeekStart(prev => prev.subtract(1, 'week'));
   const thisWeek = () => setCurrentWeekStart(dayjs().startOf('isoWeek'));
+
+  const DAY_ORDER: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
+
+  const handleSaveSchedule = async () => {
+    setIsSaving(true);
+    try {
+      // Group selected hours by day-of-week
+      const daysMap = new Map<DayOfWeek, number[]>();
+      DAY_ORDER.forEach(day => daysMap.set(day, []));
+
+      Object.entries(selectedHours).forEach(([key, isSelected]) => {
+        if (!isSelected) return;
+        // key format: "YYYY-MM-DD-H" — date parts are first 3 segments, hour is last
+        const parts = key.split('-');
+        const hour = parseInt(parts[parts.length - 1], 10);
+        const dateStr = parts.slice(0, 3).join('-');
+        const dayOfWeek = dayjs(dateStr).format('dddd').toUpperCase() as DayOfWeek;
+        daysMap.get(dayOfWeek)?.push(hour);
+      });
+
+      const days: DaySchedule[] = DAY_ORDER.map(day => ({
+        dayOfWeek: day,
+        hours: (daysMap.get(day) ?? []).sort((a, b) => a - b),
+      }));
+
+      const payload: SaveScheduleRequest = { days };
+      await doctorService.saveMyWorkingHours(payload);
+      alert('Schedule saved successfully!');
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+      alert('Failed to save schedule.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1600px] mx-auto h-full flex flex-col relative">
@@ -62,9 +132,13 @@ export function PsychologistCalendar() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               {getActiveCount()} Hours Selected
             </span>
-            <button className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs tracking-wide uppercase transition-all rounded-lg shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center gap-2 cursor-pointer">
-              <CheckCircle2 className="w-4 h-4" />
-              Save Schedule
+            <button 
+              onClick={handleSaveSchedule}
+              disabled={isSaving}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white font-bold text-xs tracking-wide uppercase transition-all rounded-lg shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center gap-2 cursor-pointer"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              {isSaving ? 'Saving...' : 'Save Schedule'}
             </button>
           </div>
         </div>
@@ -72,6 +146,11 @@ export function PsychologistCalendar() {
 
       {/* Grid */}
       <div className="flex-1 bg-[#11121d] border border-[#202235] rounded-xl overflow-hidden shadow-lg relative z-10 flex flex-col">
+        {isLoading && (
+          <div className="absolute inset-0 bg-[#11121d]/50 backdrop-blur-sm z-20 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
+          </div>
+        )}
         <div className="grid grid-cols-8 border-b border-[#202235] bg-[#1a1b2b] shrink-0">
           <div className="p-4 border-r border-[#202235]"></div>
           {weekDays.map(day => {
