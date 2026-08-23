@@ -1,2 +1,2 @@
-// sessions hooks placeholder
-export {};
+export * from './useSessions'
+

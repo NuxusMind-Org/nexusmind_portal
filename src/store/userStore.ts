@@ -1,13 +1,14 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface UserProfile {
+export interface UserProfile {
   id: string
   name: string
   email: string
   role: string
   permissions: string[]
   tenantId: string | null
+  doctorId?: number
 }
 
 interface UserState {

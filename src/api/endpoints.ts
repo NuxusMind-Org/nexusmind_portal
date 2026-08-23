@@ -75,5 +75,14 @@ export const API_ENDPOINTS = {
     SITEMAP: '/seo/sitemap',
     LLMS: '/seo/llms',
   },
+  APPOINTMENTS: {
+    BASE: '/appointments',
+    BY_ID: (id: number | string) => `/appointments/${id}`,
+    STATUS: (id: number | string) => `/appointments/${id}/status`,
+    CANCEL: (id: number | string) => `/appointments/${id}/cancel`,
+    NOTES: (id: number | string) => `/appointments/${id}/notes`,
+    JOIN_TOKEN: (id: number | string) => `/appointments/${id}/join-token`,
+    STATS: '/appointments/stats',
+  },
 } as const
 

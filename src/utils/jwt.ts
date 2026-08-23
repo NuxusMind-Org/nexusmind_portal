@@ -1,13 +1,19 @@
 export interface JwtPayload {
   sub?: string
+  id?: number | string
+  doctorId?: number
+  doctor_id?: number
+  userId?: number
+  user_id?: number
   username?: string
+  email?: string
   role?: string
   roles?: string[]
   authorities?: string[]
   tenantId?: string
   exp?: number
   iat?: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export function parseJwt(token: string): JwtPayload | null {

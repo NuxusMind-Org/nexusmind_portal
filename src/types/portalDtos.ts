@@ -69,7 +69,7 @@ export interface SiteSettingsRequestDto {
   footerText?: string
   maintenanceMode?: boolean
   socialLinks?: Record<string, string>
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface SiteSettingsResponseDto {
@@ -84,7 +84,7 @@ export interface SiteSettingsResponseDto {
   maintenanceMode?: boolean
   socialLinks?: Record<string, string>
   updatedAt?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 
@@ -273,7 +273,7 @@ export interface PasientRegisterDto {
   gender?: string
   address?: string
   mood?: PatientMood
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface DoctorDto {
@@ -307,7 +307,8 @@ export interface UpdateLanguageRequest {
 }
 
 export interface UpdateEmailRequest {
-  email: string
+  newEmail?: string
+  email?: string
 }
 
 export interface ProfileResponse {
@@ -322,28 +323,28 @@ export interface ProfileResponse {
 
 // Onboarding & Journal DTOs
 export interface OnboardingRequest {
-  answers?: Record<string, any>
-  [key: string]: any
+  answers?: Record<string, unknown>
+  [key: string]: unknown
 }
 
 export interface OnboardingResponse {
   id?: number
   status?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface JournalEntryRequest {
   content: string
   mood?: string
   tags?: string[]
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface JournalEntryResponse {
   id: number
   content: string
   createdAt?: string
-  [key: string]: any
+  [key: string]: unknown
 }
 
 // SEO Management DTOs
@@ -370,5 +371,70 @@ export interface RobotsTxtDto {
 
 export interface LlmsTxtDto {
   content: string
+}
+
+// Appointment & Session DTOs
+export interface LocalTime {
+  hour: number
+  minute: number
+  second?: number
+  nano?: number
+}
+
+export type AppointmentStatus =
+  | 'SCHEDULED'
+  | 'WAITING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+
+export type AppointmentMode = 'VR' | 'VIDEO_CALL' | 'APP'
+
+export interface AppointmentDto {
+  id: number
+  patientName?: string
+  doctorName?: string
+  appointmentDate?: string
+  appointmentTime?: LocalTime | string
+  status?: AppointmentStatus
+  mode?: AppointmentMode
+  roomUrl?: string
+  hasNote?: boolean
+  [key: string]: unknown
+}
+
+export interface CreateAppointmentRequest {
+  doctorId: number
+  appointmentDate: string
+  appointmentTime: LocalTime | string
+  mode: AppointmentMode
+}
+
+export interface UpdateUserStatusRequest {
+  status: AppointmentStatus | string
+}
+
+export interface SessionNoteDto {
+  id: number
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+  [key: string]: unknown
+}
+
+export interface CreateSessionNoteRequest {
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+}
+
+export interface AppointmentStatsDto {
+  totalAppointments?: number
+  completedAppointments?: number
+  upcomingAppointments?: number
+  cancelledAppointments?: number
+  [key: string]: unknown
 }
 

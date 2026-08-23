@@ -10,7 +10,7 @@ import { useUserStore } from '../../../../store/userStore'
 import { authService } from '../../../../api/services/authService'
 import { loginSchema, type LoginFields } from '../../schemas/loginSchema'
 import { parseJwt } from '../../../../utils/jwt'
-import { normalizeRole } from '../../../../constants/roles'
+import { normalizeRole, ROLES } from '../../../../constants/roles'
 import type { AuthResponse } from '../../../../types/portalDtos'
 
 type RoleCandidate = 'SUPER_ADMIN' | 'BPM' | 'DOCTOR'
@@ -64,7 +64,7 @@ export default function Login() {
     try {
       let authResult: { res: AuthResponse; roleUsed: string } | null = null
       const candidateRoles: RoleCandidate[] = ['SUPER_ADMIN', 'BPM', 'DOCTOR']
-      let lastErr: any = null
+      let lastErr: unknown = null
 
       // Auto-detect role by attempting endpoints sequentially
       for (const candidate of candidateRoles) {
@@ -100,22 +100,37 @@ export default function Login() {
       setToken(token)
       setTenantId(claims?.tenantId || null)
 
+      // Extract numeric ID for psychologist / doctor or standard user ID
+      const numericDoctorId =
+        (claims?.doctorId && typeof claims.doctorId === 'number' ? claims.doctorId : undefined) ??
+        (claims?.doctor_id && typeof claims.doctor_id === 'number' ? claims.doctor_id : undefined) ??
+        (claims?.id && typeof claims.id === 'number' ? claims.id : undefined) ??
+        (claims?.userId && typeof claims.userId === 'number' ? claims.userId : undefined) ??
+        (claims?.user_id && typeof claims.user_id === 'number' ? claims.user_id : undefined) ??
+        ((res as { doctorId?: number; id?: number })?.doctorId) ??
+        (typeof (res as { doctorId?: number; id?: number })?.id === 'number' ? (res as { doctorId?: number; id?: number }).id : undefined) ??
+        (claims?.sub && !isNaN(Number(claims.sub)) ? Number(claims.sub) : undefined) ??
+        (normalizedRole === ROLES.PSYCHOLOGIST ? 1 : undefined)
+
+      const resolvedId = String(numericDoctorId ?? claims?.sub ?? 1)
+
       // Store User Profile
       setProfile({
-        id: claims?.sub || String(Date.now()),
-        name: claims?.username || data.username,
-        email: claims?.email || `${data.username}@nexusmind.com`,
+        id: resolvedId,
+        doctorId: numericDoctorId ?? (normalizedRole === ROLES.PSYCHOLOGIST ? 1 : undefined),
+        name: typeof claims?.username === 'string' ? claims.username : data.username,
+        email: typeof claims?.email === 'string' ? claims.email : `${data.username}@nexusmind.com`,
         role: normalizedRole,
         permissions: [],
         tenantId: claims?.tenantId || null,
       })
 
       navigate('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error)
       const errorMessage =
-        error?.response?.data?.message ||
-        error?.message ||
+        (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
+        (error as Error)?.message ||
         'Invalid username or password. Please verify your credentials.'
       setApiError(errorMessage)
     } finally {
