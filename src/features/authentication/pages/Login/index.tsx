@@ -39,18 +39,26 @@ export default function Login() {
   })
 
   const attemptLoginByRole = async (role: RoleCandidate, credentials: LoginFields): Promise<{ res: AuthResponse; roleUsed: string }> => {
-    const payload = { username: credentials.username, password: credentials.password }
     let res: AuthResponse
 
     switch (role) {
       case 'SUPER_ADMIN':
-        res = await authService.superAdminLogin(payload)
+        res = await authService.superAdminLogin({
+          username: credentials.username,
+          password: credentials.password,
+        })
         break
       case 'BPM':
-        res = await authService.bpmLogin(payload)
+        res = await authService.bpmLogin({
+          username: credentials.username,
+          password: credentials.password,
+        })
         break
       case 'DOCTOR':
-        res = await authService.doctorPanelLogin(payload)
+        res = await authService.doctorPanelLogin({
+          email: credentials.username,
+          password: credentials.password,
+        })
         break
     }
 
@@ -119,7 +127,7 @@ export default function Login() {
         id: resolvedId,
         doctorId: numericDoctorId ?? (normalizedRole === ROLES.PSYCHOLOGIST ? 1 : undefined),
         name: typeof claims?.username === 'string' ? claims.username : data.username,
-        email: typeof claims?.email === 'string' ? claims.email : `${data.username}@nexusmind.com`,
+        email: typeof claims?.email === 'string' ? claims.email : (data.username.includes('@') ? data.username : `${data.username}@nexusmind.com`),
         role: normalizedRole,
         permissions: [],
         tenantId: claims?.tenantId || null,

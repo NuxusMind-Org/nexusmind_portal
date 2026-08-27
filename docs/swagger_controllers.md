@@ -42,7 +42,7 @@ Used for credential validation and JWT token issuance across roles.
 | `POST` | `/auth/bpm-login` | BPM Admin authentication | `AdminLoginRequest` | `AuthResponse` | `nexusmind_portal` |
 | `POST` | `/auth/super-admin-login` | NexusMind Super Admin authentication | `AdminLoginRequest` | `AuthResponse` | `nexusmind_portal` |
 | `POST` | `/auth/doctor-login` | Doctor / Psychologist authentication | `LoginRequest` | `AuthResponse` | `nexusmind_portal` |
-| `POST` | `/auth/doctor-panel-login` | Doctor Panel authentication | `AdminLoginRequest` | `AuthResponse` | `nexusmind_portal` |
+| `POST` | `/auth/doctor-panel-login` | Doctor Panel authentication | `DoctorPanelLoginRequest` | `AuthResponse` | `nexusmind_portal` |
 | `POST` | `/auth/login` | Patient authentication | `LoginRequest` | `AuthResponse` | `nexusmind_web` |
 | `PUT` | `/auth/change-password` | Change account password | `ChangePasswordRequest` | `string` | Both |
 | `POST` | `/auth/forgot-password` | Request password reset OTP | `ForgotPasswordRequest` | `string` | Both |

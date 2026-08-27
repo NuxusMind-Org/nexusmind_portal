@@ -66,16 +66,16 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
 
       {/* Action Buttons */}
       <div className="shrink-0 flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 border-[#222437] pt-3 md:pt-0">
-        {session.status === 'Waiting' && (
+        {session.status !== 'Completed' && session.status !== 'Cancelled' && (
           <button
             onClick={(e) => {
               e.stopPropagation()
               onJoinRoom?.(session.id)
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(16,185,129,0.15)]"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(16,185,129,0.15)]"
           >
             <Video className="w-3.5 h-3.5 text-white" />
-            <span>{t('sessions.joinRoom')}</span>
+            <span>{t('sessions.joinRoom', { defaultValue: 'Otağa Qoşul' })}</span>
           </button>
         )}
         
@@ -88,23 +88,11 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5 text-slate-400" />
-            <span>{t('sessions.reviewSummary')}</span>
+            <span>{t('sessions.reviewSummary', { defaultValue: 'Xülasəyə Bax' })}</span>
           </button>
         )}
 
-        {session.status === 'Scheduled' && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onViewDetails?.(session.id)
-            }}
-            className="px-3 py-1.5 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
-          >
-            {t('sessions.details')}
-          </button>
-        )}
-
-        {(session.status === 'Scheduled' || session.status === 'Waiting') && (
+        {session.status !== 'Completed' && session.status !== 'Cancelled' && (
           <button
             onClick={(e) => {
               e.stopPropagation()
@@ -117,6 +105,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
           </button>
         )}
       </div>
+
 
     </div>
   )

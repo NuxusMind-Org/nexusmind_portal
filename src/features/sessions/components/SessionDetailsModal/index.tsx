@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Calendar, Clock, Video, Eye, Play, AlertCircle, FileText, Loader2 } from 'lucide-react'
+import { X, Calendar, Clock, Video, Eye, AlertCircle, FileText, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { appointmentService } from '../../../../api'
 import type { Session } from '../../types/session'
@@ -17,9 +17,9 @@ export default function SessionDetailsModal({
   session,
   isOpen,
   onClose,
-  onStartSession,
   onJoinRoom,
 }: SessionDetailsModalProps) {
+
   const { t } = useTranslation()
   const [notes, setNotes] = useState<SessionNoteDto | null>(null)
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
@@ -254,14 +254,15 @@ export default function SessionDetailsModal({
           ) : session.status === 'Scheduled' ? (
             <button
               onClick={() => {
-                onStartSession?.(session.id)
+                onJoinRoom?.(session.id)
                 onClose()
               }}
-              className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(124,58,237,0.25)] flex items-center justify-center gap-1.5"
+              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
             >
-              <Play className="w-3.5 h-3.5 fill-current text-white" />
-              <span>{t('sessions.startSession', { defaultValue: 'Start Session' })}</span>
+              <Video className="w-3.5 h-3.5 text-white" />
+              <span>{t('sessions.joinRoom', { defaultValue: 'Otağa Qoşul' })}</span>
             </button>
+
           ) : (
             <div className="flex items-center gap-1.5 p-3 bg-emerald-500/5 text-emerald-400 rounded-xl border border-emerald-500/10 text-[10px] leading-relaxed">
               <AlertCircle className="w-4 h-4 shrink-0 text-emerald-500" />

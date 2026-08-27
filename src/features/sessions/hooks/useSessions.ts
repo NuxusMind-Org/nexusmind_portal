@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { appointmentService } from '../../../api'
 import { useUserStore } from '../../../store/userStore'
 import type { Session, TimeFilter } from '../types/session'
@@ -18,11 +19,13 @@ const resolveNumericId = (val: unknown): number | null => {
 }
 
 export function useSessions() {
+  const navigate = useNavigate()
   const { profile } = useUserStore()
   const activeDoctorId =
     resolveNumericId(profile?.doctorId) ??
     resolveNumericId(profile?.id) ??
     1
+
 
   const [sessions, setSessions] = useState<Session[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -129,34 +132,12 @@ export function useSessions() {
 
   // Actions
   const handleJoinRoom = useCallback(
-    async (id: string) => {
-      const session = sessions.find((s) => s.id === id)
-      if (!session) return
-
-      try {
-        // Attempt to fetch room join token
-        const tokenRes = await appointmentService.getJoinToken(id).catch(() => null)
-        if (tokenRes?.token || session.roomUrl) {
-          const targetUrl = session.roomUrl || `/room/${session.id}?token=${tokenRes?.token}`
-          window.open(targetUrl, '_blank')
-        }
-
-        // Update status to IN_PROGRESS or COMPLETED
-        await appointmentService
-          .updateAppointmentStatus(id, { status: 'COMPLETED' })
-          .catch((e) => console.warn('Could not update appointment status on server:', e))
-
-        setSessions((prev) =>
-          prev.map((s) => (s.id === id ? { ...s, status: 'Completed' as const } : s))
-        )
-        triggerFeedback(`Joined telehealth room for ${session.patientName}. Marked as Completed.`)
-      } catch (err) {
-        console.error('Error joining room:', err)
-        triggerFeedback(`Joined room for ${session.patientName}.`)
-      }
+    (id: string) => {
+      navigate(`/psy/sessions/${id}/room`)
     },
-    [sessions, triggerFeedback]
+    [navigate]
   )
+
 
   const handleCancelSession = useCallback(
     async (id: string) => {

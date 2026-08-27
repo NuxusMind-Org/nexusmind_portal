@@ -2,13 +2,17 @@ import type { RouteObject } from 'react-router-dom'
 import DashboardLayout from '../layouts/DashboardLayout'
 import { RoleGuard } from '../permissions/guards'
 import { PatientsList } from '../features/patients/pages'
-import { SessionsOverview } from '../features/sessions/pages'
+import { SessionsOverview, VideoCallRoom } from '../features/sessions/pages'
 import { PsychologistDashboard, PsychologistCalendar } from '../features/psychologists/pages'
 
 export const psychologistRoutes: RouteObject = {
   path: 'psy',
   element: <RoleGuard allowedRoles={['psychologist', 'platform_admin']} />,
   children: [
+    {
+      path: 'sessions/:sessionId/room',
+      element: <VideoCallRoom />,
+    },
     {
       element: <DashboardLayout />,
       children: [
@@ -32,3 +36,4 @@ export const psychologistRoutes: RouteObject = {
     },
   ],
 }
+

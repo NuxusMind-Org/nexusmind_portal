@@ -23,6 +23,11 @@ export interface LoginRequest {
   password: string
 }
 
+export interface DoctorPanelLoginRequest {
+  email: string
+  password: string
+}
+
 export interface AdminLoginRequest {
   username?: string
   email?: string
@@ -32,6 +37,7 @@ export interface AdminLoginRequest {
 export interface AuthResponse {
   token?: string
   accessToken?: string
+  refreshToken?: string
   tokenType?: string
   role?: string
 }
@@ -437,4 +443,26 @@ export interface AppointmentStatsDto {
   cancelledAppointments?: number
   [key: string]: unknown
 }
+
+export interface LiveKitJoinTokenResponse {
+  token?: string
+  serverUrl?: string
+  roomName?: string
+  livekitUrl?: string
+  [key: string]: unknown
+}
+
+
+export interface ChatMessageResponseDto {
+  id?: number | string
+  appointmentId?: number | string
+  senderId?: number | string
+  senderName?: string
+  senderRole?: string
+  message: string
+  timestamp?: string
+  createdAt?: string
+  [key: string]: unknown
+}
+
 

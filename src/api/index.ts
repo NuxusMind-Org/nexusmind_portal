@@ -11,4 +11,6 @@ export { appointmentService } from './services/appointmentService'
 export { utilityService } from './services/utilityService'
 export { siteSettingsService } from './services/siteSettingsService'
 export { seoService } from './services/seoService'
+export { chatService } from './services/chatService'
+
 

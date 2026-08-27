@@ -84,5 +84,9 @@ export const API_ENDPOINTS = {
     JOIN_TOKEN: (id: number | string) => `/appointments/${id}/join-token`,
     STATS: '/appointments/stats',
   },
+  CHAT: {
+    MESSAGES: (appointmentId: number | string) => `/chat/${appointmentId}/messages`,
+  },
 } as const
+
 

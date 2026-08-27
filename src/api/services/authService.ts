@@ -2,6 +2,7 @@ import api from '../axios'
 import { API_ENDPOINTS } from '../endpoints'
 import type {
   AdminLoginRequest,
+  DoctorPanelLoginRequest,
   LoginRequest,
   AuthResponse,
   ChangePasswordRequest,
@@ -30,7 +31,7 @@ export const authService = {
   },
 
   // Doctor Panel Login
-  doctorPanelLogin: async (data: AdminLoginRequest): Promise<AuthResponse> => {
+  doctorPanelLogin: async (data: DoctorPanelLoginRequest): Promise<AuthResponse> => {
     const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.DOCTOR_PANEL_LOGIN, data)
     return response.data
   },

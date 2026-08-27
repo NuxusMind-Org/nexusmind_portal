@@ -7,6 +7,7 @@ import type {
   SessionNoteDto,
   CreateSessionNoteRequest,
   AppointmentStatsDto,
+  LiveKitJoinTokenResponse,
 } from '../../types/portalDtos'
 
 export const appointmentService = {
@@ -87,10 +88,11 @@ export const appointmentService = {
   },
 
   // Get LiveKit join token for virtual room
-  getJoinToken: async (id: number | string): Promise<{ token?: string; [key: string]: unknown }> => {
-    const response = await api.post<{ token?: string }>(API_ENDPOINTS.APPOINTMENTS.JOIN_TOKEN(id))
+  getJoinToken: async (id: number | string): Promise<LiveKitJoinTokenResponse> => {
+    const response = await api.post<LiveKitJoinTokenResponse>(API_ENDPOINTS.APPOINTMENTS.JOIN_TOKEN(id))
     return response.data
   },
+
 
   // Get appointment statistics
   getAppointmentStats: async (): Promise<AppointmentStatsDto> => {
