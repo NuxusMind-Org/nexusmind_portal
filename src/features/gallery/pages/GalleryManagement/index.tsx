@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Plus, Edit2, Trash2, Image as ImageIcon, Loader2, Search, X, Video } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { GalleryItemResponse, GalleryItemRequest } from '../../../../types/portalDtos'
+import { ImageUploadInput } from '../../../../components/forms'
 
 export default function GalleryManagement() {
   const [items, setItems] = useState<GalleryItemResponse[]>([])
@@ -272,38 +273,36 @@ export default function GalleryManagement() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Category (category)</label>
-                  <input
-                    type="text"
+                  <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g. TERAPIYALAR"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                  />
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="TERAPIYALAR">TERAPIYALAR</option>
+                    <option value="OTAQLAR">OTAQLAR</option>
+                    <option value="TELIMLER">TELIMLER</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Media URL * (mediaUrl)</label>
-                <input
-                  type="url"
-                  required
-                  value={mediaUrl}
-                  onChange={(e) => setMediaUrl(e.target.value)}
-                  placeholder="https://example.com/media.jpg"
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+              <ImageUploadInput
+                label="Media Asset * (mediaUrl / imageUrl)"
+                value={mediaUrl}
+                onChange={setMediaUrl}
+                folder="gallery"
+                accentColor="emerald"
+                required
+                placeholder="https://example.com/media.jpg or upload media file"
+              />
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Thumbnail URL (thumbnailUrl)</label>
-                <input
-                  type="url"
-                  value={thumbnailUrl}
-                  onChange={(e) => setThumbnailUrl(e.target.value)}
-                  placeholder="https://example.com/thumbnail.jpg"
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+              <ImageUploadInput
+                label="Thumbnail Asset (thumbnailUrl)"
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+                folder="gallery"
+                accentColor="emerald"
+                placeholder="https://example.com/thumbnail.jpg or upload thumbnail"
+              />
 
               <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
                 <button

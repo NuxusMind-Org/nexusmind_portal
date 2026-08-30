@@ -12,5 +12,7 @@ export { utilityService } from './services/utilityService'
 export { siteSettingsService } from './services/siteSettingsService'
 export { seoService } from './services/seoService'
 export { chatService } from './services/chatService'
+export { uploadService } from './services/uploadService'
+
 
 

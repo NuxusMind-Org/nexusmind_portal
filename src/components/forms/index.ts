@@ -1,2 +1,2 @@
-// Global Form components placeholder
-export {}
+export { ImageUploadInput } from './ImageUploadInput'
+export type { ImageUploadInputProps } from './ImageUploadInput'

@@ -87,6 +87,9 @@ export const API_ENDPOINTS = {
   CHAT: {
     MESSAGES: (appointmentId: number | string) => `/chat/${appointmentId}/messages`,
   },
+  UPLOAD: {
+    BASE: '/upload',
+  },
 } as const
 
 

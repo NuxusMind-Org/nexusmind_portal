@@ -22,8 +22,12 @@ import {
   Edit2,
   Trash2,
   Loader2,
-  X
+  X,
+  Tag,
+  Globe,
+  Code
 } from 'lucide-react'
+import { ImageUploadInput } from '../../../../components/forms'
 
 export default function DashboardOverview() {
   const profile = useUserStore((state) => state.profile)
@@ -51,9 +55,17 @@ export default function DashboardOverview() {
   const [formAuthor, setFormAuthor] = useState('')
   const [formQuote, setFormQuote] = useState('')
   const [formImageUrl, setFormImageUrl] = useState('')
-  const [formStatus, setFormStatus] = useState<'DRAFT' | 'PUBLISHED'>('PUBLISHED')
+  const [formStatus, setFormStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('PUBLISHED')
   const [formReadTime, setFormReadTime] = useState(5)
   const [formMediaType, setFormMediaType] = useState<'IMAGE' | 'VIDEO'>('IMAGE')
+
+  // SEO Form Fields
+  const [formMetaKeywords, setFormMetaKeywords] = useState('')
+  const [formMetaTitle, setFormMetaTitle] = useState('')
+  const [formMetaDesc, setFormMetaDesc] = useState('')
+  const [formSlug, setFormSlug] = useState('')
+  const [formSchemaMarkup, setFormSchemaMarkup] = useState('')
+  const [formDoctorId, setFormDoctorId] = useState<number | string>('')
 
   const fetchContentData = async () => {
     setIsContentLoading(true)
@@ -104,6 +116,11 @@ export default function DashboardOverview() {
     setFormImageUrl('')
     setFormStatus('PUBLISHED')
     setFormReadTime(5)
+    setFormMetaKeywords('')
+    setFormMetaTitle('')
+    setFormMetaDesc('')
+    setFormSlug('')
+    setFormSchemaMarkup('')
     setActiveModal('xeber')
   }
 
@@ -118,6 +135,9 @@ export default function DashboardOverview() {
     setFormQuote('')
     setFormImageUrl('')
     setFormStatus('PUBLISHED')
+    setFormDoctorId('')
+    setFormMetaKeywords('')
+    setFormSchemaMarkup('')
     setActiveModal('meqale')
   }
 
@@ -130,6 +150,11 @@ export default function DashboardOverview() {
     setFormAuthor('NexusMind Editorial')
     setFormCategory('General')
     setFormImageUrl('')
+    setFormMetaKeywords('')
+    setFormMetaTitle('')
+    setFormMetaDesc('')
+    setFormSlug('')
+    setFormSchemaMarkup('')
     setActiveModal('blog')
   }
 
@@ -146,7 +171,7 @@ export default function DashboardOverview() {
   const handleOpenEditItem = (type: 'xeber' | 'meqale' | 'blog' | 'gallery', item: any) => {
     setEditingItem(item)
     if (type === 'xeber') {
-      setFormTitle(item.title)
+      setFormTitle(item.title || '')
       setFormShortDesc(item.shortDescription || '')
       setFormIntroText(item.introText || '')
       setFormContent(item.content || (item.sections && item.sections.map((s: any) => s.text).join('\n\n')) || '')
@@ -155,8 +180,14 @@ export default function DashboardOverview() {
       setFormImageUrl(item.imageUrl || '')
       setFormStatus(item.status || 'PUBLISHED')
       setFormReadTime(item.readTimeMinutes || 5)
+      setFormMetaTitle(item.metaTitle || '')
+      setFormMetaDesc(item.metaDescription || '')
+      setFormSlug(item.slug || '')
+      setFormSchemaMarkup(item.schemaMarkup || '')
+      const kw = item.metaKeywords
+      setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'meqale') {
-      setFormTitle(item.title)
+      setFormTitle(item.title || '')
       setFormShortDesc(item.shortDescription || '')
       setFormIntroText(item.introText || '')
       setFormContent(item.content || (item.sections && item.sections.map((s: any) => s.text).join('\n\n')) || '')
@@ -165,14 +196,24 @@ export default function DashboardOverview() {
       setFormQuote(item.quote || '')
       setFormImageUrl(item.imageUrl || '')
       setFormStatus(item.status || 'PUBLISHED')
+      setFormDoctorId(item.doctorId || '')
+      setFormSchemaMarkup(item.schemaMarkup || '')
+      const kw = item.metaKeywords
+      setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'blog') {
-      setFormTitle(item.title)
+      setFormTitle(item.title || '')
       setFormShortDesc(item.shortDescription || '')
       setFormIntroText(item.introText || '')
       setFormContent(item.body || (item.sections && item.sections.map((s: any) => s.text).join('\n\n')) || '')
       setFormAuthor(item.authorName || 'NexusMind Editorial')
       setFormCategory(item.category || 'General')
       setFormImageUrl(item.imageUrl || item.coverImage || '')
+      setFormMetaTitle(item.metaTitle || '')
+      setFormMetaDesc(item.metaDescription || '')
+      setFormSlug(item.slug || '')
+      setFormSchemaMarkup(item.schemaMarkup || item.schema_markup || '')
+      const kw = item.metaKeywords || item.meta_keywords
+      setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'gallery') {
       setFormTitle(item.title || '')
       setFormImageUrl(item.mediaUrl || item.imageUrl || '')
@@ -211,6 +252,11 @@ export default function DashboardOverview() {
     if (!formTitle.trim()) return
     setIsSavingContent(true)
     const mainText = formContent.trim() || formIntroText.trim() || formTitle.trim()
+    const parsedKeywords = formMetaKeywords
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0)
+
     const payload: XeberRequestDto = {
       title: formTitle.trim(),
       shortDescription: formShortDesc.trim() || undefined,
@@ -222,6 +268,11 @@ export default function DashboardOverview() {
       readTimeMinutes: Number(formReadTime) || 5,
       status: formStatus,
       content: mainText,
+      metaTitle: formMetaTitle.trim() || undefined,
+      metaDescription: formMetaDesc.trim() || undefined,
+      slug: formSlug.trim() || undefined,
+      schemaMarkup: formSchemaMarkup.trim() || undefined,
+      metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
     try {
       if (editingItem) {
@@ -244,6 +295,11 @@ export default function DashboardOverview() {
     if (!formTitle.trim()) return
     setIsSavingContent(true)
     const mainText = formContent.trim() || formIntroText.trim() || formTitle.trim()
+    const parsedKeywords = formMetaKeywords
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0)
+
     const payload: MeqaleRequestDto = {
       title: formTitle.trim(),
       shortDescription: formShortDesc.trim() || undefined,
@@ -251,10 +307,13 @@ export default function DashboardOverview() {
       sections: mainText ? [{ title: 'Main Article', text: mainText }] : undefined,
       quote: formQuote.trim() || undefined,
       category: formCategory.trim() || 'Psychology',
+      doctorId: formDoctorId ? Number(formDoctorId) : undefined,
       author: formAuthor.trim() || 'Super Admin',
       imageUrl: formImageUrl.trim() || undefined,
       status: formStatus,
       content: mainText,
+      schemaMarkup: formSchemaMarkup.trim() || undefined,
+      metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
     try {
       if (editingItem) {
@@ -277,6 +336,11 @@ export default function DashboardOverview() {
     if (!formTitle.trim()) return
     setIsSavingContent(true)
     const mainText = formContent.trim() || formIntroText.trim() || formTitle.trim()
+    const parsedKeywords = formMetaKeywords
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0)
+
     const payload: BlogRequest = {
       title: formTitle.trim(),
       shortDescription: formShortDesc.trim() || undefined,
@@ -287,6 +351,13 @@ export default function DashboardOverview() {
       imageUrl: formImageUrl.trim() || undefined,
       coverImage: formImageUrl.trim() || undefined,
       body: mainText,
+      metaTitle: formMetaTitle.trim() || undefined,
+      metaDescription: formMetaDesc.trim() || undefined,
+      slug: formSlug.trim() || undefined,
+      schemaMarkup: formSchemaMarkup.trim() || undefined,
+      schema_markup: formSchemaMarkup.trim() || undefined,
+      metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
+      meta_keywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
     try {
       if (editingItem) {
@@ -825,7 +896,7 @@ export default function DashboardOverview() {
       {/* XEBER MODAL */}
       {activeModal === 'xeber' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-2xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-lg font-bold text-white">
                 {editingItem ? 'PUT Edit News Item (/xeber)' : 'POST Create News Item (/xeber)'}
@@ -858,6 +929,31 @@ export default function DashboardOverview() {
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Read Time (Minutes)</label>
+                  <input
+                    type="number"
+                    value={formReadTime}
+                    onChange={(e) => setFormReadTime(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Status</label>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value as any)}
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
+                  >
+                    <option value="PUBLISHED">PUBLISHED</option>
+                    <option value="DRAFT">DRAFT</option>
+                    <option value="ARCHIVED">ARCHIVED</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Short Description</label>
                 <input
@@ -868,16 +964,14 @@ export default function DashboardOverview() {
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Image URL</label>
-                <input
-                  type="url"
-                  value={formImageUrl}
-                  onChange={(e) => setFormImageUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                />
-              </div>
+              <ImageUploadInput
+                label="News Image (imageUrl)"
+                value={formImageUrl}
+                onChange={setFormImageUrl}
+                folder="news"
+                accentColor="violet"
+                placeholder="https://... or upload a news cover image"
+              />
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Main Content *</label>
                 <textarea
@@ -889,6 +983,71 @@ export default function DashboardOverview() {
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                 />
               </div>
+
+              {/* SEO Section */}
+              <div className="space-y-3 pt-3 border-t border-[#2e3146]">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>SEO & Metadata</span>
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={formMetaTitle}
+                    onChange={(e) => setFormMetaTitle(e.target.value)}
+                    placeholder="Meta Title (metaTitle)..."
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                  <input
+                    type="text"
+                    value={formSlug}
+                    onChange={(e) => setFormSlug(e.target.value)}
+                    placeholder="Slug (e.g. news-slug)..."
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-violet-400" />
+                    <span>Keywords (metaKeywords)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formMetaKeywords}
+                    onChange={(e) => setFormMetaKeywords(e.target.value)}
+                    placeholder="e.g. news, update, clinic, mental health"
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                  {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).map((tag, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px]">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                    <Code className="w-3 h-3 text-cyan-400" />
+                    <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formSchemaMarkup}
+                    onChange={(e) => setFormSchemaMarkup(e.target.value)}
+                    placeholder='{"@context": "https://schema.org", "@type": "NewsArticle"}'
+                    className="w-full px-3 py-2 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
                 <button
                   type="button"
@@ -914,7 +1073,7 @@ export default function DashboardOverview() {
       {/* MEQALE MODAL */}
       {activeModal === 'meqale' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-2xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-lg font-bold text-white">
                 {editingItem ? 'PUT Edit Article (/meqale)' : 'POST Create Article (/meqale)'}
@@ -947,6 +1106,42 @@ export default function DashboardOverview() {
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Category</label>
+                  <input
+                    type="text"
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    placeholder="Category..."
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Doctor ID (doctorId)</label>
+                  <input
+                    type="number"
+                    value={formDoctorId}
+                    onChange={(e) => setFormDoctorId(e.target.value)}
+                    placeholder="Optional Doctor ID..."
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Status</label>
+                  <select
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value as any)}
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="PUBLISHED">PUBLISHED</option>
+                    <option value="DRAFT">DRAFT</option>
+                    <option value="ARCHIVED">ARCHIVED</option>
+                  </select>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Short Description</label>
                 <input
@@ -957,16 +1152,14 @@ export default function DashboardOverview() {
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Image URL</label>
-                <input
-                  type="url"
-                  value={formImageUrl}
-                  onChange={(e) => setFormImageUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
+              <ImageUploadInput
+                label="Article Cover Image (imageUrl)"
+                value={formImageUrl}
+                onChange={setFormImageUrl}
+                folder="articles"
+                accentColor="indigo"
+                placeholder="https://... or upload an article cover"
+              />
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Content *</label>
                 <textarea
@@ -978,6 +1171,54 @@ export default function DashboardOverview() {
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                 />
               </div>
+
+              {/* SEO Section */}
+              <div className="space-y-3 pt-3 border-t border-[#2e3146]">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>SEO & Metadata</span>
+                  </h4>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-indigo-400" />
+                    <span>Keywords (metaKeywords)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formMetaKeywords}
+                    onChange={(e) => setFormMetaKeywords(e.target.value)}
+                    placeholder="e.g. mental health, articles, research, clinical"
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                  {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).map((tag, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px]">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                    <Code className="w-3 h-3 text-cyan-400" />
+                    <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formSchemaMarkup}
+                    onChange={(e) => setFormSchemaMarkup(e.target.value)}
+                    placeholder='{"@context": "https://schema.org", "@type": "MedicalScholarlyArticle"}'
+                    className="w-full px-3 py-2 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
                 <button
                   type="button"
@@ -1003,7 +1244,7 @@ export default function DashboardOverview() {
       {/* BLOG MODAL */}
       {activeModal === 'blog' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-2xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-lg font-bold text-white">
                 {editingItem ? 'PUT Edit Blog Post (/blog)' : 'POST Create Blog Post (/blog)'}
@@ -1036,16 +1277,40 @@ export default function DashboardOverview() {
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Category</label>
+                  <input
+                    type="text"
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    placeholder="e.g. Psychology, Therapy"
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              <ImageUploadInput
+                label="Blog Cover Image (imageUrl)"
+                value={formImageUrl}
+                onChange={setFormImageUrl}
+                folder="blogs"
+                accentColor="purple"
+                placeholder="https://... or upload a blog cover"
+              />
+
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Cover Image URL</label>
+                <label className="text-xs font-semibold text-slate-300">Short Description</label>
                 <input
-                  type="url"
-                  value={formImageUrl}
-                  onChange={(e) => setFormImageUrl(e.target.value)}
-                  placeholder="https://..."
+                  type="text"
+                  value={formShortDesc}
+                  onChange={(e) => setFormShortDesc(e.target.value)}
+                  placeholder="Summary..."
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
                 />
               </div>
+
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Post Body *</label>
                 <textarea
@@ -1057,6 +1322,71 @@ export default function DashboardOverview() {
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
                 />
               </div>
+
+              {/* SEO Section */}
+              <div className="space-y-3 pt-3 border-t border-[#2e3146]">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>SEO & Metadata</span>
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={formMetaTitle}
+                    onChange={(e) => setFormMetaTitle(e.target.value)}
+                    placeholder="Meta Title (metaTitle)..."
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                  <input
+                    type="text"
+                    value={formSlug}
+                    onChange={(e) => setFormSlug(e.target.value)}
+                    placeholder="Slug (e.g. blog-slug)..."
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-purple-400" />
+                    <span>Keywords (metaKeywords)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formMetaKeywords}
+                    onChange={(e) => setFormMetaKeywords(e.target.value)}
+                    placeholder="e.g. blog, mental health, therapy, mind"
+                    className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                  {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).map((tag, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px]">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-slate-300 flex items-center gap-1">
+                    <Code className="w-3 h-3 text-cyan-400" />
+                    <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={formSchemaMarkup}
+                    onChange={(e) => setFormSchemaMarkup(e.target.value)}
+                    placeholder='{"@context": "https://schema.org", "@type": "BlogPosting"}'
+                    className="w-full px-3 py-2 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
                 <button
                   type="button"
@@ -1116,26 +1446,26 @@ export default function DashboardOverview() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Category</label>
-                  <input
-                    type="text"
+                  <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    placeholder="e.g. TERAPIYALAR"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                  />
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="TERAPIYALAR">TERAPIYALAR</option>
+                    <option value="OTAQLAR">OTAQLAR</option>
+                    <option value="TELIMLER">TELIMLER</option>
+                  </select>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Media URL *</label>
-                <input
-                  type="url"
-                  required
-                  value={formImageUrl}
-                  onChange={(e) => setFormImageUrl(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
+              <ImageUploadInput
+                label="Gallery Media File (imageUrl / mediaUrl)"
+                value={formImageUrl}
+                onChange={setFormImageUrl}
+                folder="gallery"
+                accentColor="emerald"
+                required
+                placeholder="https://... or upload gallery media asset"
+              />
               <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
                 <button
                   type="button"

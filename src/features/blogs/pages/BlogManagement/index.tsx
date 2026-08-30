@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, FileText, Loader2, Search, X, Layers, Code, Tag } from 'lucide-react'
+import { Plus, Edit2, Trash2, FileText, Loader2, Search, X, Layers, Code, Tag, Globe } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { BlogResponse, BlogRequest, ContentSection } from '../../../../types/portalDtos'
+import { ImageUploadInput } from '../../../../components/forms'
 
 export default function BlogManagement() {
   const [items, setItems] = useState<BlogResponse[]>([])
@@ -22,13 +23,16 @@ export default function BlogManagement() {
   const [authorName, setAuthorName] = useState('')
   const [imageUrl, setImageUrl] = useState('')
 
-  // Dynamic Sections Array
-  const [sections, setSections] = useState<ContentSection[]>([{ title: 'Main Section', text: '' }])
-
   // SEO & Schema Markup Fields
+  const [metaTitle, setMetaTitle] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
+  const [slug, setSlug] = useState('')
   const [schemaMarkup, setSchemaMarkup] = useState('')
   const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
   const [jsonError, setJsonError] = useState<string | null>(null)
+
+  // Dynamic Sections Array
+  const [sections, setSections] = useState<ContentSection[]>([{ title: 'Main Section', text: '' }])
 
   const fetchItems = async () => {
     setIsLoading(true)
@@ -57,6 +61,9 @@ export default function BlogManagement() {
     setAuthorName('NexusMind Editorial')
     setImageUrl('')
     setSections([{ title: 'Main Section', text: '' }])
+    setMetaTitle('')
+    setMetaDescription('')
+    setSlug('')
     setSchemaMarkup('')
     setMetaKeywordsInput('')
     setJsonError(null)
@@ -71,13 +78,23 @@ export default function BlogManagement() {
     setCategory(item.category || 'General')
     setAuthorName(item.authorName || 'NexusMind Editorial')
     setImageUrl(item.imageUrl || item.coverImage || '')
-    setSchemaMarkup(item.schema_markup || '')
-    setMetaKeywordsInput(item.meta_keywords ? item.meta_keywords.join(', ') : '')
+    setMetaTitle(item.metaTitle || '')
+    setMetaDescription(item.metaDescription || '')
+    setSlug(item.slug || '')
+    setSchemaMarkup(item.schemaMarkup || item.schema_markup || '')
+    
+    const kw = item.metaKeywords || item.meta_keywords
+    setMetaKeywordsInput(kw && Array.isArray(kw) ? kw.join(', ') : '')
     setJsonError(null)
     
     // Populate sections array or fallback from body
     if (item.sections && item.sections.length > 0) {
-      setSections(item.sections)
+      setSections(
+        item.sections.map((s) => ({
+          title: s.title || '',
+          text: s.text || '',
+        }))
+      )
     } else {
       setSections([{ title: 'Main Section', text: item.body || '' }])
     }
@@ -142,7 +159,12 @@ export default function BlogManagement() {
       category: category.trim() || 'General',
       authorName: authorName.trim() || 'NexusMind Editorial',
       body: mainBodyFallback,
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      slug: slug.trim() || undefined,
+      schemaMarkup: schemaMarkup.trim() || undefined,
       schema_markup: schemaMarkup.trim() || undefined,
+      metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
       meta_keywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
 
@@ -355,18 +377,17 @@ export default function BlogManagement() {
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Image URL (imageUrl)</label>
-                    <input
-                      type="url"
-                      value={imageUrl}
-                      onChange={(e) => setImageUrl(e.target.value)}
-                      placeholder="https://example.com/blog-cover.jpg"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
                 </div>
               </div>
+
+              <ImageUploadInput
+                label="Blog Cover Image (imageUrl)"
+                value={imageUrl}
+                onChange={setImageUrl}
+                folder="blogs"
+                accentColor="purple"
+                placeholder="https://example.com/blog-cover.jpg or upload blog cover"
+              />
 
               {/* Section 2: Summary & Intro */}
               <div className="space-y-4 pt-2 border-t border-[#2e3146]">
@@ -446,18 +467,95 @@ export default function BlogManagement() {
 
               {/* Section 4: SEO & JSON-LD Schema Markup */}
               <div className="space-y-4 pt-2 border-t border-[#2e3146]">
-                <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
-                  <Code className="w-4 h-4" />
-                  <span>4. SEO & JSON-LD Schema Markup</span>
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    <span>4. SEO & Search Optimization</span>
+                  </h4>
+                  <span className="text-[10px] text-slate-500">Keywords & Structured Data</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Meta Title (metaTitle)</label>
+                    <input
+                      type="text"
+                      value={metaTitle}
+                      onChange={(e) => setMetaTitle(e.target.value)}
+                      placeholder="SEO page title for Google..."
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Slug (URL Identifier)</label>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="e.g. guide-to-cognitive-behavioral-therapy"
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Meta Description (metaDescription)</label>
+                  <textarea
+                    rows={2}
+                    value={metaDescription}
+                    onChange={(e) => setMetaDescription(e.target.value)}
+                    placeholder="Search snippet summary..."
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Meta Keywords (metaKeywords)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={metaKeywordsInput}
+                    onChange={(e) => setMetaKeywordsInput(e.target.value)}
+                    placeholder="e.g. mental health, psychology, therapy, wellness, mindfulness"
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    Separate multiple keywords with commas.
+                  </p>
+                  {metaKeywordsInput
+                    .split(',')
+                    .map((k) => k.trim())
+                    .filter((k) => k.length > 0).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {metaKeywordsInput
+                        .split(',')
+                        .map((k) => k.trim())
+                        .filter((k) => k.length > 0)
+                        .map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-medium"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                    </div>
+                  )}
+                </div>
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                    <span>JSON-LD Schema Code (schema_markup)</span>
-                    <span className="text-[10px] text-slate-500">JSON-LD format</span>
+                    <span className="flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>JSON-LD Schema Code (schemaMarkup)</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500">Optional</span>
                   </label>
                   <textarea
-                    rows={4}
+                    rows={3}
                     value={schemaMarkup}
                     onChange={(e) => {
                       setSchemaMarkup(e.target.value)
@@ -469,23 +567,6 @@ export default function BlogManagement() {
                   {jsonError && (
                     <p className="text-xs text-rose-400 font-semibold">{jsonError}</p>
                   )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Meta Keywords (meta_keywords)</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={metaKeywordsInput}
-                    onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. mental health, psychology, therapy, wellness"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                  />
-                  <p className="text-[10px] text-slate-500">
-                    Separate multiple keywords with commas.
-                  </p>
                 </div>
               </div>
 

@@ -98,26 +98,79 @@ export interface SiteSettingsResponseDto {
 export interface ContentSection {
   title?: string
   text: string
+  sectionOrder?: number
+}
+
+export interface XeberSectionRequestDto {
+  title?: string
+  text?: string
+}
+
+export interface XeberSectionResponseDto {
+  title?: string
+  text?: string
+  sectionOrder?: number
 }
 
 export interface HighlightCard {
   icon?: string
   title: string
   text: string
+  cardOrder?: number
+}
+
+export interface MeqaleSectionRequestDto {
+  title?: string
+  text?: string
+}
+
+export interface MeqaleSectionResponseDto {
+  title?: string
+  text?: string
+  sectionOrder?: number
+}
+
+export interface MeqaleHighlightCardRequestDto {
+  icon?: string
+  title?: string
+  text?: string
+}
+
+export interface MeqaleHighlightCardResponseDto {
+  icon?: string
+  title?: string
+  text?: string
+  cardOrder?: number
+}
+
+export interface BlogSectionRequest {
+  title: string
+  text: string
+}
+
+export interface BlogSectionResponse {
+  title?: string
+  text?: string
+  order?: number
 }
 
 export interface XeberRequestDto {
   title: string
   shortDescription?: string
   introText?: string
-  sections?: ContentSection[]
+  sections?: ContentSection[] | XeberSectionRequestDto[]
   quote?: string
   quoteAuthor?: string
   imageUrl?: string
   category?: string
   readTimeMinutes?: number
-  status?: 'DRAFT' | 'PUBLISHED' | string
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
   content?: string
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
+  schemaMarkup?: string
+  metaKeywords?: string[]
 }
 
 export interface XeberResponseDto {
@@ -125,31 +178,39 @@ export interface XeberResponseDto {
   title: string
   shortDescription?: string
   introText?: string
-  sections?: ContentSection[]
+  sections?: XeberSectionResponseDto[] | ContentSection[]
   quote?: string
   quoteAuthor?: string
   imageUrl?: string
   category?: string
   readTimeMinutes?: number
-  status?: 'DRAFT' | 'PUBLISHED' | string
+  viewCount?: number
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
   content?: string
   createdAt?: string
   updatedAt?: string
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
+  schemaMarkup?: string
+  metaKeywords?: string[]
 }
 
 export interface MeqaleRequestDto {
   title: string
   shortDescription?: string
   introText?: string
-  sections?: ContentSection[]
+  sections?: ContentSection[] | MeqaleSectionRequestDto[]
   quote?: string
-  highlightCards?: HighlightCard[]
+  highlightCards?: HighlightCard[] | MeqaleHighlightCardRequestDto[]
   imageUrl?: string
   category?: string
   doctorId?: number
-  status?: 'DRAFT' | 'PUBLISHED' | string
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
   author?: string
   content?: string
+  schemaMarkup?: string
+  metaKeywords?: string[]
 }
 
 export interface MeqaleResponseDto {
@@ -157,29 +218,38 @@ export interface MeqaleResponseDto {
   title: string
   shortDescription?: string
   introText?: string
-  sections?: ContentSection[]
+  sections?: MeqaleSectionResponseDto[] | ContentSection[]
   quote?: string
-  highlightCards?: HighlightCard[]
+  highlightCards?: MeqaleHighlightCardResponseDto[] | HighlightCard[]
   imageUrl?: string
   category?: string
   doctorId?: number
-  status?: 'DRAFT' | 'PUBLISHED' | string
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
   author?: string
   content?: string
   createdAt?: string
+  updatedAt?: string
+  schemaMarkup?: string
+  metaKeywords?: string[]
 }
 
 export interface BlogRequest {
   title: string
   shortDescription?: string
   introText?: string
-  sections?: ContentSection[]
+  sections?: ContentSection[] | BlogSectionRequest[]
   imageUrl?: string
   coverImage?: string
   category?: string
   authorName?: string
   tags?: string[]
   body?: string
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
+  schemaMarkup?: string
+  metaKeywords?: string[]
+  // Legacy alias support
   schema_markup?: string
   meta_keywords?: string[]
 }
@@ -189,16 +259,23 @@ export interface BlogResponse {
   title: string
   shortDescription?: string
   introText?: string
-  sections?: ContentSection[]
+  sections?: BlogSectionResponse[] | ContentSection[]
   imageUrl?: string
   coverImage?: string
   category?: string
   authorName?: string
   tags?: string[]
   body?: string
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
+  schemaMarkup?: string
+  metaKeywords?: string[]
+  // Legacy alias support
   schema_markup?: string
   meta_keywords?: string[]
   createdAt?: string
+  updatedAt?: string
 }
 
 export interface GalleryItemRequest {
@@ -207,7 +284,7 @@ export interface GalleryItemRequest {
   mediaUrl: string
   imageUrl?: string
   mediaType?: 'IMAGE' | 'VIDEO' | string
-  category?: string
+  category?: 'TERAPIYALAR' | 'OTAQLAR' | 'TELIMLER' | string
 }
 
 export interface GalleryItemResponse {
@@ -217,7 +294,9 @@ export interface GalleryItemResponse {
   mediaUrl?: string
   imageUrl?: string
   mediaType?: 'IMAGE' | 'VIDEO' | string
-  category?: string
+  category?: 'TERAPIYALAR' | 'OTAQLAR' | 'TELIMLER' | string
+  categoryLabel?: string
+  popularityScore?: number
   createdAt?: string
 }
 
@@ -464,5 +543,11 @@ export interface ChatMessageResponseDto {
   createdAt?: string
   [key: string]: unknown
 }
+
+export interface FileUploadResponse {
+  imageUrl: string
+  [key: string]: unknown
+}
+
 
 

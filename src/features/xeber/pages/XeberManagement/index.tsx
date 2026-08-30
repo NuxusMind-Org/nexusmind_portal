@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Newspaper, Loader2, Search, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, Newspaper, Loader2, Search, X, Tag, Code, Globe } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { XeberResponseDto, XeberRequestDto } from '../../../../types/portalDtos'
+import { ImageUploadInput } from '../../../../components/forms'
 
 export default function XeberManagement() {
   const [items, setItems] = useState<XeberResponseDto[]>([])
@@ -24,7 +25,15 @@ export default function XeberManagement() {
   const [quote, setQuote] = useState('')
   const [quoteAuthor, setQuoteAuthor] = useState('')
   const [readTimeMinutes, setReadTimeMinutes] = useState(5)
-  const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED'>('PUBLISHED')
+  const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('PUBLISHED')
+
+  // SEO & Keywords State
+  const [metaTitle, setMetaTitle] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
+  const [slug, setSlug] = useState('')
+  const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
+  const [schemaMarkup, setSchemaMarkup] = useState('')
+  const [jsonError, setJsonError] = useState<string | null>(null)
 
   const fetchItems = async () => {
     setIsLoading(true)
@@ -56,6 +65,12 @@ export default function XeberManagement() {
     setQuoteAuthor('')
     setReadTimeMinutes(5)
     setStatus('PUBLISHED')
+    setMetaTitle('')
+    setMetaDescription('')
+    setSlug('')
+    setMetaKeywordsInput('')
+    setSchemaMarkup('')
+    setJsonError(null)
     setIsModalOpen(true)
   }
 
@@ -71,6 +86,12 @@ export default function XeberManagement() {
     setQuoteAuthor(item.quoteAuthor || '')
     setReadTimeMinutes(item.readTimeMinutes || 5)
     setStatus((item.status as any) || 'PUBLISHED')
+    setMetaTitle(item.metaTitle || '')
+    setMetaDescription(item.metaDescription || '')
+    setSlug(item.slug || '')
+    setMetaKeywordsInput(item.metaKeywords ? item.metaKeywords.join(', ') : '')
+    setSchemaMarkup(item.schemaMarkup || '')
+    setJsonError(null)
     setIsModalOpen(true)
   }
 
@@ -78,8 +99,26 @@ export default function XeberManagement() {
     e.preventDefault()
     if (!title.trim()) return
 
+    // Validate JSON-LD Schema markup syntax if provided
+    if (schemaMarkup.trim()) {
+      try {
+        JSON.parse(schemaMarkup.trim())
+        setJsonError(null)
+      } catch (err: any) {
+        setJsonError(`Invalid JSON-LD Syntax: ${err.message}`)
+        return
+      }
+    } else {
+      setJsonError(null)
+    }
+
     setIsSaving(true)
     const mainText = content.trim() || introText.trim() || title.trim()
+
+    const parsedKeywords = metaKeywordsInput
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0)
 
     const payload: XeberRequestDto = {
       title: title.trim(),
@@ -93,6 +132,11 @@ export default function XeberManagement() {
       readTimeMinutes: Number(readTimeMinutes) || 5,
       status: status,
       content: mainText,
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      slug: slug.trim() || undefined,
+      schemaMarkup: schemaMarkup.trim() || undefined,
+      metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
 
     try {
@@ -130,6 +174,11 @@ export default function XeberManagement() {
       (item.content && item.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  const previewKeywords = metaKeywordsInput
+    .split(',')
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0)
 
   return (
     <div className="space-y-6">
@@ -222,6 +271,8 @@ export default function XeberManagement() {
                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                         item.status === 'PUBLISHED' 
                           ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
+                          : item.status === 'ARCHIVED'
+                          ? 'bg-slate-500/10 border border-slate-500/20 text-slate-400'
                           : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
                       }`}>
                         {item.status || 'PUBLISHED'}
@@ -273,6 +324,7 @@ export default function XeberManagement() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-4">
+              {/* Basic Details */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Title *</label>
@@ -318,20 +370,19 @@ export default function XeberManagement() {
                   >
                     <option value="PUBLISHED">PUBLISHED</option>
                     <option value="DRAFT">DRAFT</option>
+                    <option value="ARCHIVED">ARCHIVED</option>
                   </select>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Image URL</label>
-                <input
-                  type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                />
-              </div>
+              <ImageUploadInput
+                label="News Image (imageUrl)"
+                value={imageUrl}
+                onChange={setImageUrl}
+                folder="news"
+                accentColor="violet"
+                placeholder="https://example.com/image.jpg or upload an image"
+              />
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-300">Short Description</label>
@@ -388,6 +439,104 @@ export default function XeberManagement() {
                   placeholder="Full article content text..."
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                 />
+              </div>
+
+              {/* SEO & Metadata Section */}
+              <div className="space-y-4 pt-3 border-t border-[#2e3146]">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-violet-400 uppercase tracking-wider flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    <span>SEO & Search Optimization</span>
+                  </h4>
+                  <span className="text-[10px] text-slate-500">Keywords & Search Indexing</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Meta Title (metaTitle)</label>
+                    <input
+                      type="text"
+                      value={metaTitle}
+                      onChange={(e) => setMetaTitle(e.target.value)}
+                      placeholder="SEO meta title for Google..."
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Slug (URL Identifier)</label>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="e.g. mental-health-conference-2026"
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Meta Description (metaDescription)</label>
+                  <textarea
+                    rows={2}
+                    value={metaDescription}
+                    onChange={(e) => setMetaDescription(e.target.value)}
+                    placeholder="Search engine snippet description..."
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-violet-400" />
+                    <span>Meta Keywords (metaKeywords)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={metaKeywordsInput}
+                    onChange={(e) => setMetaKeywordsInput(e.target.value)}
+                    placeholder="e.g. nexusmind, psychology, health news, therapy, clinic"
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    Separate multiple keywords with commas.
+                  </p>
+                  {previewKeywords.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {previewKeywords.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-medium"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500">Optional</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={schemaMarkup}
+                    onChange={(e) => {
+                      setSchemaMarkup(e.target.value)
+                      setJsonError(null)
+                    }}
+                    placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle",\n  "headline": "${title || 'News Headline'}"\n}`}
+                    className="w-full px-3.5 py-2.5 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                  />
+                  {jsonError && (
+                    <p className="text-xs text-rose-400 font-semibold">{jsonError}</p>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">

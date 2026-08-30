@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, BookOpen, Loader2, Search, X, Sparkles, Layers } from 'lucide-react'
+import { Plus, Edit2, Trash2, BookOpen, Loader2, Search, X, Sparkles, Layers, Tag, Code, Globe } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { MeqaleResponseDto, MeqaleRequestDto, HighlightCard, ContentSection } from '../../../../types/portalDtos'
+import { ImageUploadInput } from '../../../../components/forms'
 
 export default function MeqaleManagement() {
   const [items, setItems] = useState<MeqaleResponseDto[]>([])
@@ -22,8 +23,13 @@ export default function MeqaleManagement() {
   const [imageUrl, setImageUrl] = useState('')
   const [category, setCategory] = useState('')
   const [doctorId, setDoctorId] = useState<number | string>('')
-  const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED'>('PUBLISHED')
+  const [status, setStatus] = useState<'DRAFT' | 'PUBLISHED' | 'ARCHIVED'>('PUBLISHED')
   const [author, setAuthor] = useState('')
+
+  // SEO & Keywords State
+  const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
+  const [schemaMarkup, setSchemaMarkup] = useState('')
+  const [jsonError, setJsonError] = useState<string | null>(null)
 
   // Structured Sections & Highlight Cards Arrays
   const [sections, setSections] = useState<ContentSection[]>([{ title: 'Main Section', text: '' }])
@@ -60,6 +66,9 @@ export default function MeqaleManagement() {
     setAuthor('BPM Editorial')
     setSections([{ title: 'Main Section', text: '' }])
     setHighlightCards([])
+    setMetaKeywordsInput('')
+    setSchemaMarkup('')
+    setJsonError(null)
     setIsModalOpen(true)
   }
 
@@ -74,16 +83,34 @@ export default function MeqaleManagement() {
     setDoctorId(item.doctorId || '')
     setStatus((item.status as any) || 'PUBLISHED')
     setAuthor(item.author || 'BPM Editorial')
+    setMetaKeywordsInput(item.metaKeywords ? item.metaKeywords.join(', ') : '')
+    setSchemaMarkup(item.schemaMarkup || '')
+    setJsonError(null)
     
     // Populate sections array or fallback from content
     if (item.sections && item.sections.length > 0) {
-      setSections(item.sections)
+      setSections(
+        item.sections.map((s) => ({
+          title: s.title || '',
+          text: s.text || '',
+        }))
+      )
     } else {
       setSections([{ title: 'Main Section', text: item.content || '' }])
     }
 
     // Populate highlight cards
-    setHighlightCards(item.highlightCards || [])
+    if (item.highlightCards && item.highlightCards.length > 0) {
+      setHighlightCards(
+        item.highlightCards.map((c) => ({
+          icon: c.icon || 'Sparkles',
+          title: c.title || '',
+          text: c.text || '',
+        }))
+      )
+    } else {
+      setHighlightCards([])
+    }
     setIsModalOpen(true)
   }
 
@@ -121,6 +148,19 @@ export default function MeqaleManagement() {
     e.preventDefault()
     if (!title.trim()) return
 
+    // Validate JSON-LD Schema markup syntax if provided
+    if (schemaMarkup.trim()) {
+      try {
+        JSON.parse(schemaMarkup.trim())
+        setJsonError(null)
+      } catch (err: any) {
+        setJsonError(`Invalid JSON-LD Syntax: ${err.message}`)
+        return
+      }
+    } else {
+      setJsonError(null)
+    }
+
     setIsSaving(true)
 
     // Filter out empty sections & cards
@@ -136,6 +176,11 @@ export default function MeqaleManagement() {
       ? cleanedSections.map((s) => s.text).join('\n\n')
       : introText.trim() || shortDescription.trim() || title.trim()
 
+    const parsedKeywords = metaKeywordsInput
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0)
+
     const payload: MeqaleRequestDto = {
       title: title.trim(),
       shortDescription: shortDescription.trim() || undefined,
@@ -149,6 +194,8 @@ export default function MeqaleManagement() {
       status: status,
       author: author.trim() || 'BPM Editorial',
       content: mainContentFallback,
+      schemaMarkup: schemaMarkup.trim() || undefined,
+      metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
 
     try {
@@ -177,6 +224,11 @@ export default function MeqaleManagement() {
       alert('Failed to delete article.')
     }
   }
+
+  const previewKeywords = metaKeywordsInput
+    .split(',')
+    .map((k) => k.trim())
+    .filter((k) => k.length > 0)
 
   const filteredItems = items.filter(
     (item) =>
@@ -284,6 +336,8 @@ export default function MeqaleManagement() {
                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                         item.status === 'PUBLISHED' 
                           ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
+                          : item.status === 'ARCHIVED'
+                          ? 'bg-slate-500/10 border border-slate-500/20 text-slate-400'
                           : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
                       }`}>
                         {item.status || 'PUBLISHED'}
@@ -396,20 +450,19 @@ export default function MeqaleManagement() {
                     >
                       <option value="PUBLISHED">PUBLISHED</option>
                       <option value="DRAFT">DRAFT</option>
+                      <option value="ARCHIVED">ARCHIVED</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Cover Image URL (imageUrl)</label>
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://example.com/article-cover.jpg"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
+                <ImageUploadInput
+                  label="Cover Image (imageUrl)"
+                  value={imageUrl}
+                  onChange={setImageUrl}
+                  folder="articles"
+                  accentColor="indigo"
+                  placeholder="https://example.com/article-cover.jpg or upload cover image"
+                />
               </div>
 
               {/* Section 2: Summary & Quotes */}
@@ -559,6 +612,69 @@ export default function MeqaleManagement() {
                     </div>
                   ))
                 )}
+              </div>
+
+              {/* Section 5: SEO & Keywords Optimization */}
+              <div className="space-y-4 pt-2 border-t border-[#2e3146]">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    <span>5. SEO & Keywords Optimization</span>
+                  </h4>
+                  <span className="text-[10px] text-slate-500">Search Tags & Schema</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Meta Keywords (metaKeywords)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={metaKeywordsInput}
+                    onChange={(e) => setMetaKeywordsInput(e.target.value)}
+                    placeholder="e.g. mental health, clinical psychology, therapy methods, depression"
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    Separate multiple keywords with commas.
+                  </p>
+                  {previewKeywords.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {previewKeywords.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-medium"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Code className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                    </span>
+                    <span className="text-[10px] text-slate-500">Optional</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={schemaMarkup}
+                    onChange={(e) => {
+                      setSchemaMarkup(e.target.value)
+                      setJsonError(null)
+                    }}
+                    placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "MedicalScholarlyArticle",\n  "headline": "${title || 'Article Title'}"\n}`}
+                    className="w-full px-3.5 py-2.5 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                  />
+                  {jsonError && (
+                    <p className="text-xs text-rose-400 font-semibold">{jsonError}</p>
+                  )}
+                </div>
               </div>
 
               {/* Submit Buttons */}
