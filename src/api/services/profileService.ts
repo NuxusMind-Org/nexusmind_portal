@@ -52,11 +52,7 @@ export const profileService = {
   uploadPhoto: async (file: File): Promise<ProfileResponse> => {
     const formData = new FormData()
     formData.append('file', file)
-    const response = await api.post<ProfileResponse>(API_ENDPOINTS.PROFILE.PHOTO, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const response = await api.post<ProfileResponse>(API_ENDPOINTS.PROFILE.PHOTO, formData)
     return response.data
   },
 

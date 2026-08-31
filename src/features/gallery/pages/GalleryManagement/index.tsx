@@ -1,19 +1,44 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Image as ImageIcon, Loader2, Search, X, Video } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Image as ImageIcon, 
+  Loader2, 
+  Search, 
+  X, 
+  Video,
+  Eye,
+  LayoutGrid,
+  ExternalLink,
+  Copy,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Play
+} from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { GalleryItemResponse, GalleryItemRequest } from '../../../../types/portalDtos'
 import { ImageUploadInput } from '../../../../components/forms'
 
 export default function GalleryManagement() {
+  const navigate = useNavigate()
   const [items, setItems] = useState<GalleryItemResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('ALL')
+  const [selectedType, setSelectedType] = useState<string>('ALL')
+  const [viewMode, setViewMode] = useState<'showcase' | 'manager'>('showcase')
 
-  // Modal State
+  // Modal & Lightbox States
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<GalleryItemResponse | null>(null)
+  const [lightboxItem, setLightboxItem] = useState<GalleryItemResponse | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [copiedUrl, setCopiedUrl] = useState(false)
 
   // Form Fields matching exact Backend Schema
   const [title, setTitle] = useState('')
@@ -95,17 +120,46 @@ export default function GalleryManagement() {
     try {
       await contentService.deleteGalleryItem(id)
       setItems(items.filter((item) => item.id !== id))
+      if (lightboxItem && lightboxItem.id === id) {
+        setLightboxItem(null)
+      }
     } catch (err) {
       console.error('Failed to delete gallery item', err)
       alert('Failed to delete gallery item.')
     }
   }
 
-  const filteredItems = items.filter(
-    (item) =>
+  const handleCopyUrl = (url: string) => {
+    navigator.clipboard.writeText(url)
+    setCopiedUrl(true)
+    setTimeout(() => setCopiedUrl(false), 2000)
+  }
+
+  const filteredItems = items.filter((item) => {
+    const matchesSearch =
       (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+
+    const matchesCat = selectedCategory === 'ALL' || item.category === selectedCategory
+    const matchesType = selectedType === 'ALL' || item.mediaType === selectedType
+
+    return matchesSearch && matchesCat && matchesType
+  })
+
+  // Lightbox Navigation
+  const currentIndex = lightboxItem ? filteredItems.findIndex((i) => i.id === lightboxItem.id) : -1
+
+  const handlePrevLightbox = () => {
+    if (currentIndex > 0) {
+      setLightboxItem(filteredItems[currentIndex - 1])
+    }
+  }
+
+  const handleNextLightbox = () => {
+    if (currentIndex >= 0 && currentIndex < filteredItems.length - 1) {
+      setLightboxItem(filteredItems[currentIndex + 1])
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -114,24 +168,52 @@ export default function GalleryManagement() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <ImageIcon className="w-7 h-7 text-emerald-400" />
-            <span>Gallery Management</span>
+            <span>Gallery & Media Management</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Manage photo albums, clinical facility media, and promotional assets.
+            Browse, preview, and manage facility photos, therapy rooms, session videos, and clinical media assets.
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 py-2.5 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.3)] transition-all cursor-pointer shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Upload Asset</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div className="flex items-center p-1 bg-[#141521] border border-[#2e3146] rounded-xl">
+            <button
+              onClick={() => setViewMode('showcase')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'showcase'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Media Showcase</span>
+            </button>
+            <button
+              onClick={() => setViewMode('manager')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'manager'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              <span>Asset Manager</span>
+            </button>
+          </div>
+
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center justify-center gap-2 py-2.5 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.3)] transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Upload Asset</span>
+          </button>
+        </div>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="bg-[#141521] border border-[#222437] p-4 rounded-xl flex items-center justify-between gap-4">
+      {/* Filter & Category Bar */}
+      <div className="bg-[#141521] border border-[#222437] p-4 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -142,8 +224,46 @@ export default function GalleryManagement() {
             className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
-        <div className="text-xs text-slate-400 font-semibold">
-          Total Assets: <span className="text-white font-bold">{filteredItems.length}</span>
+
+        {/* Categories & Type Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Categories */}
+          <div className="flex items-center gap-1 bg-[#1b1c2b] p-1 rounded-lg border border-[#2e3146]">
+            {['ALL', 'TERAPIYALAR', 'OTAQLAR', 'TELIMLER'].map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                  selectedCategory === cat
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {cat === 'ALL' ? 'All Categories' : cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Media Types */}
+          <div className="flex items-center gap-1 bg-[#1b1c2b] p-1 rounded-lg border border-[#2e3146]">
+            {['ALL', 'IMAGE', 'VIDEO'].map((t) => (
+              <button
+                key={t}
+                onClick={() => setSelectedType(t)}
+                className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
+                  selectedType === t
+                    ? 'bg-emerald-500 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {t === 'ALL' ? 'All Types' : t}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-xs text-slate-400 font-semibold pl-2">
+            Items: <span className="text-white font-bold">{filteredItems.length}</span>
+          </div>
         </div>
       </div>
 
@@ -154,17 +274,17 @@ export default function GalleryManagement() {
         </div>
       )}
 
-      {/* Gallery Grid View */}
+      {/* Main Media Grid */}
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-          <span className="text-xs font-semibold">Loading gallery items...</span>
+          <span className="text-xs font-semibold">Loading media assets...</span>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl text-center text-slate-500 space-y-3">
           <ImageIcon className="w-12 h-12 mx-auto text-slate-600" />
-          <p className="text-sm font-semibold text-slate-400">No gallery items found.</p>
-          <p className="text-xs">Click "Upload Asset" above to add your first media item.</p>
+          <p className="text-sm font-semibold text-slate-400">No media assets found.</p>
+          <p className="text-xs">Click "Upload Asset" above to post your first photo or video.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -174,55 +294,92 @@ export default function GalleryManagement() {
             return (
               <div
                 key={item.id}
-                className="bg-[#141521] border border-[#222437] hover:border-[#323652] rounded-xl overflow-hidden shadow-md group flex flex-col transition-all relative"
+                className="bg-[#141521] border border-[#222437] hover:border-emerald-500/40 rounded-2xl overflow-hidden shadow-md group flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)] relative"
               >
-                {/* Image Preview Container */}
-                <div className="aspect-[4/3] w-full bg-[#10111a] relative overflow-hidden">
-                  <img
-                    src={displayImage}
-                    alt={item.title || 'Gallery item'}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    onError={(e) => {
-                      ;(e.target as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&auto=format&fit=crop&q=60'
-                    }}
-                  />
+                {/* Media Thumbnail Container */}
+                <div 
+                  onClick={() => setLightboxItem(item)}
+                  className="aspect-[4/3] w-full bg-[#10111a] relative overflow-hidden cursor-pointer"
+                >
+                  {displayImage ? (
+                    <img
+                      src={displayImage}
+                      alt={item.title || 'Gallery item'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-600">
+                      <ImageIcon className="w-8 h-8" />
+                      <span className="text-[10px] font-semibold uppercase">No Media File</span>
+                    </div>
+                  )}
 
-                  {/* Media Type Badge */}
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1 border border-white/10">
-                    {isVideo ? <Video className="w-3 h-3 text-cyan-400" /> : <ImageIcon className="w-3 h-3 text-emerald-400" />}
-                    <span>{item.mediaType || 'IMAGE'}</span>
+                  {/* Badges Overlay */}
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider">
+                      {item.category || 'TERAPIYALAR'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-600/90 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                      {isVideo ? <Video className="w-2.5 h-2.5" /> : <ImageIcon className="w-2.5 h-2.5" />}
+                      <span>{item.mediaType || 'IMAGE'}</span>
+                    </span>
                   </div>
 
-                  {/* Quick Actions Overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3">
-                    <button
-                      onClick={() => handleOpenEditModal(item)}
-                      className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Delete</span>
-                    </button>
+                  {/* Play / Inspect Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="p-3 rounded-full bg-emerald-600 text-white shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                      {isVideo ? <Play className="w-5 h-5 fill-white ml-0.5" /> : <Eye className="w-5 h-5" />}
+                    </div>
                   </div>
                 </div>
 
-                {/* Card Meta Footer */}
-                <div className="p-3.5 space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-white truncate">
+                {/* Footer Details & Action Bar */}
+                <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
+                  <div>
+                    <h3 className="text-xs font-bold text-white truncate group-hover:text-emerald-300 transition-colors">
                       {item.title || 'Untitled Asset'}
+                    </h3>
+                    <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                      {item.mediaUrl || item.imageUrl || 'No URL'}
                     </p>
                   </div>
-                  <span className="inline-block px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-[9px] uppercase tracking-wider">
-                    {item.category || 'TERAPIYALAR'}
-                  </span>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-[#222437]">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setLightboxItem(item)}
+                        className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>Inspect</span>
+                      </button>
+                      <button
+                        onClick={() => navigate(`/org/gallery/${item.id}`)}
+                        className="text-[11px] font-medium text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                        title="Open Dedicated Asset Page"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Page</span>
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleOpenEditModal(item)}
+                        className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                        title="Edit Asset"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
+                        title="Delete Asset"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )
@@ -230,17 +387,127 @@ export default function GalleryManagement() {
         </div>
       )}
 
-      {/* Create / Edit Modal */}
+      {/* FULL LIGHTBOX VIEWER */}
+      {lightboxItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+          <div className="relative w-full max-w-4xl bg-[#141521] border border-[#2e3146] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            {/* Lightbox Header */}
+            <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
+              <div className="flex items-center gap-2.5">
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold uppercase">
+                  {lightboxItem.category || 'TERAPIYALAR'}
+                </span>
+                <h3 className="text-sm font-bold text-white truncate max-w-md">
+                  {lightboxItem.title || 'Media Asset Preview'}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleCopyUrl(lightboxItem.mediaUrl || lightboxItem.imageUrl || '')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                  title="Copy Media URL"
+                >
+                  {copiedUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedUrl ? 'Copied!' : 'Copy URL'}</span>
+                </button>
+                <a
+                  href={lightboxItem.mediaUrl || lightboxItem.imageUrl || ''}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  title="Open original in new tab"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+                <button
+                  onClick={() => setLightboxItem(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Lightbox Media Stage */}
+            <div className="relative flex-1 bg-[#090a10] min-h-[350px] flex items-center justify-center p-4 overflow-hidden">
+              {lightboxItem.mediaType === 'VIDEO' ? (
+                <video
+                  src={lightboxItem.mediaUrl || lightboxItem.imageUrl}
+                  poster={lightboxItem.thumbnailUrl}
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[60vh] rounded-xl shadow-2xl"
+                />
+              ) : (
+                <img
+                  src={lightboxItem.mediaUrl || lightboxItem.imageUrl || lightboxItem.thumbnailUrl}
+                  alt={lightboxItem.title || 'Full size'}
+                  className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl"
+                />
+              )}
+
+              {/* Prev / Next Arrows */}
+              {currentIndex > 0 && (
+                <button
+                  onClick={handlePrevLightbox}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-all cursor-pointer shadow-lg"
+                  title="Previous Asset"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+
+              {currentIndex < filteredItems.length - 1 && (
+                <button
+                  onClick={handleNextLightbox}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-all cursor-pointer shadow-lg"
+                  title="Next Asset"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+            </div>
+
+            {/* Lightbox Footer Info */}
+            <div className="p-4 border-t border-[#222437] bg-[#10111a] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="space-y-0.5">
+                <p className="text-slate-300 font-semibold">{lightboxItem.title || 'Untitled'}</p>
+                <p className="text-slate-500 font-mono text-[11px] truncate max-w-lg">
+                  {lightboxItem.mediaUrl || lightboxItem.imageUrl}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const toEdit = lightboxItem
+                    setLightboxItem(null)
+                    handleOpenEditModal(toEdit)
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Edit2 className="w-3.5 h-3.5" />
+                  <span>Edit Asset</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Create / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-md bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up">
+          <div className="w-full max-w-lg bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
-              <h3 className="text-lg font-bold text-white">
-                {editingItem ? 'Edit Gallery Item (PUT /gallery/{id})' : 'Upload Gallery Item (POST /gallery)'}
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-emerald-400" />
+                <span>{editingItem ? 'Edit Gallery Asset (PUT)' : 'Upload Gallery Asset (POST)'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors"
+                className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -253,7 +520,7 @@ export default function GalleryManagement() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Asset title..."
+                  placeholder="e.g. Individual Therapy Room 102"
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
@@ -308,7 +575,7 @@ export default function GalleryManagement() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>

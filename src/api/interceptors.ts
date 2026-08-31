@@ -13,6 +13,11 @@ export function setupInterceptors(axiosInstance: AxiosInstance): void {
       if (state.currentTenantId && config.headers) {
         config.headers['X-Tenant-ID'] = state.currentTenantId
       }
+
+      // If data is FormData, remove hardcoded Content-Type so browser sets boundary automatically
+      if (config.data instanceof FormData && config.headers) {
+        delete config.headers['Content-Type']
+      }
       
       return config
     },

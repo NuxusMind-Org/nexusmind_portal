@@ -14,9 +14,6 @@ export const uploadService = {
     formData.append('file', file)
     const response = await api.post<FileUploadResponse>(API_ENDPOINTS.UPLOAD.BASE, formData, {
       params: folder ? { folder } : undefined,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
     })
     return response.data
   },

@@ -341,11 +341,24 @@ export type PatientMood = 'SAD' | 'HAPPY' | 'TIRED' | 'CALM' | 'NORMAL'
 
 export interface PatientDto {
   id: number
-  fullName: string
+  fullName?: string
+  name?: string
   email: string
   phone?: string
   status?: string
+  birthDate?: string
+  gender?: string
+  address?: string
+  mood?: PatientMood
   registeredAt?: string
+  createdAt?: string
+  assignedPsychologist?: string
+  treatmentTag?: string
+  priority?: 'High' | 'Medium' | 'Normal' | string
+  sessionsTotal?: number
+  lastSession?: string
+  nextSession?: string
+  [key: string]: unknown
 }
 
 export interface PasientRegisterDto {
@@ -363,11 +376,20 @@ export interface PasientRegisterDto {
 
 export interface DoctorDto {
   id: number
-  fullName: string
+  fullName?: string
+  name?: string
   email: string
   specialization?: string
   status?: string
   phone?: string
+  avatarUrl?: string
+  licenseNumber?: string
+  patientCount?: number
+  sessionCount?: number
+  satisfactionRate?: number
+  nextAvailability?: string
+  joinedDate?: string
+  [key: string]: unknown
 }
 
 export interface DoctorRegisterDto {

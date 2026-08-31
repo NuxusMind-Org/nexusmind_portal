@@ -123,7 +123,12 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
       }
     } catch (err: any) {
       console.error('File upload error:', err)
-      const message = err?.response?.data?.message || err?.message || 'Failed to upload image. Please try again.'
+      const message = 
+        err?.response?.data?.message || 
+        err?.response?.data?.error || 
+        (err?.response?.status ? `Upload failed (${err.response.status}: ${err.response.statusText || 'Server Error'})` : null) || 
+        err?.message || 
+        'Failed to upload image. Please try again.'
       setErrorMessage(message)
     } finally {
       setIsUploading(false)

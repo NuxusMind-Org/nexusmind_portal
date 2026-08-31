@@ -1,18 +1,38 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, Newspaper, Loader2, Search, X, Tag, Code, Globe } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { 
+  Plus, 
+  Edit2, 
+  Trash2, 
+  Newspaper, 
+  Loader2, 
+  Search, 
+  X, 
+  Tag, 
+  Globe,
+  Eye,
+  LayoutGrid,
+  List,
+  Clock,
+  Quote as QuoteIcon,
+  CheckCircle2
+} from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { XeberResponseDto, XeberRequestDto } from '../../../../types/portalDtos'
 import { ImageUploadInput } from '../../../../components/forms'
 
 export default function XeberManagement() {
+  const navigate = useNavigate()
   const [items, setItems] = useState<XeberResponseDto[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'table' | 'feed'>('feed')
 
-  // Modal State
+  // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<XeberResponseDto | null>(null)
+  const [viewingItem, setViewingItem] = useState<XeberResponseDto | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
   // Detailed Form State
@@ -160,6 +180,9 @@ export default function XeberManagement() {
     try {
       await contentService.deleteXeber(id)
       setItems(items.filter((item) => item.id !== id))
+      if (viewingItem && viewingItem.id === id) {
+        setViewingItem(null)
+      }
     } catch (err) {
       console.error('Failed to delete news item', err)
       alert('Failed to delete news item.')
@@ -190,17 +213,45 @@ export default function XeberManagement() {
             <span>News Management (Xəbərlər)</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Manage organization announcements, news releases, and public updates.
+            Manage, publish, and view all posted organization news, press releases, and articles.
           </p>
         </div>
 
-        <button
-          onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 py-2.5 px-5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(124,58,237,0.3)] transition-all cursor-pointer shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create News</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div className="flex items-center p-1 bg-[#141521] border border-[#2e3146] rounded-xl">
+            <button
+              onClick={() => setViewMode('feed')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'feed'
+                  ? 'bg-violet-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Feed & Reader</span>
+            </button>
+            <button
+              onClick={() => setViewMode('table')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                viewMode === 'table'
+                  ? 'bg-violet-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <List className="w-3.5 h-3.5" />
+              <span>Table</span>
+            </button>
+          </div>
+
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center justify-center gap-2 py-2.5 px-5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(124,58,237,0.3)] transition-all cursor-pointer shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create News</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}
@@ -216,7 +267,7 @@ export default function XeberManagement() {
           />
         </div>
         <div className="text-xs text-slate-400 font-semibold">
-          Total Items: <span className="text-white font-bold">{filteredItems.length}</span>
+          Total News Items: <span className="text-white font-bold">{filteredItems.length}</span>
         </div>
       </div>
 
@@ -227,20 +278,112 @@ export default function XeberManagement() {
         </div>
       )}
 
-      {/* News Table */}
-      <div className="bg-[#141521] border border-[#222437] rounded-xl shadow-md overflow-hidden">
-        {isLoading ? (
-          <div className="p-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
-            <span className="text-xs font-semibold">Loading news articles...</span>
-          </div>
-        ) : filteredItems.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 space-y-3">
-            <Newspaper className="w-10 h-10 mx-auto text-slate-600" />
-            <p className="text-sm font-semibold text-slate-400">No news articles found.</p>
-            <p className="text-xs">Click "Create News" above to publish your first announcement.</p>
-          </div>
-        ) : (
+      {/* Main Content Area */}
+      {isLoading ? (
+        <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400">
+          <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
+          <span className="text-xs font-semibold">Loading news articles...</span>
+        </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl text-center text-slate-500 space-y-3">
+          <Newspaper className="w-12 h-12 mx-auto text-slate-600" />
+          <p className="text-sm font-semibold text-slate-400">No news articles found.</p>
+          <p className="text-xs">Click "Create News" above to publish your first announcement.</p>
+        </div>
+      ) : viewMode === 'feed' ? (
+        /* LIVE NEWS FEED VIEW */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredItems.map((item) => {
+            const displayImg = item.imageUrl || ''
+            return (
+              <div
+                key={item.id}
+                className="bg-[#141521] border border-[#222437] hover:border-violet-500/40 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-[0_8px_30px_rgba(124,58,237,0.15)] group"
+              >
+                {/* Hero / Cover Image */}
+                <div className="h-48 bg-[#10111a] relative overflow-hidden flex items-center justify-center">
+                  {displayImg ? (
+                    <img
+                      src={displayImg}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-2 text-slate-600">
+                      <Newspaper className="w-10 h-10" />
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">No Cover Image</span>
+                    </div>
+                  )}
+
+                  {/* Badges Overlay */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-violet-600/90 text-white font-bold text-[10px] uppercase tracking-wider backdrop-blur-md shadow">
+                      {item.category || 'General'}
+                    </span>
+                    <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow ${
+                      item.status === 'PUBLISHED'
+                        ? 'bg-emerald-500/90 text-white'
+                        : item.status === 'ARCHIVED'
+                        ? 'bg-slate-700/90 text-slate-200'
+                        : 'bg-amber-500/90 text-white'
+                    }`}>
+                      {item.status || 'PUBLISHED'}
+                    </span>
+                  </div>
+
+                  {/* Read Time */}
+                  <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-300 text-[10px] font-medium flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-violet-400" />
+                    <span>{item.readTimeMinutes || 5} min read</span>
+                  </div>
+                </div>
+
+                {/* Content Body */}
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-violet-300 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
+                      {item.shortDescription || item.introText || item.content || 'No summary available.'}
+                    </p>
+                  </div>
+
+                  {/* Footer & Actions */}
+                  <div className="pt-3 border-t border-[#222437] flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => navigate(`/org/xeber/${item.id}`)}
+                      className="text-xs font-bold text-violet-400 hover:text-violet-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Read Full Article</span>
+                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleOpenEditModal(item)}
+                        className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                        title="Edit News"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
+                        title="Delete News"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      ) : (
+        /* TABLE VIEW */
+        <div className="bg-[#141521] border border-[#222437] rounded-xl shadow-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
@@ -256,7 +399,10 @@ export default function XeberManagement() {
               <tbody className="divide-y divide-[#222437] text-slate-300">
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-white max-w-xs truncate">
+                    <td 
+                      onClick={() => navigate(`/org/xeber/${item.id}`)}
+                      className="py-3.5 px-4 font-bold text-white max-w-xs truncate cursor-pointer hover:text-violet-300 transition-colors"
+                    >
                       {item.title}
                     </td>
                     <td className="py-3.5 px-4">
@@ -284,6 +430,13 @@ export default function XeberManagement() {
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
+                          onClick={() => navigate(`/org/xeber/${item.id}`)}
+                          className="p-1.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors cursor-pointer"
+                          title="Open Full Article Preview"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
                           onClick={() => handleOpenEditModal(item)}
                           className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
                           title="Edit News"
@@ -304,8 +457,151 @@ export default function XeberManagement() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* FULL NEWS READER / DETAIL MODAL */}
+      {viewingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
+              <div className="flex items-center gap-2">
+                <Newspaper className="w-5 h-5 text-violet-400" />
+                <span className="text-xs font-bold text-white uppercase tracking-wider">News Article Viewer</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    const toEdit = viewingItem
+                    setViewingItem(null)
+                    handleOpenEditModal(toEdit)
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <Edit2 className="w-3 h-3" />
+                  <span>Edit</span>
+                </button>
+                <button
+                  onClick={() => setViewingItem(null)}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              {/* Cover Image */}
+              {viewingItem.imageUrl && (
+                <div className="w-full h-72 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
+                  <img
+                    src={viewingItem.imageUrl}
+                    alt={viewingItem.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Tags & Metadata */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 font-bold text-xs">
+                  {viewingItem.category || 'General'}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  {viewingItem.status || 'PUBLISHED'}
+                </span>
+                <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-slate-400" />
+                  {viewingItem.readTimeMinutes || 5} min read
+                </span>
+                {viewingItem.slug && (
+                  <span className="px-3 py-1 rounded-full bg-slate-800/60 text-slate-400 font-mono text-[11px]">
+                    slug: /{viewingItem.slug}
+                  </span>
+                )}
+              </div>
+
+              {/* Title & Short Description */}
+              <div className="space-y-2">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                  {viewingItem.title}
+                </h1>
+                {viewingItem.shortDescription && (
+                  <p className="text-sm font-medium text-violet-300/90 leading-relaxed italic">
+                    "{viewingItem.shortDescription}"
+                  </p>
+                )}
+              </div>
+
+              {/* Intro Text */}
+              {viewingItem.introText && (
+                <div className="p-4 bg-[#1b1c2b] border-l-4 border-violet-500 rounded-r-xl text-xs text-slate-300 leading-relaxed">
+                  {viewingItem.introText}
+                </div>
+              )}
+
+              {/* Main Content */}
+              <div className="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                {viewingItem.content || (viewingItem.sections && viewingItem.sections.map((s) => s.text).join('\n\n')) || 'No detailed content provided.'}
+              </div>
+
+              {/* Featured Quote */}
+              {viewingItem.quote && (
+                <div className="p-5 bg-gradient-to-r from-violet-950/30 to-[#141521] border border-violet-500/30 rounded-2xl relative">
+                  <QuoteIcon className="w-8 h-8 text-violet-400/20 absolute right-4 top-4" />
+                  <p className="text-sm font-medium text-white italic">
+                    "{viewingItem.quote}"
+                  </p>
+                  {viewingItem.quoteAuthor && (
+                    <p className="text-xs font-bold text-violet-400 mt-2">
+                      — {viewingItem.quoteAuthor}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* SEO & Technical Schema Preview */}
+              {(viewingItem.metaTitle || viewingItem.metaDescription || (viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0) || viewingItem.schemaMarkup) && (
+                <div className="pt-4 border-t border-[#222437] space-y-3">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-violet-400" />
+                    <span>SEO & Metadata Details</span>
+                  </h4>
+                  <div className="p-4 bg-[#10111a] rounded-xl border border-[#222437] space-y-2 text-xs">
+                    {viewingItem.metaTitle && (
+                      <p><span className="text-slate-400 font-semibold">Meta Title:</span> <span className="text-white">{viewingItem.metaTitle}</span></p>
+                    )}
+                    {viewingItem.metaDescription && (
+                      <p><span className="text-slate-400 font-semibold">Meta Description:</span> <span className="text-white">{viewingItem.metaDescription}</span></p>
+                    )}
+                    {viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-slate-400 font-semibold">Keywords:</span>
+                        {viewingItem.metaKeywords.map((kw, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 text-[10px] font-mono">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {viewingItem.schemaMarkup && (
+                      <div className="pt-2">
+                        <span className="text-slate-400 font-semibold block mb-1">Schema Markup (JSON-LD):</span>
+                        <pre className="p-2.5 bg-[#0a0b12] rounded-lg text-[10px] font-mono text-emerald-400 overflow-x-auto border border-[#1b1c2b]">
+                          {viewingItem.schemaMarkup}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Detailed Create / Edit Modal */}
       {isModalOpen && (
@@ -317,7 +613,7 @@ export default function XeberManagement() {
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors"
+                className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -352,12 +648,13 @@ export default function XeberManagement() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Read Time (Minutes)</label>
+                  <label className="text-xs font-semibold text-slate-300">Read Time (minutes)</label>
                   <input
                     type="number"
+                    min={1}
                     value={readTimeMinutes}
                     onChange={(e) => setReadTimeMinutes(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
@@ -408,29 +705,30 @@ export default function XeberManagement() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Quote (Optional)</label>
+                  <label className="text-xs font-semibold text-slate-300">Featured Quote</label>
                   <input
                     type="text"
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
-                    placeholder="Featured quote text..."
+                    placeholder="Quoted highlight..."
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
+
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Quote Author</label>
                   <input
                     type="text"
                     value={quoteAuthor}
                     onChange={(e) => setQuoteAuthor(e.target.value)}
-                    placeholder="Quote author name..."
+                    placeholder="Author name..."
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Main Content Text *</label>
+                <label className="text-xs font-semibold text-slate-300">Main Content *</label>
                 <textarea
                   required
                   rows={4}
@@ -442,73 +740,67 @@ export default function XeberManagement() {
               </div>
 
               {/* SEO & Metadata Section */}
-              <div className="space-y-4 pt-3 border-t border-[#2e3146]">
+              <div className="space-y-3 pt-3 border-t border-[#2e3146]">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-violet-400 uppercase tracking-wider flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    <span>SEO & Search Optimization</span>
+                  <h4 className="text-xs font-bold text-violet-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>SEO & Metadata Fields</span>
                   </h4>
-                  <span className="text-[10px] text-slate-500">Keywords & Search Indexing</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Meta Title (metaTitle)</label>
+                    <label className="text-xs font-semibold text-slate-300">Custom URL Slug</label>
                     <input
                       type="text"
-                      value={metaTitle}
-                      onChange={(e) => setMetaTitle(e.target.value)}
-                      placeholder="SEO meta title for Google..."
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="e.g. mental-health-seminar-2026"
                       className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Slug (URL Identifier)</label>
+                    <label className="text-xs font-semibold text-slate-300">Meta Title</label>
                     <input
                       type="text"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
-                      placeholder="e.g. mental-health-conference-2026"
+                      value={metaTitle}
+                      onChange={(e) => setMetaTitle(e.target.value)}
+                      placeholder="Search engine title..."
                       className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Meta Description (metaDescription)</label>
+                  <label className="text-xs font-semibold text-slate-300">Meta Description</label>
                   <textarea
                     rows={2}
                     value={metaDescription}
                     onChange={(e) => setMetaDescription(e.target.value)}
-                    placeholder="Search engine snippet description..."
+                    placeholder="Search engine preview description..."
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Tag className="w-3.5 h-3.5 text-violet-400" />
-                    <span>Meta Keywords (metaKeywords)</span>
-                  </label>
+                  <label className="text-xs font-semibold text-slate-300">Meta Keywords (Comma separated)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. nexusmind, psychology, health news, therapy, clinic"
+                    placeholder="e.g. psixologiya, təlim, seminar, sağlamlıq"
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
-                  <p className="text-[10px] text-slate-500">
-                    Separate multiple keywords with commas.
-                  </p>
                   {previewKeywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {previewKeywords.map((tag, idx) => (
+                    <div className="flex flex-wrap gap-1.5 pt-1.5">
+                      {previewKeywords.map((kw, i) => (
                         <span
-                          key={idx}
-                          className="px-2 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-medium"
+                          key={i}
+                          className="px-2 py-0.5 rounded-md bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-mono flex items-center gap-1"
                         >
-                          #{tag}
+                          <Tag className="w-2.5 h-2.5" />
+                          {kw}
                         </span>
                       ))}
                     </div>
@@ -517,24 +809,18 @@ export default function XeberManagement() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <Code className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>JSON-LD Schema Markup (schemaMarkup)</span>
-                    </span>
-                    <span className="text-[10px] text-slate-500">Optional</span>
+                    <span>Schema Markup (JSON-LD)</span>
+                    <span className="text-[10px] text-slate-400 font-mono">application/ld+json</span>
                   </label>
                   <textarea
                     rows={3}
                     value={schemaMarkup}
-                    onChange={(e) => {
-                      setSchemaMarkup(e.target.value)
-                      setJsonError(null)
-                    }}
-                    placeholder={`{\n  "@context": "https://schema.org",\n  "@type": "NewsArticle",\n  "headline": "${title || 'News Headline'}"\n}`}
-                    className="w-full px-3.5 py-2.5 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono placeholder-slate-600 focus:outline-none focus:border-cyan-500"
+                    onChange={(e) => setSchemaMarkup(e.target.value)}
+                    placeholder='{"@context": "https://schema.org", "@type": "NewsArticle", "headline": "..."}'
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-emerald-400 font-mono placeholder-slate-600 focus:outline-none focus:border-violet-500"
                   />
                   {jsonError && (
-                    <p className="text-xs text-rose-400 font-semibold">{jsonError}</p>
+                    <p className="text-[11px] text-rose-400 font-mono mt-1">{jsonError}</p>
                   )}
                 </div>
               </div>
@@ -543,14 +829,14 @@ export default function XeberManagement() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all flex items-center gap-2"
+                  className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(124,58,237,0.3)]"
                 >
                   {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>{editingItem ? 'Save Changes (PUT)' : 'Publish News (POST)'}</span>
