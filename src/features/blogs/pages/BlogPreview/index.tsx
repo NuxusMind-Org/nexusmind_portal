@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { BlogResponse } from '../../../../types/portalDtos'
+import { getLocalizedTitle } from '../../../../utils/multilingual'
 
 export default function BlogPreview() {
   const { id } = useParams<{ id: string }>()
@@ -86,6 +87,7 @@ export default function BlogPreview() {
   }
 
   const displayImage = item.imageUrl || item.coverImage
+  const localizedTitle = getLocalizedTitle(item.title)
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
@@ -101,7 +103,7 @@ export default function BlogPreview() {
           </button>
           <span className="text-slate-600">/</span>
           <span className="text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
-            {item.title}
+            {localizedTitle}
           </span>
         </div>
 
@@ -148,7 +150,7 @@ export default function BlogPreview() {
             <div className="w-full h-80 sm:h-96 relative bg-[#0e0f19] overflow-hidden">
               <img
                 src={displayImage}
-                alt={item.title}
+                alt={localizedTitle}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#141521] via-transparent to-black/30" />
@@ -177,7 +179,7 @@ export default function BlogPreview() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              {item.title}
+              {localizedTitle}
             </h1>
 
             {item.shortDescription && (
@@ -204,7 +206,7 @@ export default function BlogPreview() {
                       <span className="w-7 h-7 rounded-full bg-purple-600/30 text-purple-400 text-xs font-mono flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
-                      <span>{section.title}</span>
+                      <span>{getLocalizedTitle(section.title)}</span>
                     </h2>
                     <div className="text-slate-300 leading-relaxed text-sm sm:text-base whitespace-pre-line pt-1">
                       {section.text}
@@ -235,7 +237,7 @@ export default function BlogPreview() {
                 https://nexusmind.az/blogs/{item.slug || id}
               </p>
               <h3 className="text-base font-semibold text-purple-400 hover:underline cursor-pointer">
-                {item.metaTitle || item.title}
+                {item.metaTitle || localizedTitle}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 {item.metaDescription || item.shortDescription || item.introText || 'No meta description provided.'}

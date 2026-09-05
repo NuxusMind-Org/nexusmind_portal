@@ -27,7 +27,15 @@ import {
   Globe,
   Code
 } from 'lucide-react'
-import { ImageUploadInput } from '../../../../components/forms'
+import { ImageUploadInput, MultilingualContentInput } from '../../../../components/forms'
+import { 
+  createEmptyTitleDto, 
+  createEmptyMultilingualContent, 
+  normalizeTitleDto, 
+  getLocalizedTitle, 
+  isTitleValid 
+} from '../../../../utils/multilingual'
+import type { TitleDto, MultilingualContent } from '../../../../utils/multilingual'
 
 export default function DashboardOverview() {
   const profile = useUserStore((state) => state.profile)
@@ -45,6 +53,10 @@ export default function DashboardOverview() {
   const [activeModal, setActiveModal] = useState<'xeber' | 'meqale' | 'blog' | 'gallery' | null>(null)
   const [editingItem, setEditingItem] = useState<any | null>(null)
   const [isSavingContent, setIsSavingContent] = useState(false)
+
+  // Multilingual Form Fields
+  const [multilingualTitle, setMultilingualTitle] = useState<TitleDto>(createEmptyTitleDto())
+  const [multilingualContent, setMultilingualContent] = useState<MultilingualContent>(createEmptyMultilingualContent())
 
   // Content Form Fields
   const [formTitle, setFormTitle] = useState('')
@@ -108,6 +120,8 @@ export default function DashboardOverview() {
   const handleOpenCreateXeber = () => {
     setEditingItem(null)
     setFormTitle('')
+    setMultilingualTitle(createEmptyTitleDto())
+    setMultilingualContent(createEmptyMultilingualContent())
     setFormShortDesc('')
     setFormIntroText('')
     setFormContent('')
@@ -127,6 +141,8 @@ export default function DashboardOverview() {
   const handleOpenCreateMeqale = () => {
     setEditingItem(null)
     setFormTitle('')
+    setMultilingualTitle(createEmptyTitleDto())
+    setMultilingualContent(createEmptyMultilingualContent())
     setFormShortDesc('')
     setFormIntroText('')
     setFormContent('')
@@ -144,6 +160,8 @@ export default function DashboardOverview() {
   const handleOpenCreateBlog = () => {
     setEditingItem(null)
     setFormTitle('')
+    setMultilingualTitle(createEmptyTitleDto())
+    setMultilingualContent(createEmptyMultilingualContent())
     setFormShortDesc('')
     setFormIntroText('')
     setFormContent('')
@@ -171,10 +189,14 @@ export default function DashboardOverview() {
   const handleOpenEditItem = (type: 'xeber' | 'meqale' | 'blog' | 'gallery', item: any) => {
     setEditingItem(item)
     if (type === 'xeber') {
-      setFormTitle(item.title || '')
+      const normalizedTitle = normalizeTitleDto(item.title)
+      setFormTitle(getLocalizedTitle(item.title))
+      setMultilingualTitle(normalizedTitle)
+      const primaryText = item.content || (item.sections && item.sections[0]?.text) || ''
+      setMultilingualContent({ az: primaryText, en: '', ru: '' })
       setFormShortDesc(item.shortDescription || '')
       setFormIntroText(item.introText || '')
-      setFormContent(item.content || (item.sections && item.sections.map((s: any) => s.text).join('\n\n')) || '')
+      setFormContent(primaryText)
       setFormCategory(item.category || 'General')
       setFormQuote(item.quote || '')
       setFormImageUrl(item.imageUrl || '')
@@ -187,10 +209,15 @@ export default function DashboardOverview() {
       const kw = item.metaKeywords
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'meqale') {
-      setFormTitle(item.title || '')
+      const titleObj = item.titleDto || item.title
+      const normalizedTitle = normalizeTitleDto(titleObj)
+      setFormTitle(getLocalizedTitle(titleObj))
+      setMultilingualTitle(normalizedTitle)
+      const primaryText = item.content || (item.sections && item.sections[0]?.text) || ''
+      setMultilingualContent({ az: primaryText, en: '', ru: '' })
       setFormShortDesc(item.shortDescription || '')
       setFormIntroText(item.introText || '')
-      setFormContent(item.content || (item.sections && item.sections.map((s: any) => s.text).join('\n\n')) || '')
+      setFormContent(primaryText)
       setFormAuthor(item.author || 'Super Admin')
       setFormCategory(item.category || 'Psychology')
       setFormQuote(item.quote || '')
@@ -201,10 +228,14 @@ export default function DashboardOverview() {
       const kw = item.metaKeywords
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'blog') {
-      setFormTitle(item.title || '')
+      const normalizedTitle = normalizeTitleDto(item.title)
+      setFormTitle(getLocalizedTitle(item.title))
+      setMultilingualTitle(normalizedTitle)
+      const primaryText = item.body || (item.sections && item.sections[0]?.text) || ''
+      setMultilingualContent({ az: primaryText, en: '', ru: '' })
       setFormShortDesc(item.shortDescription || '')
       setFormIntroText(item.introText || '')
-      setFormContent(item.body || (item.sections && item.sections.map((s: any) => s.text).join('\n\n')) || '')
+      setFormContent(primaryText)
       setFormAuthor(item.authorName || 'NexusMind Editorial')
       setFormCategory(item.category || 'General')
       setFormImageUrl(item.imageUrl || item.coverImage || '')
@@ -249,19 +280,30 @@ export default function DashboardOverview() {
   // Save Handlers
   const handleSaveXeber = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formTitle.trim()) return
+    if (!isTitleValid(multilingualTitle) && !formTitle.trim()) {
+      alert('Please provide at least Azerbaijani title.')
+      return
+    }
     setIsSavingContent(true)
-    const mainText = formContent.trim() || formIntroText.trim() || formTitle.trim()
+
+    const azTitle = multilingualTitle.az.trim() || formTitle.trim()
+    const completeTitle: TitleDto = {
+      az: azTitle,
+      en: multilingualTitle.en?.trim() || azTitle,
+      ru: multilingualTitle.ru?.trim() || azTitle,
+    }
+
+    const mainText = (multilingualContent.az || multilingualContent.en || multilingualContent.ru || formContent || formIntroText || formTitle).trim()
     const parsedKeywords = formMetaKeywords
       .split(',')
       .map((k) => k.trim())
       .filter((k) => k.length > 0)
 
     const payload: XeberRequestDto = {
-      title: formTitle.trim(),
+      title: completeTitle,
       shortDescription: formShortDesc.trim() || undefined,
       introText: formIntroText.trim() || undefined,
-      sections: mainText ? [{ title: 'Main Section', text: mainText }] : undefined,
+      sections: mainText ? [{ title: completeTitle, text: mainText }] : undefined,
       quote: formQuote.trim() || undefined,
       category: formCategory.trim() || 'General',
       imageUrl: formImageUrl.trim() || undefined,
@@ -292,19 +334,30 @@ export default function DashboardOverview() {
 
   const handleSaveMeqale = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formTitle.trim()) return
+    if (!isTitleValid(multilingualTitle) && !formTitle.trim()) {
+      alert('Please provide at least Azerbaijani title.')
+      return
+    }
     setIsSavingContent(true)
-    const mainText = formContent.trim() || formIntroText.trim() || formTitle.trim()
+
+    const azTitle = multilingualTitle.az.trim() || formTitle.trim()
+    const completeTitle: TitleDto = {
+      az: azTitle,
+      en: multilingualTitle.en?.trim() || azTitle,
+      ru: multilingualTitle.ru?.trim() || azTitle,
+    }
+
+    const mainText = (multilingualContent.az || multilingualContent.en || multilingualContent.ru || formContent || formIntroText || formTitle).trim()
     const parsedKeywords = formMetaKeywords
       .split(',')
       .map((k) => k.trim())
       .filter((k) => k.length > 0)
 
     const payload: MeqaleRequestDto = {
-      title: formTitle.trim(),
+      title: completeTitle,
       shortDescription: formShortDesc.trim() || undefined,
       introText: formIntroText.trim() || undefined,
-      sections: mainText ? [{ title: 'Main Article', text: mainText }] : undefined,
+      sections: mainText ? [{ title: completeTitle, text: mainText }] : undefined,
       quote: formQuote.trim() || undefined,
       category: formCategory.trim() || 'Psychology',
       doctorId: formDoctorId ? Number(formDoctorId) : undefined,
@@ -333,19 +386,30 @@ export default function DashboardOverview() {
 
   const handleSaveBlog = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formTitle.trim()) return
+    if (!isTitleValid(multilingualTitle) && !formTitle.trim()) {
+      alert('Please provide at least Azerbaijani title.')
+      return
+    }
     setIsSavingContent(true)
-    const mainText = formContent.trim() || formIntroText.trim() || formTitle.trim()
+
+    const azTitle = multilingualTitle.az.trim() || formTitle.trim()
+    const completeTitle: TitleDto = {
+      az: azTitle,
+      en: multilingualTitle.en?.trim() || azTitle,
+      ru: multilingualTitle.ru?.trim() || azTitle,
+    }
+
+    const mainText = (multilingualContent.az || multilingualContent.en || multilingualContent.ru || formContent || formIntroText || formTitle).trim()
     const parsedKeywords = formMetaKeywords
       .split(',')
       .map((k) => k.trim())
       .filter((k) => k.length > 0)
 
     const payload: BlogRequest = {
-      title: formTitle.trim(),
+      title: completeTitle,
       shortDescription: formShortDesc.trim() || undefined,
       introText: formIntroText.trim() || undefined,
-      sections: mainText ? [{ title: 'Main Blog', text: mainText }] : undefined,
+      sections: mainText ? [{ title: completeTitle, text: mainText }] : undefined,
       category: formCategory.trim() || 'General',
       authorName: formAuthor.trim() || 'NexusMind Editorial',
       imageUrl: formImageUrl.trim() || undefined,
@@ -644,7 +708,7 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {xeberList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{item.title}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.category || 'General'}
@@ -722,7 +786,7 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {meqaleList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{item.title}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.titleDto || item.title)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.author || 'Super Admin'}
@@ -792,7 +856,7 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {blogList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{item.title}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.authorName || 'NexusMind Editorial'}
@@ -906,18 +970,18 @@ export default function DashboardOverview() {
               </button>
             </div>
             <form onSubmit={handleSaveXeber} className="space-y-4">
+              <MultilingualContentInput
+                title={multilingualTitle}
+                onTitleChange={setMultilingualTitle}
+                content={multilingualContent}
+                onContentChange={setMultilingualContent}
+                accentColor="violet"
+                titleLabel="News Title"
+                contentLabel="News Body Content"
+                requiredLanguages={['az']}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="News title..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Category</label>
                   <input
@@ -928,9 +992,6 @@ export default function DashboardOverview() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Read Time (Minutes)</label>
                   <input
@@ -940,6 +1001,9 @@ export default function DashboardOverview() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Status</label>
                   <select
@@ -952,18 +1016,18 @@ export default function DashboardOverview() {
                     <option value="ARCHIVED">ARCHIVED</option>
                   </select>
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-300">Short Description</label>
+                  <input
+                    type="text"
+                    value={formShortDesc}
+                    onChange={(e) => setFormShortDesc(e.target.value)}
+                    placeholder="Summary..."
+                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Short Description</label>
-                <input
-                  type="text"
-                  value={formShortDesc}
-                  onChange={(e) => setFormShortDesc(e.target.value)}
-                  placeholder="Summary..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                />
-              </div>
               <ImageUploadInput
                 label="News Image (imageUrl)"
                 value={formImageUrl}
@@ -972,17 +1036,6 @@ export default function DashboardOverview() {
                 accentColor="violet"
                 placeholder="https://... or upload a news cover image"
               />
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Main Content *</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={formContent}
-                  onChange={(e) => setFormContent(e.target.value)}
-                  placeholder="News text..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                />
-              </div>
 
               {/* SEO Section */}
               <div className="space-y-3 pt-3 border-t border-[#2e3146]">
@@ -1083,18 +1136,18 @@ export default function DashboardOverview() {
               </button>
             </div>
             <form onSubmit={handleSaveMeqale} className="space-y-4">
+              <MultilingualContentInput
+                title={multilingualTitle}
+                onTitleChange={setMultilingualTitle}
+                content={multilingualContent}
+                onContentChange={setMultilingualContent}
+                accentColor="indigo"
+                titleLabel="Article Title"
+                contentLabel="Article Body Content"
+                requiredLanguages={['az']}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="Article title..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Author</label>
                   <input
@@ -1105,9 +1158,6 @@ export default function DashboardOverview() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Category</label>
                   <input
@@ -1118,6 +1168,9 @@ export default function DashboardOverview() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Doctor ID (doctorId)</label>
                   <input
@@ -1160,17 +1213,6 @@ export default function DashboardOverview() {
                 accentColor="indigo"
                 placeholder="https://... or upload an article cover"
               />
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Content *</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={formContent}
-                  onChange={(e) => setFormContent(e.target.value)}
-                  placeholder="Article text..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                />
-              </div>
 
               {/* SEO Section */}
               <div className="space-y-3 pt-3 border-t border-[#2e3146]">
@@ -1254,18 +1296,18 @@ export default function DashboardOverview() {
               </button>
             </div>
             <form onSubmit={handleSaveBlog} className="space-y-4">
+              <MultilingualContentInput
+                title={multilingualTitle}
+                onTitleChange={setMultilingualTitle}
+                content={multilingualContent}
+                onContentChange={setMultilingualContent}
+                accentColor="purple"
+                titleLabel="Blog Title"
+                contentLabel="Blog Body Content"
+                requiredLanguages={['az']}
+              />
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Blog Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="Blog title..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Author Name</label>
                   <input
@@ -1276,9 +1318,6 @@ export default function DashboardOverview() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Category</label>
                   <input
@@ -1307,18 +1346,6 @@ export default function DashboardOverview() {
                   value={formShortDesc}
                   onChange={(e) => setFormShortDesc(e.target.value)}
                   placeholder="Summary..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Post Body *</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={formContent}
-                  onChange={(e) => setFormContent(e.target.value)}
-                  placeholder="Blog post body..."
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
                 />
               </div>

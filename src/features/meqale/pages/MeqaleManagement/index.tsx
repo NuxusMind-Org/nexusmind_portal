@@ -20,8 +20,15 @@ import {
   User
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
-import type { MeqaleResponseDto, MeqaleRequestDto, HighlightCard, ContentSection } from '../../../../types/portalDtos'
-import { ImageUploadInput } from '../../../../components/forms'
+import type { MeqaleResponseDto, MeqaleRequestDto, HighlightCard, ContentSection, TitleDto } from '../../../../types/portalDtos'
+import { ImageUploadInput, MultilingualContentInput } from '../../../../components/forms'
+import {
+  getLocalizedTitle,
+  createEmptyTitleDto,
+  createEmptyMultilingualContent,
+  normalizeTitleDto,
+  type MultilingualContent
+} from '../../../../utils/multilingual'
 
 export default function MeqaleManagement() {
   const navigate = useNavigate()
@@ -38,7 +45,8 @@ export default function MeqaleManagement() {
   const [isSaving, setIsSaving] = useState(false)
 
   // Form Fields matching exact Backend Schema
-  const [title, setTitle] = useState('')
+  const [titles, setTitles] = useState<TitleDto>(createEmptyTitleDto())
+  const [contents, setContents] = useState<MultilingualContent>(createEmptyMultilingualContent())
   const [shortDescription, setShortDescription] = useState('')
   const [introText, setIntroText] = useState('')
   const [quote, setQuote] = useState('')
@@ -49,6 +57,9 @@ export default function MeqaleManagement() {
   const [author, setAuthor] = useState('')
 
   // SEO & Keywords State
+  const [metaTitle, setMetaTitle] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
+  const [slug, setSlug] = useState('')
   const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
   const [schemaMarkup, setSchemaMarkup] = useState('')
   const [jsonError, setJsonError] = useState<string | null>(null)
@@ -77,7 +88,8 @@ export default function MeqaleManagement() {
 
   const handleOpenCreateModal = () => {
     setEditingItem(null)
-    setTitle('')
+    setTitles(createEmptyTitleDto())
+    setContents(createEmptyMultilingualContent())
     setShortDescription('')
     setIntroText('')
     setQuote('')
@@ -88,6 +100,9 @@ export default function MeqaleManagement() {
     setAuthor('BPM Editorial')
     setSections([{ title: 'Main Section', text: '' }])
     setHighlightCards([])
+    setMetaTitle('')
+    setMetaDescription('')
+    setSlug('')
     setMetaKeywordsInput('')
     setSchemaMarkup('')
     setJsonError(null)
@@ -96,7 +111,13 @@ export default function MeqaleManagement() {
 
   const handleOpenEditModal = (item: MeqaleResponseDto) => {
     setEditingItem(item)
-    setTitle(item.title)
+    setTitles(normalizeTitleDto(item.titleDto || item.title))
+    const firstSectionText = item.sections && item.sections.length > 0 ? item.sections[0].text : ''
+    setContents({
+      az: item.content || firstSectionText || '',
+      en: (item.sections && item.sections.length > 1 ? item.sections[1].text : '') || '',
+      ru: (item.sections && item.sections.length > 2 ? item.sections[2].text : '') || ''
+    })
     setShortDescription(item.shortDescription || '')
     setIntroText(item.introText || '')
     setQuote(item.quote || '')
@@ -105,6 +126,9 @@ export default function MeqaleManagement() {
     setDoctorId(item.doctorId || '')
     setStatus((item.status as any) || 'PUBLISHED')
     setAuthor(item.author || 'BPM Editorial')
+    setMetaTitle(item.metaTitle || '')
+    setMetaDescription(item.metaDescription || '')
+    setSlug(item.slug || '')
     setMetaKeywordsInput(item.metaKeywords ? item.metaKeywords.join(', ') : '')
     setSchemaMarkup(item.schemaMarkup || '')
     setJsonError(null)
@@ -113,7 +137,7 @@ export default function MeqaleManagement() {
     if (item.sections && item.sections.length > 0) {
       setSections(
         item.sections.map((s) => ({
-          title: s.title || '',
+          title: typeof s.title === 'object' ? getLocalizedTitle(s.title) : s.title || '',
           text: s.text || '',
         }))
       )
@@ -168,7 +192,7 @@ export default function MeqaleManagement() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) return
+    if (!titles.az.trim() && !titles.en.trim() && !titles.ru.trim()) return
 
     // Validate JSON-LD Schema markup syntax if provided
     if (schemaMarkup.trim()) {
@@ -185,18 +209,40 @@ export default function MeqaleManagement() {
 
     setIsSaving(true)
 
+    const primaryTitle = titles.az.trim() || titles.en.trim() || titles.ru.trim() || 'Article Title'
+    const completeTitle: TitleDto = {
+      az: titles.az.trim() || primaryTitle,
+      en: titles.en.trim() || primaryTitle,
+      ru: titles.ru.trim() || primaryTitle
+    }
+
     // Filter out empty sections & cards
     const cleanedSections = sections
       .filter((s) => s.text && s.text.trim().length > 0)
-      .map((s) => ({ title: s.title?.trim() || 'Section', text: s.text.trim() }))
+      .map((s) => ({
+        title: typeof s.title === 'object' ? s.title : { az: s.title || primaryTitle, en: s.title || primaryTitle, ru: s.title || primaryTitle },
+        text: s.text.trim()
+      }))
+
+    // Add multilingual content sections if provided
+    if (contents.en.trim()) {
+      cleanedSections.push({
+        title: { ...completeTitle, az: `${completeTitle.az} (EN)` },
+        text: contents.en.trim()
+      })
+    }
+    if (contents.ru.trim()) {
+      cleanedSections.push({
+        title: { ...completeTitle, az: `${completeTitle.az} (RU)` },
+        text: contents.ru.trim()
+      })
+    }
 
     const cleanedCards = highlightCards
       .filter((c) => c.title && c.title.trim().length > 0)
       .map((c) => ({ icon: c.icon?.trim() || 'Sparkles', title: c.title.trim(), text: c.text?.trim() || '' }))
 
-    const mainContentFallback = cleanedSections.length > 0 
-      ? cleanedSections.map((s) => s.text).join('\n\n')
-      : introText.trim() || shortDescription.trim() || title.trim()
+    const mainContentFallback = contents.az.trim() || (cleanedSections.length > 0 ? cleanedSections[0].text : '') || introText.trim() || shortDescription.trim() || primaryTitle
 
     const parsedKeywords = metaKeywordsInput
       .split(',')
@@ -204,7 +250,7 @@ export default function MeqaleManagement() {
       .filter((k) => k.length > 0)
 
     const payload: MeqaleRequestDto = {
-      title: title.trim(),
+      title: completeTitle,
       shortDescription: shortDescription.trim() || undefined,
       introText: introText.trim() || undefined,
       quote: quote.trim() || undefined,
@@ -213,9 +259,12 @@ export default function MeqaleManagement() {
       author: author.trim() || 'BPM Editorial',
       doctorId: doctorId !== '' ? Number(doctorId) : undefined,
       status: status,
-      sections: cleanedSections.length > 0 ? cleanedSections : undefined,
+      sections: cleanedSections.length > 0 ? cleanedSections : [{ title: completeTitle, text: mainContentFallback }],
       highlightCards: cleanedCards.length > 0 ? cleanedCards : undefined,
       content: mainContentFallback,
+      metaTitle: metaTitle.trim() || undefined,
+      metaDescription: metaDescription.trim() || undefined,
+      slug: slug.trim() || undefined,
       schemaMarkup: schemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
@@ -250,14 +299,22 @@ export default function MeqaleManagement() {
     }
   }
 
-  const filteredItems = items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.shortDescription && item.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.introText && item.introText.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.author && item.author.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredItems = items.filter((item) => {
+    const rawTitle = item.titleDto || item.title
+    const localizedTitle = getLocalizedTitle(rawTitle)
+    const allTitles = typeof rawTitle === 'object' && rawTitle !== null
+      ? `${rawTitle.az || ''} ${rawTitle.en || ''} ${rawTitle.ru || ''}`
+      : rawTitle || ''
+    const q = searchQuery.toLowerCase()
+    return (
+      localizedTitle.toLowerCase().includes(q) ||
+      allTitles.toLowerCase().includes(q) ||
+      (item.shortDescription && item.shortDescription.toLowerCase().includes(q)) ||
+      (item.introText && item.introText.toLowerCase().includes(q)) ||
+      (item.author && item.author.toLowerCase().includes(q)) ||
+      (item.category && item.category.toLowerCase().includes(q))
+    )
+  })
 
   const previewKeywords = metaKeywordsInput
     .split(',')
@@ -369,7 +426,7 @@ export default function MeqaleManagement() {
                   {displayImg ? (
                     <img
                       src={displayImg}
-                      alt={item.title}
+                      alt={getLocalizedTitle(item.titleDto || item.title)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -402,11 +459,11 @@ export default function MeqaleManagement() {
                   </div>
                 </div>
 
-                {/* Content Body */}
+                {/* Card Header & Title */}
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-indigo-300 transition-colors">
-                      {item.title}
+                      {getLocalizedTitle(item.titleDto || item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
                       {item.shortDescription || item.introText || item.content || 'No summary available.'}
@@ -481,9 +538,9 @@ export default function MeqaleManagement() {
                   <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
                     <td 
                       onClick={() => navigate(`/org/meqale/${item.id}`)}
-                      className="py-3.5 px-4 font-bold text-white max-w-xs truncate cursor-pointer hover:text-indigo-300 transition-colors"
+                      className="px-5 py-4 font-medium text-white max-w-xs truncate cursor-pointer hover:text-indigo-300 transition-colors"
                     >
-                      {item.title}
+                      {getLocalizedTitle(item.titleDto || item.title)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-300 font-medium">
                       {item.author || 'BPM Editorial'}
@@ -578,7 +635,7 @@ export default function MeqaleManagement() {
                 <div className="w-full h-72 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
                   <img
                     src={viewingItem.imageUrl}
-                    alt={viewingItem.title}
+                    alt={getLocalizedTitle(viewingItem.titleDto || viewingItem.title)}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -604,10 +661,10 @@ export default function MeqaleManagement() {
                 )}
               </div>
 
-              {/* Title & Short Description */}
+              {/* Title & Description */}
               <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  {viewingItem.title}
+                  {getLocalizedTitle(viewingItem.titleDto || viewingItem.title)}
                 </h1>
                 {viewingItem.shortDescription && (
                   <p className="text-sm font-medium text-indigo-300/90 leading-relaxed italic">
@@ -658,7 +715,7 @@ export default function MeqaleManagement() {
                         <span className="w-5 h-5 rounded-full bg-indigo-600/30 text-indigo-400 text-[10px] font-mono flex items-center justify-center shrink-0">
                           {idx + 1}
                         </span>
-                        <span>{section.title}</span>
+                        <span>{typeof section.title === 'object' ? getLocalizedTitle(section.title) : section.title}</span>
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
                         {section.text}
@@ -734,23 +791,21 @@ export default function MeqaleManagement() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-6">
-              {/* Section 1: Overview & Metas */}
+              {/* Section 1: Core Multilingual Fields */}
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">1. Core Details</h4>
+                <MultilingualContentInput
+                  title={titles}
+                  onTitleChange={setTitles}
+                  content={contents}
+                  onContentChange={setContents}
+                  accentColor="indigo"
+                  contentRows={4}
+                  requiredLanguages={['az']}
+                  titleLabel="Article Title"
+                  contentLabel="Primary Article Content"
+                />
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Title * (title)</label>
-                    <input
-                      type="text"
-                      required
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Navigating Anxiety in Modern Life"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-300">Category (category)</label>
                     <input
@@ -761,9 +816,7 @@ export default function MeqaleManagement() {
                       className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-300">Author (author)</label>
                     <input
@@ -771,17 +824,6 @@ export default function MeqaleManagement() {
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
                       placeholder="e.g. Dr. Jane Smith or BPM Editorial"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Assigned Doctor ID (doctorId)</label>
-                    <input
-                      type="number"
-                      value={doctorId}
-                      onChange={(e) => setDoctorId(e.target.value)}
-                      placeholder="Optional doctor ID"
                       className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
@@ -913,7 +955,7 @@ export default function MeqaleManagement() {
                 )}
               </div>
 
-              {/* Section 4: Dynamic Article Sections */}
+              {/* Section 4: Article Sections */}
               <div className="space-y-3 pt-2 border-t border-[#2e3146]">
                 <div className="flex items-center justify-between">
                   <div>
@@ -950,7 +992,7 @@ export default function MeqaleManagement() {
                       </div>
                       <input
                         type="text"
-                        value={section.title}
+                        value={typeof section.title === 'string' ? section.title : getLocalizedTitle(section.title)}
                         onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
                         placeholder="Section Heading / Title..."
                         className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
@@ -968,15 +1010,50 @@ export default function MeqaleManagement() {
                 </div>
               </div>
 
-              {/* Section 5: SEO & Schema */}
+              {/* Section 4: SEO Metadata */}
               <div className="space-y-3 pt-2 border-t border-[#2e3146]">
                 <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5" />
-                  <span>SEO & JSON-LD Schema (Optional)</span>
+                  <span>SEO & Discoverability Metadata</span>
                 </h4>
 
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Custom URL Slug</label>
+                    <input
+                      type="text"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="e.g. anxiety-modern-life"
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Meta Title</label>
+                    <input
+                      type="text"
+                      value={metaTitle}
+                      onChange={(e) => setMetaTitle(e.target.value)}
+                      placeholder="SEO Title..."
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-300">Meta Description</label>
+                    <input
+                      type="text"
+                      value={metaDescription}
+                      onChange={(e) => setMetaDescription(e.target.value)}
+                      placeholder="SEO Description..."
+                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Keywords (Comma separated)</label>
+                  <label className="text-xs font-semibold text-slate-300">Meta Keywords (comma-separated)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}

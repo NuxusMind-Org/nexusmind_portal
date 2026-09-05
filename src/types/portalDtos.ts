@@ -94,20 +94,27 @@ export interface SiteSettingsResponseDto {
 }
 
 
+// Multilingual Model
+export interface TitleDto {
+  az: string
+  en: string
+  ru: string
+}
+
 // Content DTOs (Xeber, Meqale, Blog, Gallery)
 export interface ContentSection {
-  title?: string
+  title?: TitleDto | string
   text: string
   sectionOrder?: number
 }
 
 export interface XeberSectionRequestDto {
-  title?: string
+  title?: TitleDto | string
   text?: string
 }
 
 export interface XeberSectionResponseDto {
-  title?: string
+  title?: TitleDto | string
   text?: string
   sectionOrder?: number
 }
@@ -120,12 +127,12 @@ export interface HighlightCard {
 }
 
 export interface MeqaleSectionRequestDto {
-  title?: string
+  title?: TitleDto | string
   text?: string
 }
 
 export interface MeqaleSectionResponseDto {
-  title?: string
+  title?: TitleDto | string
   text?: string
   sectionOrder?: number
 }
@@ -144,18 +151,18 @@ export interface MeqaleHighlightCardResponseDto {
 }
 
 export interface BlogSectionRequest {
-  title: string
+  title: TitleDto | string
   text: string
 }
 
 export interface BlogSectionResponse {
-  title?: string
+  title?: TitleDto | string
   text?: string
   order?: number
 }
 
 export interface XeberRequestDto {
-  title: string
+  title: TitleDto | string
   shortDescription?: string
   introText?: string
   sections?: ContentSection[] | XeberSectionRequestDto[]
@@ -175,7 +182,7 @@ export interface XeberRequestDto {
 
 export interface XeberResponseDto {
   id: number
-  title: string
+  title: TitleDto | string
   shortDescription?: string
   introText?: string
   sections?: XeberSectionResponseDto[] | ContentSection[]
@@ -197,7 +204,7 @@ export interface XeberResponseDto {
 }
 
 export interface MeqaleRequestDto {
-  title: string
+  title: TitleDto | string
   shortDescription?: string
   introText?: string
   sections?: ContentSection[] | MeqaleSectionRequestDto[]
@@ -211,11 +218,15 @@ export interface MeqaleRequestDto {
   content?: string
   schemaMarkup?: string
   metaKeywords?: string[]
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
 }
 
 export interface MeqaleResponseDto {
   id: number
-  title: string
+  title: TitleDto | string
+  titleDto?: TitleDto
   shortDescription?: string
   introText?: string
   sections?: MeqaleSectionResponseDto[] | ContentSection[]
@@ -231,10 +242,13 @@ export interface MeqaleResponseDto {
   updatedAt?: string
   schemaMarkup?: string
   metaKeywords?: string[]
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
 }
 
 export interface BlogRequest {
-  title: string
+  title: TitleDto | string
   shortDescription?: string
   introText?: string
   sections?: ContentSection[] | BlogSectionRequest[]
@@ -256,7 +270,7 @@ export interface BlogRequest {
 
 export interface BlogResponse {
   id: number
-  title: string
+  title: TitleDto | string
   shortDescription?: string
   introText?: string
   sections?: BlogSectionResponse[] | ContentSection[]
@@ -570,6 +584,8 @@ export interface FileUploadResponse {
   imageUrl: string
   [key: string]: unknown
 }
+
+export type FileUploadResponseDto = FileUploadResponse
 
 
 

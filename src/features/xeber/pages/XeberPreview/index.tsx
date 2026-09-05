@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { XeberResponseDto } from '../../../../types/portalDtos'
+import { getLocalizedTitle } from '../../../../utils/multilingual'
 
 export default function XeberPreview() {
   const { id } = useParams<{ id: string }>()
@@ -87,6 +88,8 @@ export default function XeberPreview() {
     )
   }
 
+  const localizedTitle = getLocalizedTitle(item.title)
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Top Breadcrumb & Action Toolbar */}
@@ -101,7 +104,7 @@ export default function XeberPreview() {
           </button>
           <span className="text-slate-600">/</span>
           <span className="text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
-            {item.title}
+            {localizedTitle}
           </span>
         </div>
 
@@ -149,7 +152,7 @@ export default function XeberPreview() {
             <div className="w-full h-80 sm:h-96 relative bg-[#0e0f19] overflow-hidden">
               <img
                 src={item.imageUrl}
-                alt={item.title}
+                alt={getLocalizedTitle(item.title)}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#141521] via-transparent to-black/30" />
@@ -183,7 +186,7 @@ export default function XeberPreview() {
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              {item.title}
+              {getLocalizedTitle(item.title)}
             </h1>
 
             {item.shortDescription && (
@@ -206,12 +209,12 @@ export default function XeberPreview() {
               <div className="space-y-8">
                 {item.sections.map((section, idx) => (
                   <div key={idx} className="space-y-3">
-                    {section.title && section.title !== 'Main Section' && (
+                    {section.title && getLocalizedTitle(section.title) !== 'Main Section' && (
                       <h2 className="text-xl font-bold text-white flex items-center gap-2 pb-2 border-b border-[#222437]">
                         <span className="w-6 h-6 rounded-full bg-violet-600/30 text-violet-400 text-xs font-mono flex items-center justify-center shrink-0">
                           {idx + 1}
                         </span>
-                        <span>{section.title}</span>
+                        <span>{getLocalizedTitle(section.title)}</span>
                       </h2>
                     )}
                     <div className="text-slate-300 leading-relaxed text-sm sm:text-base whitespace-pre-line">
@@ -259,7 +262,7 @@ export default function XeberPreview() {
                 https://nexusmind.az/xeber/{item.slug || id}
               </p>
               <h3 className="text-base font-semibold text-indigo-400 hover:underline cursor-pointer">
-                {item.metaTitle || item.title}
+                {item.metaTitle || localizedTitle}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 {item.metaDescription || item.shortDescription || item.introText || 'No meta description provided.'}

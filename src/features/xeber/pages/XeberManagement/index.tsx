@@ -18,8 +18,15 @@ import {
   CheckCircle2
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
-import type { XeberResponseDto, XeberRequestDto } from '../../../../types/portalDtos'
-import { ImageUploadInput } from '../../../../components/forms'
+import type { XeberResponseDto, XeberRequestDto, TitleDto } from '../../../../types/portalDtos'
+import { ImageUploadInput, MultilingualContentInput } from '../../../../components/forms'
+import {
+  getLocalizedTitle,
+  createEmptyTitleDto,
+  createEmptyMultilingualContent,
+  normalizeTitleDto,
+  type MultilingualContent
+} from '../../../../utils/multilingual'
 
 export default function XeberManagement() {
   const navigate = useNavigate()
@@ -36,10 +43,10 @@ export default function XeberManagement() {
   const [isSaving, setIsSaving] = useState(false)
 
   // Detailed Form State
-  const [title, setTitle] = useState('')
+  const [titles, setTitles] = useState<TitleDto>(createEmptyTitleDto())
+  const [contents, setContents] = useState<MultilingualContent>(createEmptyMultilingualContent())
   const [shortDescription, setShortDescription] = useState('')
   const [introText, setIntroText] = useState('')
-  const [content, setContent] = useState('')
   const [category, setCategory] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [quote, setQuote] = useState('')
@@ -75,10 +82,10 @@ export default function XeberManagement() {
 
   const handleOpenCreateModal = () => {
     setEditingItem(null)
-    setTitle('')
+    setTitles(createEmptyTitleDto())
+    setContents(createEmptyMultilingualContent())
     setShortDescription('')
     setIntroText('')
-    setContent('')
     setCategory('General')
     setImageUrl('')
     setQuote('')
@@ -96,10 +103,15 @@ export default function XeberManagement() {
 
   const handleOpenEditModal = (item: XeberResponseDto) => {
     setEditingItem(item)
-    setTitle(item.title)
+    setTitles(normalizeTitleDto(item.title))
+    const firstSectionText = item.sections && item.sections.length > 0 ? item.sections[0].text : ''
+    setContents({
+      az: item.content || firstSectionText || '',
+      en: (item.sections && item.sections.length > 1 ? item.sections[1].text : '') || '',
+      ru: (item.sections && item.sections.length > 2 ? item.sections[2].text : '') || ''
+    })
     setShortDescription(item.shortDescription || '')
     setIntroText(item.introText || '')
-    setContent(item.content || (item.sections && item.sections.map((s) => s.text).join('\n\n')) || '')
     setCategory(item.category || 'General')
     setImageUrl(item.imageUrl || '')
     setQuote(item.quote || '')
@@ -117,7 +129,7 @@ export default function XeberManagement() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) return
+    if (!titles.az.trim() && !titles.en.trim() && !titles.ru.trim()) return
 
     // Validate JSON-LD Schema markup syntax if provided
     if (schemaMarkup.trim()) {
@@ -133,7 +145,19 @@ export default function XeberManagement() {
     }
 
     setIsSaving(true)
-    const mainText = content.trim() || introText.trim() || title.trim()
+    const primaryTitle = titles.az.trim() || titles.en.trim() || titles.ru.trim() || 'News Title'
+    const completeTitle: TitleDto = {
+      az: titles.az.trim() || primaryTitle,
+      en: titles.en.trim() || primaryTitle,
+      ru: titles.ru.trim() || primaryTitle
+    }
+
+    const mainText = contents.az.trim() || contents.en.trim() || contents.ru.trim() || introText.trim() || primaryTitle
+    const sectionsPayload = [
+      { title: completeTitle, text: contents.az.trim() || mainText },
+      ...(contents.en.trim() ? [{ title: { ...completeTitle, az: `${completeTitle.az} (EN)` }, text: contents.en.trim() }] : []),
+      ...(contents.ru.trim() ? [{ title: { ...completeTitle, az: `${completeTitle.az} (RU)` }, text: contents.ru.trim() }] : [])
+    ]
 
     const parsedKeywords = metaKeywordsInput
       .split(',')
@@ -141,10 +165,10 @@ export default function XeberManagement() {
       .filter((k) => k.length > 0)
 
     const payload: XeberRequestDto = {
-      title: title.trim(),
+      title: completeTitle,
       shortDescription: shortDescription.trim() || undefined,
       introText: introText.trim() || undefined,
-      sections: mainText ? [{ title: 'Main Section', text: mainText }] : undefined,
+      sections: sectionsPayload,
       quote: quote.trim() || undefined,
       quoteAuthor: quoteAuthor.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
@@ -189,14 +213,21 @@ export default function XeberManagement() {
     }
   }
 
-  const filteredItems = items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.shortDescription && item.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.introText && item.introText.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.content && item.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  const filteredItems = items.filter((item) => {
+    const localizedTitle = getLocalizedTitle(item.title)
+    const allTitles = typeof item.title === 'object' && item.title !== null
+      ? `${item.title.az || ''} ${item.title.en || ''} ${item.title.ru || ''}`
+      : item.title || ''
+    const q = searchQuery.toLowerCase()
+    return (
+      localizedTitle.toLowerCase().includes(q) ||
+      allTitles.toLowerCase().includes(q) ||
+      (item.shortDescription && item.shortDescription.toLowerCase().includes(q)) ||
+      (item.introText && item.introText.toLowerCase().includes(q)) ||
+      (item.content && item.content.toLowerCase().includes(q)) ||
+      (item.category && item.category.toLowerCase().includes(q))
+    )
+  })
 
   const previewKeywords = metaKeywordsInput
     .split(',')
@@ -305,7 +336,7 @@ export default function XeberManagement() {
                   {displayImg ? (
                     <img
                       src={displayImg}
-                      alt={item.title}
+                      alt={getLocalizedTitle(item.title)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -342,7 +373,7 @@ export default function XeberManagement() {
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-violet-300 transition-colors">
-                      {item.title}
+                      {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
                       {item.shortDescription || item.introText || item.content || 'No summary available.'}
@@ -403,7 +434,7 @@ export default function XeberManagement() {
                       onClick={() => navigate(`/org/xeber/${item.id}`)}
                       className="py-3.5 px-4 font-bold text-white max-w-xs truncate cursor-pointer hover:text-violet-300 transition-colors"
                     >
-                      {item.title}
+                      {getLocalizedTitle(item.title)}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold text-[10px] uppercase tracking-wider">
@@ -498,7 +529,7 @@ export default function XeberManagement() {
                 <div className="w-full h-72 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
                   <img
                     src={viewingItem.imageUrl}
-                    alt={viewingItem.title}
+                    alt={getLocalizedTitle(viewingItem.title)}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -527,7 +558,7 @@ export default function XeberManagement() {
               {/* Title & Short Description */}
               <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  {viewingItem.title}
+                  {getLocalizedTitle(viewingItem.title)}
                 </h1>
                 {viewingItem.shortDescription && (
                   <p className="text-sm font-medium text-violet-300/90 leading-relaxed italic">
@@ -620,20 +651,21 @@ export default function XeberManagement() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-4">
-              {/* Basic Details */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Title *</label>
-                  <input
-                    type="text"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Enter news title..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                  />
-                </div>
+              {/* Multilingual Title & Content with Separate Textareas for AZ, EN, RU */}
+              <MultilingualContentInput
+                title={titles}
+                onTitleChange={setTitles}
+                content={contents}
+                onContentChange={setContents}
+                accentColor="violet"
+                contentRows={4}
+                requiredLanguages={['az']}
+                titleLabel="News Title"
+                contentLabel="Article Content"
+              />
 
+              {/* Category, Read Time, and Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Category</label>
                   <input
@@ -644,9 +676,7 @@ export default function XeberManagement() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-300">Read Time (minutes)</label>
                   <input
@@ -725,18 +755,6 @@ export default function XeberManagement() {
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Main Content *</label>
-                <textarea
-                  required
-                  rows={4}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Full article content text..."
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
-                />
               </div>
 
               {/* SEO & Metadata Section */}

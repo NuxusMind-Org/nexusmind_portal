@@ -6,7 +6,6 @@ import {
   UserSquare2, 
   LogOut,
   HelpCircle,
-  Plus,
   Search,
   Menu,
   Users,
@@ -120,18 +119,8 @@ export default function DashboardLayout() {
           <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase pl-1">Enterprise AI</p>
         </div>
 
-        {/* New Session Button */}
-        {profile?.role !== 'psychologist' && (
-          <div className="px-4 py-4">
-            <button className="w-full py-2.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs tracking-wide uppercase transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_4px_12px_rgba(124,58,237,0.25)]">
-              <Plus className="w-4 h-4" />
-              <span>New Session</span>
-            </button>
-          </div>
-        )}
-
         {/* Navigation Links */}
-        <nav className="px-3 space-y-1">
+        <nav className="px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
             const isOverview = item.path === '/dashboard'

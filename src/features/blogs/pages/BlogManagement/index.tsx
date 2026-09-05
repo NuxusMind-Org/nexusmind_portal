@@ -17,8 +17,16 @@ import {
   User
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
-import type { BlogResponse, BlogRequest, ContentSection } from '../../../../types/portalDtos'
-import { ImageUploadInput } from '../../../../components/forms'
+import type { BlogResponse, BlogRequest, BlogSectionRequest, ContentSection } from '../../../../types/portalDtos'
+import { ImageUploadInput, MultilingualContentInput } from '../../../../components/forms'
+import { 
+  createEmptyTitleDto, 
+  createEmptyMultilingualContent, 
+  normalizeTitleDto, 
+  getLocalizedTitle, 
+  isTitleValid 
+} from '../../../../utils/multilingual'
+import type { TitleDto, MultilingualContent } from '../../../../utils/multilingual'
 
 export default function BlogManagement() {
   const navigate = useNavigate()
@@ -34,8 +42,11 @@ export default function BlogManagement() {
   const [viewingItem, setViewingItem] = useState<BlogResponse | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  // Multilingual Form Fields
+  const [titles, setTitles] = useState<TitleDto>(createEmptyTitleDto())
+  const [contents, setContents] = useState<MultilingualContent>(createEmptyMultilingualContent())
+
   // Form Fields matching exact Backend Schema
-  const [title, setTitle] = useState('')
   const [shortDescription, setShortDescription] = useState('')
   const [introText, setIntroText] = useState('')
   const [category, setCategory] = useState('')
@@ -73,13 +84,14 @@ export default function BlogManagement() {
 
   const handleOpenCreateModal = () => {
     setEditingItem(null)
-    setTitle('')
+    setTitles(createEmptyTitleDto())
+    setContents(createEmptyMultilingualContent())
     setShortDescription('')
     setIntroText('')
     setCategory('General')
     setAuthorName('NexusMind Editorial')
     setImageUrl('')
-    setSections([{ title: 'Main Section', text: '' }])
+    setSections([])
     setMetaTitle('')
     setMetaDescription('')
     setSlug('')
@@ -91,7 +103,13 @@ export default function BlogManagement() {
 
   const handleOpenEditModal = (item: BlogResponse) => {
     setEditingItem(item)
-    setTitle(item.title)
+    setTitles(normalizeTitleDto(item.title))
+    const firstSectionText = item.sections && item.sections.length > 0 ? (item.sections[0].text || '') : (item.body || '')
+    setContents({
+      az: firstSectionText,
+      en: '',
+      ru: '',
+    })
     setShortDescription(item.shortDescription || '')
     setIntroText(item.introText || '')
     setCategory(item.category || 'General')
@@ -106,16 +124,16 @@ export default function BlogManagement() {
     setMetaKeywordsInput(kw && Array.isArray(kw) ? kw.join(', ') : '')
     setJsonError(null)
     
-    // Populate sections array or fallback from body
-    if (item.sections && item.sections.length > 0) {
+    // Populate additional sections if more than 1, else empty
+    if (item.sections && item.sections.length > 1) {
       setSections(
-        item.sections.map((s) => ({
-          title: s.title || '',
+        item.sections.slice(1).map((s) => ({
+          title: getLocalizedTitle(s.title) || '',
           text: s.text || '',
         }))
       )
     } else {
-      setSections([{ title: 'Main Section', text: item.body || '' }])
+      setSections([])
     }
     setIsModalOpen(true)
   }
@@ -137,7 +155,10 @@ export default function BlogManagement() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title.trim()) return
+    if (!isTitleValid(titles)) {
+      alert('Please provide at least Azerbaijani title.')
+      return
+    }
 
     // Validate JSON-LD Schema syntax if provided
     if (schemaMarkup.trim()) {
@@ -154,14 +175,42 @@ export default function BlogManagement() {
 
     setIsSaving(true)
 
-    // Clean sections
-    const cleanedSections = sections
-      .filter((s) => s.text && s.text.trim().length > 0)
-      .map((s) => ({ title: s.title?.trim() || 'Section', text: s.text.trim() }))
+    const completeTitle: TitleDto = {
+      az: titles.az.trim(),
+      en: titles.en?.trim() || titles.az.trim(),
+      ru: titles.ru?.trim() || titles.az.trim(),
+    }
 
-    const mainBodyFallback = cleanedSections.length > 0 
-      ? cleanedSections.map((s) => s.text).join('\n\n')
-      : introText.trim() || shortDescription.trim() || title.trim()
+    const primaryContent = contents.az || contents.en || contents.ru || ''
+
+    // Clean additional sections
+    const cleanedAdditionalSections: BlogSectionRequest[] = sections
+      .filter((s) => s.text && s.text.trim().length > 0)
+      .map((s) => {
+        const sTitle = (typeof s.title === 'string' ? s.title : getLocalizedTitle(s.title) || 'Section').trim()
+        return {
+          title: { az: sTitle, en: sTitle, ru: sTitle },
+          text: s.text.trim(),
+        }
+      })
+
+    const allSections: BlogSectionRequest[] = []
+    if (primaryContent.trim()) {
+      allSections.push({
+        title: completeTitle,
+        text: primaryContent.trim(),
+      })
+    }
+    allSections.push(...cleanedAdditionalSections)
+
+    if (allSections.length === 0) {
+      allSections.push({
+        title: completeTitle,
+        text: introText.trim() || shortDescription.trim() || completeTitle.az,
+      })
+    }
+
+    const mainBodyFallback = allSections.map((s) => s.text).join('\n\n')
 
     const parsedKeywords = metaKeywordsInput
       .split(',')
@@ -169,10 +218,10 @@ export default function BlogManagement() {
       .filter((k) => k.length > 0)
 
     const payload: BlogRequest = {
-      title: title.trim(),
+      title: completeTitle,
       shortDescription: shortDescription.trim() || undefined,
       introText: introText.trim() || undefined,
-      sections: cleanedSections.length > 0 ? cleanedSections : [{ title: 'Main Section', text: mainBodyFallback }],
+      sections: allSections,
       imageUrl: imageUrl.trim() || undefined,
       coverImage: imageUrl.trim() || undefined,
       category: category.trim() || 'General',
@@ -217,13 +266,15 @@ export default function BlogManagement() {
     }
   }
 
-  const filteredItems = items.filter(
-    (item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredItems = items.filter((item) => {
+    const titleStr = getLocalizedTitle(item.title).toLowerCase()
+    return (
+      titleStr.includes(searchQuery.toLowerCase()) ||
       (item.shortDescription && item.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.authorName && item.authorName.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+    )
+  })
 
   const previewKeywords = metaKeywordsInput
     .split(',')
@@ -334,7 +385,7 @@ export default function BlogManagement() {
                   {displayImg ? (
                     <img
                       src={displayImg}
-                      alt={item.title}
+                      alt={getLocalizedTitle(item.title)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -362,7 +413,7 @@ export default function BlogManagement() {
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-purple-300 transition-colors">
-                      {item.title}
+                      {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
                       {item.shortDescription || item.introText || item.body || 'No summary available.'}
@@ -432,7 +483,7 @@ export default function BlogManagement() {
                       onClick={() => navigate(`/org/blogs/${item.id}`)}
                       className="py-3.5 px-4 font-bold text-white max-w-xs truncate cursor-pointer hover:text-purple-300 transition-colors"
                     >
-                      {item.title}
+                      {getLocalizedTitle(item.title)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-300 font-medium">
                       {item.authorName || 'NexusMind Editorial'}
@@ -519,7 +570,7 @@ export default function BlogManagement() {
                 <div className="w-full h-72 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
                   <img
                     src={viewingItem.imageUrl || viewingItem.coverImage}
-                    alt={viewingItem.title}
+                    alt={getLocalizedTitle(viewingItem.title)}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -544,7 +595,7 @@ export default function BlogManagement() {
               {/* Title & Short Description */}
               <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  {viewingItem.title}
+                  {getLocalizedTitle(viewingItem.title)}
                 </h1>
                 {viewingItem.shortDescription && (
                   <p className="text-sm font-medium text-purple-300/90 leading-relaxed italic">
@@ -569,7 +620,7 @@ export default function BlogManagement() {
                         <span className="w-5 h-5 rounded-full bg-purple-600/30 text-purple-400 text-[10px] font-mono flex items-center justify-center shrink-0">
                           {idx + 1}
                         </span>
-                        <span>{section.title}</span>
+                        <span>{getLocalizedTitle(section.title)}</span>
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
                         {section.text}
@@ -631,21 +682,21 @@ export default function BlogManagement() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-6">
-              {/* Section 1: Overview */}
+              {/* Section 1: Multilingual Title & Content */}
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider">1. Basic Information</h4>
+                <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider">1. Multilingual Title & Content</h4>
                 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Blog Title * (title)</label>
-                  <input
-                    type="text"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Cognitive Behavioral Insights for Stress Management"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
+                <MultilingualContentInput
+                  title={titles}
+                  onTitleChange={setTitles}
+                  content={contents}
+                  onContentChange={setContents}
+                  accentColor="purple"
+                  titleLabel="Blog Title"
+                  contentLabel="Blog Content"
+                  contentPlaceholder="Write the full blog article content..."
+                  requiredLanguages={['az']}
+                />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -708,15 +759,15 @@ export default function BlogManagement() {
                 </div>
               </div>
 
-              {/* Section 3: Dynamic Post Sections */}
+              {/* Section 3: Additional Post Sections */}
               <div className="space-y-3 pt-2 border-t border-[#2e3146]">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5" />
-                      <span>Post Sections (sections)</span>
+                      <span>Additional Sections (Optional)</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400">Structured sections for the blog article.</p>
+                    <p className="text-[11px] text-slate-400">Optional additional sub-sections if you wish to break the blog into multiple blocks.</p>
                   </div>
                   <button
                     type="button"
@@ -733,19 +784,17 @@ export default function BlogManagement() {
                     <div key={idx} className="p-3.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-2 relative group">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-purple-400 uppercase">Section #{idx + 1}</span>
-                        {sections.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveSection(idx)}
-                            className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSection(idx)}
+                          className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                       <input
                         type="text"
-                        value={section.title}
+                        value={typeof section.title === 'string' ? section.title : getLocalizedTitle(section.title)}
                         onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
                         placeholder="Section Heading..."
                         className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"

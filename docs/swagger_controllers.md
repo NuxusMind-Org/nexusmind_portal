@@ -97,7 +97,7 @@ Manages search engine files, custom script injection, and metadata.
 
 ### 2.4. News Controller (`news-controller`)
 
-Manages press releases and news items under `/xeber`.
+Manages press releases and news items under `/xeber`. Root titles and section titles use multilingual `TitleDto` (`az`, `en`, `ru`).
 
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
@@ -114,7 +114,7 @@ Manages press releases and news items under `/xeber`.
 
 ### 2.5. Article Controller (`article-controller`)
 
-Manages professional psychologist articles under `/meqale`.
+Manages professional psychologist articles under `/meqale`. Root titles and section titles use multilingual `TitleDto` (`az`, `en`, `ru`). In response, the multilingual title is mapped to `titleDto`. Formally supports SEO metadata (`metaTitle`, `metaDescription`, `slug`).
 
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
@@ -131,7 +131,7 @@ Manages professional psychologist articles under `/meqale`.
 
 ### 2.6. Blog Controller (`blog-controller`)
 
-Manages general blog posts and educational reads under `/blog`.
+Manages general blog posts and educational reads under `/blog`. Root titles and section titles use multilingual `TitleDto` (`az`, `en`, `ru`). Section title and text are required. Includes SEO metadata (`metaTitle`, `metaDescription`, `slug`) across both request and response.
 
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
@@ -284,13 +284,25 @@ Handles multipart binary file uploads and asset storage across content domains (
 
 | Method | Endpoint | Operation ID | Parameters / Headers | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
-| `POST` | `/upload` | `uploadFile` | Query: `folder` (string, optional - e.g. `news`, `blogs`, `articles`, `gallery`)<br>Header: `Authorization` (string) | `multipart/form-data`:<br>`file` (binary, required) | `FileUploadResponse` | Both (Portal & Web) |
+| `POST` | `/upload` | `uploadImage` | Query: `folder` (string, optional - e.g. `news`, `blogs`, `articles`, `gallery`)<br>Header: `Authorization` (string) | `multipart/form-data`:<br>`file` (binary, required) | `FileUploadResponseDto` | Both (Portal & Web) |
 
 ---
 
 ## 3. Data Transfer Objects & Schemas Reference
 
 All DTOs corresponding to backend `components.schemas`:
+
+### 3.0. Common Multilingual Models
+
+Shared model across all multi-language content controllers (News, Articles, Blogs).
+
+```typescript
+export interface TitleDto {
+  az: string // e.g. "Başlıq mətni"
+  en: string // e.g. "Title text"
+  ru: string // e.g. "Заголовок"
+}
+```
 
 ### 3.1. Authentication & User Profile DTOs
 
@@ -400,18 +412,18 @@ export interface PasientRegisterEntity {
 
 ```typescript
 export interface XeberSectionRequestDto {
-  title?: string
+  title?: TitleDto
   text?: string
 }
 
 export interface XeberSectionResponseDto {
-  title?: string
+  title?: TitleDto
   text?: string
   sectionOrder?: number
 }
 
 export interface XeberRequestDto {
-  title?: string
+  title: TitleDto // required
   shortDescription?: string
   introText?: string
   sections?: XeberSectionRequestDto[]
@@ -430,7 +442,7 @@ export interface XeberRequestDto {
 
 export interface XeberResponseDto {
   id: number
-  title?: string
+  title?: TitleDto
   shortDescription?: string
   introText?: string
   sections?: XeberSectionResponseDto[]
@@ -459,12 +471,12 @@ export interface PageXeberResponseDto extends Page<XeberResponseDto> {}
 
 ```typescript
 export interface MeqaleSectionRequestDto {
-  title?: string
+  title?: TitleDto
   text?: string
 }
 
 export interface MeqaleSectionResponseDto {
-  title?: string
+  title?: TitleDto
   text?: string
   sectionOrder?: number
 }
@@ -483,7 +495,7 @@ export interface MeqaleHighlightCardResponseDto {
 }
 
 export interface MeqaleRequestDto {
-  title?: string
+  title: TitleDto // required
   shortDescription?: string
   introText?: string
   sections?: MeqaleSectionRequestDto[]
@@ -495,11 +507,14 @@ export interface MeqaleRequestDto {
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   schemaMarkup?: string
   metaKeywords?: string[]
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
 }
 
 export interface MeqaleResponseDto {
   id: number
-  title?: string
+  titleDto?: TitleDto // Backend response property is named 'titleDto'
   shortDescription?: string
   introText?: string
   sections?: MeqaleSectionResponseDto[]
@@ -513,6 +528,9 @@ export interface MeqaleResponseDto {
   updatedAt?: string
   schemaMarkup?: string
   metaKeywords?: string[]
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
 }
 
 export interface PageMeqaleResponseDto extends Page<MeqaleResponseDto> {}
@@ -524,18 +542,18 @@ export interface PageMeqaleResponseDto extends Page<MeqaleResponseDto> {}
 
 ```typescript
 export interface BlogSectionRequest {
-  title: string
-  text: string
+  title: TitleDto // required
+  text: string // required
 }
 
 export interface BlogSectionResponse {
-  title?: string
+  title?: TitleDto
   text?: string
   order?: number
 }
 
 export interface BlogRequest {
-  title: string
+  title: TitleDto // required
   shortDescription?: string
   introText?: string
   sections?: BlogSectionRequest[]
@@ -551,7 +569,7 @@ export interface BlogRequest {
 
 export interface BlogResponse {
   id: number
-  title?: string
+  title?: TitleDto
   shortDescription?: string
   introText?: string
   sections?: BlogSectionResponse[]
@@ -562,6 +580,9 @@ export interface BlogResponse {
   updatedAt?: string
   schemaMarkup?: string
   metaKeywords?: string[]
+  metaTitle?: string
+  metaDescription?: string
+  slug?: string
 }
 
 export interface PageBlogResponse extends Page<BlogResponse> {}
@@ -863,7 +884,7 @@ export interface SiteSettingsResponseDto {
   updatedAt?: string
 }
 
-export interface FileUploadResponse {
+export interface FileUploadResponseDto {
   imageUrl?: string
 }
 ```
