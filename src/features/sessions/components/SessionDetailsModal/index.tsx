@@ -79,11 +79,12 @@ export default function SessionDetailsModal({
       <div className="absolute inset-0" onClick={onClose}></div>
 
       {/* Modal Box */}
-      <div className="bg-[#141521] border border-[#222437] rounded-2xl max-w-md w-full shadow-2xl overflow-hidden relative flex flex-col p-6 z-10 animate-in fade-in zoom-in-95 duration-200 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#141521] border border-[#222437] rounded-2xl max-w-md w-full shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar relative flex flex-col p-5 sm:p-6 z-10 animate-in fade-in zoom-in-95 duration-200 space-y-5">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 bg-[#1b1c2b] border border-[#2e3146] hover:border-slate-500 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+          title="Close"
+          className="absolute top-4 right-4 p-2.5 bg-[#1b1c2b] border border-[#2e3146] hover:border-slate-500 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -158,9 +159,9 @@ export default function SessionDetailsModal({
         </div>
 
         {/* Technical Data Grid */}
-        <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-400">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs font-semibold text-slate-400">
           <div className="space-y-1 bg-[#1b1c2b]/30 p-3 rounded-lg border border-[#222437]/50">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
               {t('sessions.scheduledTime', { defaultValue: 'Scheduled Time' })}
             </span>
             <div className="flex items-center gap-1.5 text-slate-200 mt-1">
@@ -170,7 +171,7 @@ export default function SessionDetailsModal({
           </div>
 
           <div className="space-y-1 bg-[#1b1c2b]/30 p-3 rounded-lg border border-[#222437]/50">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
               {t('sessions.scheduledDate', { defaultValue: 'Scheduled Date' })}
             </span>
             <div className="flex items-center gap-1.5 text-slate-200 mt-1">
@@ -217,11 +218,11 @@ export default function SessionDetailsModal({
 
         {/* Status indicator row */}
         <div className="flex items-center justify-between text-xs font-semibold">
-          <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
             {t('sessions.appointmentStatus', { defaultValue: 'Appointment Status' })}
           </span>
           <span
-            className={`text-[9px] font-bold border px-3 py-1 rounded-full uppercase tracking-wider ${getPriorityStyles(
+            className={`text-[10px] font-bold border px-3 py-1 rounded-full uppercase tracking-wider ${getPriorityStyles(
               session.status
             )}`}
           >
@@ -232,7 +233,7 @@ export default function SessionDetailsModal({
         {/* Start / Join Action Triggers */}
         <div className="pt-2">
           {session.status === 'Cancelled' ? (
-            <div className="flex items-center gap-1.5 p-3 bg-rose-500/5 text-rose-400 rounded-xl border border-rose-500/10 text-[10px] leading-relaxed">
+            <div className="flex items-center gap-1.5 p-3 bg-rose-500/5 text-rose-400 rounded-xl border border-rose-500/10 text-xs leading-relaxed">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>
                 {t('sessions.sessionCancelled', {
@@ -246,7 +247,7 @@ export default function SessionDetailsModal({
                 onJoinRoom?.(session.id)
                 onClose()
               }}
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
             >
               <Video className="w-3.5 h-3.5 text-white" />
               <span>{t('sessions.joinRoom', { defaultValue: 'Join Telehealth Room' })}</span>
@@ -257,14 +258,13 @@ export default function SessionDetailsModal({
                 onJoinRoom?.(session.id)
                 onClose()
               }}
-              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
             >
               <Video className="w-3.5 h-3.5 text-white" />
               <span>{t('sessions.joinRoom', { defaultValue: 'Otağa Qoşul' })}</span>
             </button>
-
           ) : (
-            <div className="flex items-center gap-1.5 p-3 bg-emerald-500/5 text-emerald-400 rounded-xl border border-emerald-500/10 text-[10px] leading-relaxed">
+            <div className="flex items-center gap-1.5 p-3 bg-emerald-500/5 text-emerald-400 rounded-xl border border-emerald-500/10 text-xs leading-relaxed">
               <AlertCircle className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>
                 {t('sessions.sessionCompleted', {

@@ -56,7 +56,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
 
       {/* Status Pill */}
       <div className="shrink-0 flex items-center gap-2">
-        <span className={`text-[9px] font-bold border px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider ${getStatusStyles(session.status)}`}>
+        <span className={`text-[11px] font-bold border px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase tracking-wider ${getStatusStyles(session.status)}`}>
           {session.status === 'Waiting' && (
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           )}
@@ -72,7 +72,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
               e.stopPropagation()
               onJoinRoom?.(session.id)
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(16,185,129,0.15)]"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(16,185,129,0.15)]"
           >
             <Video className="w-3.5 h-3.5 text-white" />
             <span>{t('sessions.joinRoom', { defaultValue: 'Otağa Qoşul' })}</span>
@@ -85,7 +85,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
               e.stopPropagation()
               onViewDetails?.(session.id)
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5 text-slate-400" />
             <span>{t('sessions.reviewSummary', { defaultValue: 'Xülasəyə Bax' })}</span>
@@ -98,10 +98,11 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
               e.stopPropagation()
               onCancelSession?.(session.id)
             }}
-            className="p-1.5 bg-[#1b1c2b] hover:bg-rose-500/10 border border-[#2e3146] hover:border-rose-500/30 text-slate-400 hover:text-rose-400 rounded-lg transition-all cursor-pointer"
+            className="p-2.5 bg-[#1b1c2b] hover:bg-rose-500/10 border border-[#2e3146] hover:border-rose-500/30 text-slate-400 hover:text-rose-400 rounded-lg transition-all cursor-pointer"
             title="Cancel Session"
+            aria-label="Cancel Session"
           >
-            <Ban className="w-3.5 h-3.5" />
+            <Ban className="w-4 h-4" />
           </button>
         )}
       </div>

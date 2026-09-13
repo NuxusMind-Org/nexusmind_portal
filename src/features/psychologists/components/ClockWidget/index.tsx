@@ -25,7 +25,7 @@ export default function ClockWidget() {
       </div>
       
       <div className="relative z-10">
-        <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tighter drop-shadow-md">
+        <h2 className="text-4xl font-black text-white tracking-tighter drop-shadow-md">
           {formattedTime}
         </h2>
         <p className="text-sm font-semibold text-slate-400 mt-1 tracking-wide">

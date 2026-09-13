@@ -20,6 +20,7 @@ import { useUserStore } from '../../store/userStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSidebarStore } from '../../store/sidebarStore'
 import LanguageSelector from '../../features/dashboard/components/LanguageSelector'
+import nexusMindLogo from '@/assets/UpdatedNexusMindNavbarLogo.svg'
 
 export default function DashboardLayout() {
   const profile = useUserStore((state) => state.profile)
@@ -114,7 +115,7 @@ export default function DashboardLayout() {
         {/* Brand/Header */}
         <div className="p-6 border-b border-[#202235] space-y-1">
           <div className="flex items-center gap-2.5">
-            <img src="/nexusMindLogoMin.png" alt="NexusMind Logo" className="h-[27.6px] w-auto" />
+            <img src={nexusMindLogo} alt="NexusMind Logo" className="h-7 w-auto object-contain" />
           </div>
           <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase pl-1">Enterprise AI</p>
         </div>
@@ -236,8 +237,10 @@ export default function DashboardLayout() {
         </header>
 
         {/* Workspace Body */}
-        <main className="flex-1 overflow-y-auto bg-[#090a0f] p-4 sm:p-8">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto bg-[#090a0f] p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto w-full h-full">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

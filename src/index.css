@@ -2,7 +2,16 @@
 
 body {
   margin: 0;
-  background-color: #ffffff;
+  background-color: #090a0f;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(-100%); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes slide-up {
@@ -21,4 +30,23 @@ body {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2e3146;
+  border-radius: 4px;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2e3146 transparent;
 }

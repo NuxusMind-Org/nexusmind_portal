@@ -253,17 +253,17 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   }, [viewMode, currentDate, currentWeekStart])
 
   return (
-    <div className="bg-[#11121d] border border-[#202235] rounded-xl flex flex-col h-[calc(100vh-8rem)] shadow-lg overflow-hidden relative">
+    <div className="bg-[#11121d] border border-[#202235] rounded-xl flex flex-col min-h-[600px] lg:h-[calc(100vh-8rem)] shadow-lg overflow-hidden relative">
       {/* Top Header Bar */}
       <div className="p-4 sm:p-6 border-b border-[#202235] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0 bg-[#141521]/60">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-violet-600/10 border border-violet-500/20 rounded-lg text-violet-400">
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap w-full sm:w-auto">
+          <div className="flex items-center gap-2 min-w-0 max-w-full">
+            <div className="p-2 bg-violet-600/10 border border-violet-500/20 rounded-lg text-violet-400 shrink-0">
               <CalendarIcon className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white tracking-wide">{headerTitle}</h2>
-              <p className="text-[11px] font-semibold text-slate-400">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-wide truncate">{headerTitle}</h2>
+              <p className="text-[11px] font-semibold text-slate-400 truncate">
                 {viewMode === 'day' && currentDate.format('dddd')}
                 {viewMode === 'week' && 'Weekly Schedule Overview'}
                 {viewMode === 'month' && 'Monthly Caseload Calendar'}
@@ -272,7 +272,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           </div>
 
           {/* Navigation Buttons */}
-          <div className="flex items-center gap-1 bg-[#141521] border border-[#2e3146] rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-[#141521] border border-[#2e3146] rounded-lg p-1 shrink-0">
             <button
               onClick={handlePrev}
               title="Previous"
@@ -300,19 +300,19 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
             onClick={loadAppointments}
             disabled={isLoading}
             title="Refresh appointments"
-            className="p-2 bg-[#141521] border border-[#2e3146] text-slate-400 hover:text-white rounded-lg hover:bg-[#202235] transition-colors cursor-pointer disabled:opacity-50"
+            className="p-2 bg-[#141521] border border-[#2e3146] text-slate-400 hover:text-white rounded-lg hover:bg-[#202235] transition-colors cursor-pointer disabled:opacity-50 shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-violet-400' : ''}`} />
           </button>
         </div>
 
         {/* View Mode Toggles */}
-        <div className="flex p-1 bg-[#141521] border border-[#2e3146] rounded-lg self-end sm:self-auto">
+        <div className="flex p-1 bg-[#141521] border border-[#2e3146] rounded-lg w-full sm:w-auto justify-between sm:justify-start shrink-0">
           {(['day', 'week', 'month'] as ViewMode[]).map((mode) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
-              className={`px-4 py-1.5 text-xs font-bold capitalize rounded-md transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 sm:px-4 py-1.5 text-xs font-bold capitalize rounded-md transition-all cursor-pointer text-center ${
                 viewMode === mode
                   ? 'bg-violet-600 text-white shadow-md'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-[#202235]'
@@ -509,105 +509,109 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
             </div>
 
             <div className="flex-1 min-h-[500px] border border-[#202235] rounded-xl overflow-hidden flex flex-col bg-[#141521]/50">
-              {/* Days Header */}
-              <div className="grid grid-cols-8 border-b border-[#202235] bg-[#1a1b2b] shrink-0 sticky top-0 z-20">
-                <div className="p-3 border-r border-[#202235] flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    TIME
-                  </span>
-                </div>
-                {weekDays.map((day) => {
-                  const isToday = day.isSame(dayjs(), 'day')
-                  return (
-                    <div
-                      key={day.format('YYYY-MM-DD')}
-                      onClick={() => handleSelectDayFromMonth(day)}
-                      className={`p-2.5 text-center border-r border-[#202235] last:border-0 cursor-pointer transition-colors hover:bg-violet-500/5 ${
-                        isToday ? 'bg-violet-500/15' : ''
-                      }`}
-                    >
-                      <p
-                        className={`text-[11px] font-bold uppercase tracking-wider ${
-                          isToday ? 'text-violet-300 font-black' : 'text-slate-400'
-                        }`}
-                      >
-                        {day.format('ddd')}
-                      </p>
-                      <p
-                        className={`text-base font-black mt-0.5 ${
-                          isToday ? 'text-violet-400 font-black' : 'text-slate-200'
-                        }`}
-                      >
-                        {day.format('D')}
-                      </p>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Time Grid (scrollable) */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar relative divide-y divide-[#202235]/50">
-                {DISPLAY_HOURS.map((hour) => (
-                  <div key={hour} className="grid grid-cols-8 min-h-16 group">
-                    {/* Time Column */}
-                    <div className="p-2 border-r border-[#202235] text-right flex items-start justify-end shrink-0 select-none bg-[#141521]/20">
-                      <span className="text-[10px] font-bold text-slate-500">
-                        {hour.toString().padStart(2, '0')}:00
+              <div className="overflow-x-auto custom-scrollbar flex-1 flex flex-col">
+                <div className="min-w-[640px] flex-1 flex flex-col">
+                  {/* Days Header */}
+                  <div className="grid grid-cols-8 border-b border-[#202235] bg-[#1a1b2b] shrink-0 sticky top-0 z-20">
+                    <div className="p-3 border-r border-[#202235] flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        TIME
                       </span>
                     </div>
-
-                    {/* 7 Day Columns */}
-                    {weekDays.map((day, dayIdx) => {
-                      const dayKey = WEEK_DAY_KEYS[dayIdx]
-                      const isWorkingHour = workingHours[dayKey]?.includes(hour)
-                      const dayDateStr = day.format('YYYY-MM-DD')
+                    {weekDays.map((day) => {
                       const isToday = day.isSame(dayjs(), 'day')
-
-                      // Appointments on this date and hour
-                      const slotAppointments = appointments.filter((app) => {
-                        const dateMatches = normalizeDate(app.appointmentDate) === dayDateStr
-                        const { hour: appHour } = extractHourMinute(app.appointmentTime)
-                        return dateMatches && appHour === hour
-                      })
-
                       return (
                         <div
-                          key={dayDateStr}
-                          className={`border-r border-[#202235]/50 last:border-0 p-1 relative min-h-16 flex flex-col gap-1 transition-colors ${
-                            isToday ? 'bg-violet-950/[0.04]' : ''
-                          } ${isWorkingHour ? 'bg-emerald-500/[0.05]' : ''}`}
+                          key={day.format('YYYY-MM-DD')}
+                          onClick={() => handleSelectDayFromMonth(day)}
+                          className={`p-2.5 text-center border-r border-[#202235] last:border-0 cursor-pointer transition-colors hover:bg-violet-500/5 ${
+                            isToday ? 'bg-violet-500/15' : ''
+                          }`}
                         >
-                          {/* Working hour edge accent */}
-                          {isWorkingHour && (
-                            <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-emerald-500/40 rounded-full" />
-                          )}
-
-                          {slotAppointments.map((app) => {
-                            const modeBadge = formatAppointmentMode(app.mode)
-                            const timeStr = formatAppointmentTime(app.appointmentTime)
-                            return (
-                              <div
-                                key={app.id}
-                                onClick={() => handleOpenSession(app)}
-                                className="bg-[#1b1d2e] hover:bg-[#252840] border border-violet-500/30 hover:border-violet-400 rounded-lg p-1.5 transition-all cursor-pointer z-10 shadow-sm overflow-hidden group/event"
-                              >
-                                <p className="text-[11px] font-bold text-white group-hover/event:text-violet-300 truncate">
-                                  {app.patientName || 'Patient'}
-                                </p>
-                                <div className="flex items-center justify-between text-[9px] font-semibold text-slate-400 mt-0.5">
-                                  <span>{timeStr}</span>
-                                  <span className={`font-bold ${modeBadge.text}`}>
-                                    {modeBadge.shortLabel}
-                                  </span>
-                                </div>
-                              </div>
-                            )
-                          })}
+                          <p
+                            className={`text-[11px] font-bold uppercase tracking-wider ${
+                              isToday ? 'text-violet-300 font-black' : 'text-slate-400'
+                            }`}
+                          >
+                            {day.format('ddd')}
+                          </p>
+                          <p
+                            className={`text-base font-black mt-0.5 ${
+                              isToday ? 'text-violet-400 font-black' : 'text-slate-200'
+                            }`}
+                          >
+                            {day.format('D')}
+                          </p>
                         </div>
                       )
                     })}
                   </div>
-                ))}
+
+                  {/* Time Grid (scrollable) */}
+                  <div className="flex-1 overflow-y-auto custom-scrollbar relative divide-y divide-[#202235]/50">
+                    {DISPLAY_HOURS.map((hour) => (
+                      <div key={hour} className="grid grid-cols-8 min-h-16 group">
+                        {/* Time Column */}
+                        <div className="p-2 border-r border-[#202235] text-right flex items-start justify-end shrink-0 select-none bg-[#141521]/20">
+                          <span className="text-[10px] font-bold text-slate-500">
+                            {hour.toString().padStart(2, '0')}:00
+                          </span>
+                        </div>
+
+                        {/* 7 Day Columns */}
+                        {weekDays.map((day, dayIdx) => {
+                          const dayKey = WEEK_DAY_KEYS[dayIdx]
+                          const isWorkingHour = workingHours[dayKey]?.includes(hour)
+                          const dayDateStr = day.format('YYYY-MM-DD')
+                          const isToday = day.isSame(dayjs(), 'day')
+
+                          // Appointments on this date and hour
+                          const slotAppointments = appointments.filter((app) => {
+                            const dateMatches = normalizeDate(app.appointmentDate) === dayDateStr
+                            const { hour: appHour } = extractHourMinute(app.appointmentTime)
+                            return dateMatches && appHour === hour
+                          })
+
+                          return (
+                            <div
+                              key={dayDateStr}
+                              className={`border-r border-[#202235]/50 last:border-0 p-1 relative min-h-16 flex flex-col gap-1 transition-colors ${
+                                isToday ? 'bg-violet-950/[0.04]' : ''
+                              } ${isWorkingHour ? 'bg-emerald-500/[0.05]' : ''}`}
+                            >
+                              {/* Working hour edge accent */}
+                              {isWorkingHour && (
+                                <div className="absolute left-0 top-1 bottom-1 w-0.5 bg-emerald-500/40 rounded-full" />
+                              )}
+
+                              {slotAppointments.map((app) => {
+                                const modeBadge = formatAppointmentMode(app.mode)
+                                const timeStr = formatAppointmentTime(app.appointmentTime)
+                                return (
+                                  <div
+                                    key={app.id}
+                                    onClick={() => handleOpenSession(app)}
+                                    className="bg-[#1b1d2e] hover:bg-[#252840] border border-violet-500/30 hover:border-violet-400 rounded-lg p-1.5 transition-all cursor-pointer z-10 shadow-sm overflow-hidden group/event"
+                                  >
+                                    <p className="text-[11px] font-bold text-white group-hover/event:text-violet-300 truncate">
+                                      {app.patientName || 'Patient'}
+                                    </p>
+                                    <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mt-0.5">
+                                      <span>{timeStr}</span>
+                                      <span className={`font-bold ${modeBadge.text}`}>
+                                        {modeBadge.shortLabel}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -629,83 +633,87 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
             </div>
 
             <div className="flex-1 min-h-[500px] border border-[#202235] rounded-xl overflow-hidden flex flex-col bg-[#141521]/50">
-              {/* Days Header */}
-              <div className="grid grid-cols-7 border-b border-[#202235] bg-[#1a1b2b] shrink-0">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                  <div
-                    key={day}
-                    className="p-3 text-center border-r border-[#202235] last:border-0 text-slate-400"
-                  >
-                    <p className="text-[11px] font-bold uppercase tracking-widest">{day}</p>
+              <div className="overflow-x-auto custom-scrollbar flex-1 flex flex-col">
+                <div className="min-w-[520px] flex-1 flex flex-col">
+                  {/* Days Header */}
+                  <div className="grid grid-cols-7 border-b border-[#202235] bg-[#1a1b2b] shrink-0">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                      <div
+                        key={day}
+                        className="p-3 text-center border-r border-[#202235] last:border-0 text-slate-400"
+                      >
+                        <p className="text-[11px] font-bold uppercase tracking-widest">{day}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              {/* Calendar Grid */}
-              <div className="flex-1 grid grid-cols-7 grid-rows-5">
-                {calendarGridDays.map((cellDay) => {
-                  const dateStr = cellDay.format('YYYY-MM-DD')
-                  const isCurrentMonth = cellDay.month() === currentDate.month()
-                  const isToday = cellDay.isSame(dayjs(), 'day')
+                  {/* Calendar Grid */}
+                  <div className="flex-1 grid grid-cols-7 grid-rows-5">
+                    {calendarGridDays.map((cellDay) => {
+                      const dateStr = cellDay.format('YYYY-MM-DD')
+                      const isCurrentMonth = cellDay.month() === currentDate.month()
+                      const isToday = cellDay.isSame(dayjs(), 'day')
 
-                  const daySessions = appointments.filter(
-                    (app) => normalizeDate(app.appointmentDate) === dateStr
-                  )
-                  const count = daySessions.length
+                      const daySessions = appointments.filter(
+                        (app) => normalizeDate(app.appointmentDate) === dateStr
+                      )
+                      const count = daySessions.length
 
-                  return (
-                    <div
-                      key={dateStr}
-                      onClick={() => handleSelectDayFromMonth(cellDay)}
-                      className={`border-r border-b border-[#202235]/60 p-2 relative hover:bg-[#1a1b2b]/80 transition-colors cursor-pointer flex flex-col justify-between min-h-[90px] ${
-                        !isCurrentMonth ? 'bg-[#0b0c14]/60 opacity-40' : ''
-                      }`}
-                    >
-                      <div className="flex justify-between items-start">
-                        <span
-                          className={`text-xs font-bold ${
-                            isToday
-                              ? 'bg-violet-600 text-white w-6 h-6 flex items-center justify-center rounded-full shadow-sm'
-                              : isCurrentMonth
-                              ? 'text-slate-200'
-                              : 'text-slate-500'
+                      return (
+                        <div
+                          key={dateStr}
+                          onClick={() => handleSelectDayFromMonth(cellDay)}
+                          className={`border-r border-b border-[#202235]/60 p-2 relative hover:bg-[#1a1b2b]/80 transition-colors cursor-pointer flex flex-col justify-between min-h-[90px] ${
+                            !isCurrentMonth ? 'bg-[#0b0c14]/60 opacity-40' : ''
                           }`}
                         >
-                          {cellDay.format('D')}
-                        </span>
+                          <div className="flex justify-between items-start">
+                            <span
+                              className={`text-xs font-bold ${
+                                isToday
+                                  ? 'bg-violet-600 text-white w-6 h-6 flex items-center justify-center rounded-full shadow-sm'
+                                  : isCurrentMonth
+                                  ? 'text-slate-200'
+                                  : 'text-slate-500'
+                              }`}
+                            >
+                              {cellDay.format('D')}
+                            </span>
 
-                        {count > 0 && (
-                          <span className="text-[10px] font-extrabold text-violet-300 bg-violet-500/20 border border-violet-500/30 px-1.5 py-0.5 rounded-full">
-                            {count} {count === 1 ? 'session' : 'sessions'}
-                          </span>
-                        )}
-                      </div>
+                            {count > 0 && (
+                              <span className="text-[10px] font-extrabold text-violet-300 bg-violet-500/20 border border-violet-500/30 px-1.5 py-0.5 rounded-full">
+                                {count} {count === 1 ? 'session' : 'sessions'}
+                              </span>
+                            )}
+                          </div>
 
-                      {/* Session Mini Previews */}
-                      {count > 0 && (
-                        <div className="mt-1 space-y-1 overflow-hidden">
-                          {daySessions.slice(0, 2).map((s) => {
-                            const timeStr = formatAppointmentTime(s.appointmentTime)
-                            return (
-                              <div
-                                key={s.id}
-                                className="text-[9px] font-semibold text-slate-300 bg-[#1e2035] border border-violet-500/20 rounded px-1.5 py-0.5 truncate flex items-center justify-between"
-                              >
-                                <span className="truncate">{s.patientName || 'Patient'}</span>
-                                <span className="text-violet-400 font-bold ml-1">{timeStr}</span>
-                              </div>
-                            )
-                          })}
-                          {count > 2 && (
-                            <p className="text-[8px] font-bold text-slate-500 text-right pr-1">
-                              +{count - 2} more
-                            </p>
+                          {/* Session Mini Previews */}
+                          {count > 0 && (
+                            <div className="mt-1 space-y-1 overflow-hidden">
+                              {daySessions.slice(0, 2).map((s) => {
+                                const timeStr = formatAppointmentTime(s.appointmentTime)
+                                return (
+                                  <div
+                                    key={s.id}
+                                    className="text-[11px] font-semibold text-slate-300 bg-[#1e2035] border border-violet-500/20 rounded px-1.5 py-0.5 truncate flex items-center justify-between"
+                                  >
+                                    <span className="truncate">{s.patientName || 'Patient'}</span>
+                                    <span className="text-violet-400 font-bold ml-1">{timeStr}</span>
+                                  </div>
+                                )
+                              })}
+                              {count > 2 && (
+                                <p className="text-[10px] font-bold text-slate-500 text-right pr-1">
+                                  +{count - 2} more
+                                </p>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  )
-                })}
+                      )
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -719,7 +727,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
         <div className="fixed inset-0 z-50 bg-[#090a0f]/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="absolute inset-0" onClick={handleCloseModal} />
 
-          <div className="bg-[#141521] border border-[#222437] rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden relative flex flex-col p-6 z-10 animate-in fade-in zoom-in-95 duration-200 space-y-6">
+          <div className="bg-[#141521] border border-[#222437] rounded-2xl max-w-lg w-full shadow-2xl overflow-y-auto max-h-[90vh] custom-scrollbar relative flex flex-col p-5 sm:p-6 z-10 animate-in fade-in zoom-in-95 duration-200 space-y-6">
             {/* Modal Header */}
             <div className="flex items-start justify-between">
               <div>
@@ -738,7 +746,8 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
 
               <button
                 onClick={handleCloseModal}
-                className="p-1.5 bg-[#1b1c2b] border border-[#2e3146] hover:border-slate-500 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                title="Close"
+                className="p-2.5 bg-[#1b1c2b] border border-[#2e3146] hover:border-slate-500 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -783,7 +792,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
 
             {/* Session Metadata Grid */}
             {detailedAppointment && (
-              <div className="grid grid-cols-2 gap-4 text-xs font-semibold text-slate-400">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs font-semibold text-slate-400">
                 {/* Date */}
                 <div className="space-y-1 bg-[#1b1c2b]/40 p-3 rounded-xl border border-[#222437]/60">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">

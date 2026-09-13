@@ -114,28 +114,28 @@ export function PsychologistCalendar() {
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto flex-wrap">
           {/* Week Navigation */}
-          <div className="flex items-center gap-1 bg-[#141521] border border-[#2e3146] rounded-lg p-1">
-            <button onClick={prevWeek} className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235]">
+          <div className="flex items-center gap-1 bg-[#141521] border border-[#2e3146] rounded-lg p-1 max-w-full">
+            <button onClick={prevWeek} className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235] shrink-0" title="Previous Week">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <button onClick={thisWeek} className="px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235]">
+            <button onClick={thisWeek} className="px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235] truncate max-w-[200px] sm:max-w-none">
               {currentWeekStart.format('MMM D')} - {currentWeekStart.add(6, 'day').format('MMM D, YYYY')}
             </button>
-            <button onClick={nextWeek} className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235]">
+            <button onClick={nextWeek} className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235] shrink-0" title="Next Week">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-4 border-l-0 sm:border-l border-[#202235] pl-0 sm:pl-6">
+          <div className="flex items-center justify-between sm:justify-start gap-4 border-l-0 sm:border-l border-[#202235] pl-0 sm:pl-6 w-full sm:w-auto flex-wrap">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               {getActiveCount()} Hours Selected
             </span>
             <button 
               onClick={handleSaveSchedule}
               disabled={isSaving}
-              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white font-bold text-xs tracking-wide uppercase transition-all rounded-lg shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center gap-2 cursor-pointer"
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white font-bold text-xs tracking-wide uppercase transition-all rounded-lg shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center gap-2 cursor-pointer shrink-0"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               {isSaving ? 'Saving...' : 'Save Schedule'}
@@ -145,59 +145,63 @@ export function PsychologistCalendar() {
       </div>
 
       {/* Grid */}
-      <div className="flex-1 bg-[#11121d] border border-[#202235] rounded-xl overflow-hidden shadow-lg relative z-10 flex flex-col">
+      <div className="flex-1 bg-[#11121d] border border-[#202235] rounded-xl overflow-hidden shadow-lg relative z-10 flex flex-col min-h-[500px]">
         {isLoading && (
           <div className="absolute inset-0 bg-[#11121d]/50 backdrop-blur-sm z-20 flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
           </div>
         )}
-        <div className="grid grid-cols-8 border-b border-[#202235] bg-[#1a1b2b] shrink-0">
-          <div className="p-4 border-r border-[#202235]"></div>
-          {weekDays.map(day => {
-            const isToday = day.isSame(dayjs(), 'day');
-            return (
-              <div key={day.format('YYYY-MM-DD')} className="p-3 text-center border-r border-[#202235] last:border-0 flex flex-col items-center justify-center">
-                <p className={`text-[10px] font-bold uppercase tracking-wider ${isToday ? 'text-emerald-400' : 'text-slate-400'}`}>
-                  {day.format('ddd')}
-                </p>
-                <p className={`text-lg font-black mt-0.5 ${isToday ? 'text-white' : 'text-slate-300'}`}>
-                  {day.format('D')}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-        
-        <div className="flex-1 overflow-y-auto custom-scrollbar relative">
-          {hours.map(hour => (
-            <div key={hour} className="grid grid-cols-8 border-b border-[#202235]/50 hover:bg-[#1a1b2b]/50 transition-colors h-16">
-              <div className="p-3 border-r border-[#202235] flex items-center justify-end">
-                <span className="text-xs font-semibold text-slate-500">{hour}:00</span>
-              </div>
+        <div className="overflow-x-auto custom-scrollbar flex-1 flex flex-col">
+          <div className="min-w-[640px] flex-1 flex flex-col">
+            <div className="grid grid-cols-8 border-b border-[#202235] bg-[#1a1b2b] shrink-0">
+              <div className="p-4 border-r border-[#202235]"></div>
               {weekDays.map(day => {
-                const dateStr = day.format('YYYY-MM-DD');
-                const key = `${dateStr}-${hour}`;
-                const isSelected = selectedHours[key];
+                const isToday = day.isSame(dayjs(), 'day');
                 return (
-                  <div 
-                    key={dateStr} 
-                    onClick={() => toggleHour(dateStr, hour)}
-                    className={`border-r border-[#202235]/50 last:border-0 p-1 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-emerald-500/10' : 'hover:bg-[#1c1d2e]/50'
-                    }`}
-                  >
-                    <div className={`w-full h-full rounded-md flex items-center justify-center transition-all ${
-                      isSelected 
-                        ? 'bg-emerald-500/20 border border-emerald-500/50 shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]' 
-                        : 'border border-dashed border-[#202235]/0 hover:border-slate-600/50'
-                    }`}>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                    </div>
+                  <div key={day.format('YYYY-MM-DD')} className="p-3 text-center border-r border-[#202235] last:border-0 flex flex-col items-center justify-center">
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${isToday ? 'text-emerald-400' : 'text-slate-400'}`}>
+                      {day.format('ddd')}
+                    </p>
+                    <p className={`text-lg font-black mt-0.5 ${isToday ? 'text-white' : 'text-slate-300'}`}>
+                      {day.format('D')}
+                    </p>
                   </div>
                 );
               })}
             </div>
-          ))}
+            
+            <div className="flex-1 overflow-y-auto custom-scrollbar relative">
+              {hours.map(hour => (
+                <div key={hour} className="grid grid-cols-8 border-b border-[#202235]/50 hover:bg-[#1a1b2b]/50 transition-colors h-16">
+                  <div className="p-3 border-r border-[#202235] flex items-center justify-end">
+                    <span className="text-xs font-semibold text-slate-500">{hour}:00</span>
+                  </div>
+                  {weekDays.map(day => {
+                    const dateStr = day.format('YYYY-MM-DD');
+                    const key = `${dateStr}-${hour}`;
+                    const isSelected = selectedHours[key];
+                    return (
+                      <div 
+                        key={dateStr} 
+                        onClick={() => toggleHour(dateStr, hour)}
+                        className={`border-r border-[#202235]/50 last:border-0 p-1 cursor-pointer transition-colors ${
+                          isSelected ? 'bg-emerald-500/10' : 'hover:bg-[#1c1d2e]/50'
+                        }`}
+                      >
+                        <div className={`w-full h-full rounded-md flex items-center justify-center transition-all ${
+                          isSelected 
+                            ? 'bg-emerald-500/20 border border-emerald-500/50 shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]' 
+                            : 'border border-dashed border-[#202235]/0 hover:border-slate-600/50'
+                        }`}>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -54,7 +54,7 @@ export default function PatientCard({ patient, onViewProfile }: PatientCardProps
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{patient.tag}</span>
             </div>
           </div>
-          <span className={`text-[9px] font-bold border px-2 py-0.5 rounded uppercase tracking-wider ${getPriorityStyles(patient.priority)}`}>
+          <span className={`text-[11px] font-bold border px-2 py-0.5 rounded uppercase tracking-wider ${getPriorityStyles(patient.priority)}`}>
             {patient.priority}
           </span>
         </div>
@@ -75,16 +75,16 @@ export default function PatientCard({ patient, onViewProfile }: PatientCardProps
         <div className="border-t border-[#222437]"></div>
 
         {/* Sessions Details */}
-        <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 font-semibold">
+        <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 font-semibold">
           <div className="space-y-1">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">{t('patients.lastSessionLabel')}</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">{t('patients.lastSessionLabel')}</span>
             <div className="flex items-center gap-1.5 text-slate-300">
               <Clock className="w-3.5 h-3.5 text-slate-500" />
               <span className="truncate">{patient.lastSession}</span>
             </div>
           </div>
           <div className="space-y-1">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">{t('patients.nextSessionLabel')}</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">{t('patients.nextSessionLabel')}</span>
             <div className="flex items-center gap-1.5 text-slate-300">
               <Calendar className="w-3.5 h-3.5 text-slate-500" />
               <span className="truncate">{patient.nextSession}</span>
@@ -109,7 +109,7 @@ export default function PatientCard({ patient, onViewProfile }: PatientCardProps
       <div className="px-5 pb-5 pt-1 shrink-0">
         <button
           onClick={() => onViewProfile?.(patient.id)}
-          className="w-full py-2 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-center text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-slate-100 rounded-lg transition-colors cursor-pointer"
+          className="w-full py-3 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-center text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-slate-100 rounded-lg transition-colors cursor-pointer"
         >
           {t('patients.viewProfile')}
         </button>

@@ -12,6 +12,7 @@ import { loginSchema, type LoginFields } from '../../schemas/loginSchema'
 import { parseJwt } from '../../../../utils/jwt'
 import { normalizeRole, ROLES } from '../../../../constants/roles'
 import type { AuthResponse } from '../../../../types/portalDtos'
+import nexusMindLogo from '@/assets/UpdatedNexusMindNavbarLogo.svg'
 
 type RoleCandidate = 'SUPER_ADMIN' | 'BPM' | 'DOCTOR'
 
@@ -152,7 +153,7 @@ export default function Login() {
       <div className="p-8 sm:p-12 md:p-14 lg:p-16 flex flex-col justify-center min-h-[500px] md:min-h-[580px]">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <img src="/nexusMindLogoMin.png" alt="NexusMind Logo" className="h-[41.4px] w-auto" />
+          <img src={nexusMindLogo} alt="NexusMind Logo" className="h-10 w-auto object-contain" />
         </div>
 
         {/* Title */}

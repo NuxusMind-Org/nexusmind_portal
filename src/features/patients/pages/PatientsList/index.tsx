@@ -165,11 +165,11 @@ export default function PatientsList() {
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{t('patients.highPriority')}</span>
           <span className="text-xl font-extrabold text-rose-400">{patients.filter(p => p.priority === 'High').length}</span>
         </div>
-        <div className="space-y-1 border-l border-[#222437] pl-4">
+        <div className="space-y-1 border-t md:border-t-0 md:border-l border-[#222437] pt-3 md:pt-0 md:pl-4">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{t('patients.needNotesToday')}</span>
           <span className="text-xl font-extrabold text-amber-500">1</span>
         </div>
-        <div className="space-y-1 border-l border-[#222437] pl-4">
+        <div className="space-y-1 border-t md:border-t-0 border-l border-[#222437] pt-3 md:pt-0 pl-4">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">{t('patients.completedWeekly')}</span>
           <span className="text-xl font-extrabold text-emerald-400">4</span>
         </div>
@@ -194,20 +194,20 @@ export default function PatientsList() {
             placeholder={t('patients.searchBarPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded-lg text-xs text-slate-300 placeholder-slate-500 focus:outline-none transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded-lg text-xs text-slate-300 placeholder-slate-500 focus:outline-none transition-all"
           />
         </div>
 
         {/* Filters dropdown */}
-        <div className="w-full sm:w-auto flex items-center gap-3 justify-end shrink-0">
-          <div className="flex items-center gap-2 text-slate-400">
+        <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3 shrink-0">
+          <div className="flex items-center gap-2 text-slate-400 shrink-0">
             <SlidersHorizontal className="w-4 h-4 text-slate-500" />
             <span className="text-xs font-bold uppercase tracking-wider">{t('patients.priorityLabel')}</span>
           </div>
           <select 
             value={selectedPriority}
             onChange={(e) => setSelectedPriority(e.target.value)}
-            className="bg-[#141521] border border-[#2e3146] text-xs font-bold text-slate-300 py-2.5 px-4 rounded-lg focus:outline-none focus:border-violet-500 cursor-pointer"
+            className="w-full sm:w-auto bg-[#141521] border border-[#2e3146] text-xs font-bold text-slate-300 py-3 px-4 rounded-lg focus:outline-none focus:border-violet-500 cursor-pointer"
           >
             <option value="All">{t('patients.allCaseload')}</option>
             <option value="High">{t('patients.highPriorityFilter')}</option>

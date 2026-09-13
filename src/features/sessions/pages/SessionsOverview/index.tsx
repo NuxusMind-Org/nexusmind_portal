@@ -81,7 +81,7 @@ export default function SessionsOverview() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center sm:border-l border-[#222437] sm:pl-5">
+        <div className="flex justify-between items-center border-t sm:border-t-0 sm:border-l border-[#222437] pt-4 sm:pt-0 sm:pl-5">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               {t('sessions.weekLoad')}
@@ -99,7 +99,7 @@ export default function SessionsOverview() {
           </div>
         </div>
 
-        <div className="flex justify-between items-center sm:border-l border-[#222437] sm:pl-5">
+        <div className="flex justify-between items-center border-t sm:border-t-0 sm:border-l border-[#222437] pt-4 sm:pt-0 sm:pl-5">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               {t('sessions.monthLoad')}
@@ -143,10 +143,10 @@ export default function SessionsOverview() {
       )}
 
       {/* Segmented Tab Controls */}
-      <div className="flex justify-start border-b border-[#222437] gap-6">
+      <div className="flex justify-start border-b border-[#222437] gap-6 overflow-x-auto scrollbar-hide flex-nowrap pb-px">
         <button
           onClick={() => setActiveFilter('today')}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer relative ${
+          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer relative shrink-0 ${
             activeFilter === 'today'
               ? 'text-white font-extrabold border-b-2 border-violet-500'
               : 'text-slate-400 hover:text-slate-200'
@@ -156,7 +156,7 @@ export default function SessionsOverview() {
         </button>
         <button
           onClick={() => setActiveFilter('week')}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer relative ${
+          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer relative shrink-0 ${
             activeFilter === 'week'
               ? 'text-white font-extrabold border-b-2 border-violet-500'
               : 'text-slate-400 hover:text-slate-200'
@@ -166,7 +166,7 @@ export default function SessionsOverview() {
         </button>
         <button
           onClick={() => setActiveFilter('month')}
-          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer relative ${
+          className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer relative shrink-0 ${
             activeFilter === 'month'
               ? 'text-white font-extrabold border-b-2 border-violet-500'
               : 'text-slate-400 hover:text-slate-200'

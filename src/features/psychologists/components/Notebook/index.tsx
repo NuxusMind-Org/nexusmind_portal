@@ -20,7 +20,7 @@ export default function Notebook() {
   }, [note]);
 
   return (
-    <div className="bg-gradient-to-b from-[#11121d] to-[#141521] border border-[#202235] hover:border-violet-500/30 transition-colors rounded-xl flex flex-col flex-1 shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden relative">
+    <div className="bg-gradient-to-b from-[#11121d] to-[#141521] border border-[#202235] hover:border-violet-500/30 transition-colors rounded-xl flex flex-col flex-1 min-h-[300px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden relative">
       {/* Header */}
       <div className="p-4 sm:p-6 border-b border-[#202235] flex items-center justify-between bg-[#11121d] shrink-0">
         <div className="flex items-center gap-3">
@@ -56,12 +56,12 @@ export default function Notebook() {
       </div>
 
       {/* Editor Area */}
-      <div className="flex-1 p-0 relative">
+      <div className="flex-1 p-0 relative min-h-[160px]">
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Start typing your session notes here..."
-          className="w-full h-full resize-none bg-transparent p-6 text-sm text-slate-300 placeholder-slate-600 focus:outline-none custom-scrollbar leading-relaxed"
+          className="w-full h-full min-h-[160px] resize-none bg-transparent p-6 text-sm text-slate-300 placeholder-slate-600 focus:outline-none custom-scrollbar leading-relaxed"
           spellCheck={false}
         />
       </div>
