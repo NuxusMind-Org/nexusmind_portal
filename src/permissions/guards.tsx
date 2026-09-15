@@ -5,6 +5,7 @@ import { useUserStore } from '../store/userStore'
 import type { RoleType } from '../constants/roles'
 import type { PermissionType } from './permissions'
 import { useHasPermission } from './hasPermission'
+import { getInitialRouteForRole } from '../utils/navigation'
 
 export function AuthGuard() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -13,7 +14,8 @@ export function AuthGuard() {
 
 export function GuestGuard() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Outlet />
+  const profile = useUserStore((state) => state.profile)
+  return isAuthenticated ? <Navigate to={getInitialRouteForRole(profile?.role)} replace /> : <Outlet />
 }
 
 interface RoleGuardProps {

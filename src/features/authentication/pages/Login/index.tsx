@@ -11,6 +11,7 @@ import { authService } from '../../../../api/services/authService'
 import { loginSchema, type LoginFields } from '../../schemas/loginSchema'
 import { parseJwt } from '../../../../utils/jwt'
 import { normalizeRole, ROLES } from '../../../../constants/roles'
+import { getInitialRouteForRole } from '../../../../utils/navigation'
 import type { AuthResponse } from '../../../../types/portalDtos'
 import nexusMindLogo from '@/assets/UpdatedNexusMindNavbarLogo.svg'
 
@@ -134,7 +135,7 @@ export default function Login() {
         tenantId: claims?.tenantId || null,
       })
 
-      navigate('/dashboard')
+      navigate(getInitialRouteForRole(normalizedRole))
     } catch (error: unknown) {
       console.error('Login error:', error)
       const errorMessage =

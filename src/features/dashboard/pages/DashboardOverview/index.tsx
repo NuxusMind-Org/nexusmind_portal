@@ -113,8 +113,12 @@ export default function DashboardOverview() {
   }
 
   useEffect(() => {
+    if (profile?.role === 'psychologist') {
+      navigate('/psy', { replace: true })
+      return
+    }
     fetchContentData()
-  }, [])
+  }, [profile?.role, navigate])
 
   // Open Create Modals
   const handleOpenCreateXeber = () => {
@@ -1615,33 +1619,24 @@ export default function DashboardOverview() {
     </div>
   )
 
-  const renderPsychologistDashboard = () => (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h2 className="text-3xl font-extrabold text-white tracking-tight">Clinical Overview</h2>
-        <p className="text-xs text-slate-400 font-semibold mt-1">
-          Psychologist Workspace & Content Catalog
-        </p>
-      </div>
-    </div>
-  )
-
   const renderDashboard = () => {
     switch (profile?.role) {
       case 'platform_admin':
         return renderSuperAdminDashboard()
       case 'org_admin':
         return renderOrgAdminDashboard()
-      case 'psychologist':
-        return renderPsychologistDashboard()
       default:
         return renderSuperAdminDashboard()
     }
   }
 
+  if (profile?.role === 'psychologist') {
+    return null
+  }
+
   return (
     <div className="space-y-6">
-      {profile?.role !== 'platform_admin' && profile?.role !== 'psychologist' && (
+      {profile?.role !== 'platform_admin' && (
         <div className="bg-slate-900/40 rounded-2xl p-8 border border-slate-800 text-white relative overflow-hidden shadow-md">
           <div className="relative z-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">

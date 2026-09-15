@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, NavLink } from 'react-router-dom'
+import { Outlet, useNavigate, NavLink, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { 
   LayoutDashboard, 
@@ -20,6 +20,7 @@ import { useUserStore } from '../../store/userStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSidebarStore } from '../../store/sidebarStore'
 import LanguageSelector from '../../features/dashboard/components/LanguageSelector'
+import { getInitialRouteForRole } from '../../utils/navigation'
 import nexusMindLogo from '@/assets/UpdatedNexusMindNavbarLogo.svg'
 
 export default function DashboardLayout() {
@@ -114,9 +115,9 @@ export default function DashboardLayout() {
       <div>
         {/* Brand/Header */}
         <div className="p-6 border-b border-[#202235] space-y-1">
-          <div className="flex items-center gap-2.5">
+          <Link to={getInitialRouteForRole(profile?.role)} className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
             <img src={nexusMindLogo} alt="NexusMind Logo" className="h-7 w-auto object-contain" />
-          </div>
+          </Link>
           <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase pl-1">Enterprise AI</p>
         </div>
 
@@ -124,7 +125,7 @@ export default function DashboardLayout() {
         <nav className="px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
-            const isOverview = item.path === '/dashboard'
+            const isOverview = item.path === '/dashboard' || item.path === '/psy'
             return (
               <NavLink
                 key={item.label}
