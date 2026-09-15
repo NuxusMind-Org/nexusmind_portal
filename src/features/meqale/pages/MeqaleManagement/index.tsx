@@ -600,7 +600,7 @@ export default function MeqaleManagement() {
       {/* FULL ARTICLE READER / DETAIL MODAL */}
       {viewingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-4xl bg-[#141521] border border-[#2e3146] rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
               <div className="flex items-center gap-2">
@@ -775,16 +775,16 @@ export default function MeqaleManagement() {
 
       {/* Detailed Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-5xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-indigo-400" />
+              <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
+                <BookOpen className="w-6 h-6 text-indigo-400" />
                 <span>{editingItem ? 'Edit Article (PUT)' : 'Create Article (POST)'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-lg hover:bg-[#1b1c2b]"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -799,41 +799,41 @@ export default function MeqaleManagement() {
                   content={contents}
                   onContentChange={setContents}
                   accentColor="indigo"
-                  contentRows={4}
+                  contentRows={6}
                   requiredLanguages={['az']}
                   titleLabel="Article Title"
                   contentLabel="Primary Article Content"
                 />
                 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Category (category)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Category (category)</label>
                     <input
                       type="text"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       placeholder="e.g. Psychology, Therapy, Well-being"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Author (author)</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Author (author)</label>
                     <input
                       type="text"
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
                       placeholder="e.g. Dr. Jane Smith or BPM Editorial"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Status (status)</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Status (status)</label>
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value as any)}
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
                     >
                       <option value="PUBLISHED">PUBLISHED</option>
                       <option value="DRAFT">DRAFT</option>
@@ -853,59 +853,59 @@ export default function MeqaleManagement() {
               </div>
 
               {/* Section 2: Summary & Quotes */}
-              <div className="space-y-4 pt-2 border-t border-[#2e3146]">
-                <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">2. Intro & Featured Quote</h4>
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
+                <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">2. Intro & Featured Quote</h4>
                 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Short Description (shortDescription)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Short Description (shortDescription)</label>
                   <input
                     type="text"
                     value={shortDescription}
                     onChange={(e) => setShortDescription(e.target.value)}
                     placeholder="Brief summary for card previews..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Intro Paragraph (introText)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Intro Paragraph (introText)</label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={introText}
                     onChange={(e) => setIntroText(e.target.value)}
                     placeholder="Lead in paragraph for the article header..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed transition-colors"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Key Takeaway Quote (quote)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Key Takeaway Quote (quote)</label>
                   <input
                     type="text"
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
                     placeholder="Inspirational or clinical takeaway..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Section 3: Highlight Cards */}
-              <div className="space-y-3 pt-2 border-t border-[#2e3146]">
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
+                    <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
                       <span>Highlight Cards (highlightCards)</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400">Add highlight bullet boxes with title and text.</p>
+                    <p className="text-xs text-slate-400">Add highlight bullet boxes with title and text.</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddHighlightCard}
-                    className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                    className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>Add Card</span>
                   </button>
                 </div>
@@ -915,31 +915,31 @@ export default function MeqaleManagement() {
                 ) : (
                   <div className="space-y-3">
                     {highlightCards.map((card, idx) => (
-                      <div key={idx} className="p-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-2 relative group">
+                      <div key={idx} className="p-4 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-3 relative group">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-[10px] font-bold text-indigo-400 uppercase">Card #{idx + 1}</span>
+                          <span className="text-xs font-bold text-indigo-400 uppercase">Card #{idx + 1}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveHighlightCard(idx)}
                             className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <input
                             type="text"
                             value={card.title}
                             onChange={(e) => handleUpdateHighlightCard(idx, 'title', e.target.value)}
                             placeholder="Card Title..."
-                            className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                            className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                           />
                           <input
                             type="text"
                             value={card.icon || 'Sparkles'}
                             onChange={(e) => handleUpdateHighlightCard(idx, 'icon', e.target.value)}
                             placeholder="Icon Name (e.g. Sparkles, Brain, Heart)"
-                            className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                            className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                           />
                         </div>
                         <textarea
@@ -947,7 +947,7 @@ export default function MeqaleManagement() {
                           value={card.text}
                           onChange={(e) => handleUpdateHighlightCard(idx, 'text', e.target.value)}
                           placeholder="Card description or tips..."
-                          className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                          className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
                         />
                       </div>
                     ))}
@@ -956,37 +956,37 @@ export default function MeqaleManagement() {
               </div>
 
               {/* Section 4: Article Sections */}
-              <div className="space-y-3 pt-2 border-t border-[#2e3146]">
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5" />
+                    <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
                       <span>Article Sections (sections)</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400">Structured paragraphs with section titles.</p>
+                    <p className="text-xs text-slate-400">Structured paragraphs with section titles.</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddSection}
-                    className="px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                    className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>Add Section</span>
                   </button>
                 </div>
 
                 <div className="space-y-3">
                   {sections.map((section, idx) => (
-                    <div key={idx} className="p-3.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-2 relative group">
+                    <div key={idx} className="p-4 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-3 relative group">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-indigo-400 uppercase">Section #{idx + 1}</span>
+                        <span className="text-xs font-bold text-indigo-400 uppercase">Section #{idx + 1}</span>
                         {sections.length > 1 && (
                           <button
                             type="button"
                             onClick={() => handleRemoveSection(idx)}
                             className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -995,7 +995,7 @@ export default function MeqaleManagement() {
                         value={typeof section.title === 'string' ? section.title : getLocalizedTitle(section.title)}
                         onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
                         placeholder="Section Heading / Title..."
-                        className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                       />
                       <textarea
                         rows={4}
@@ -1003,72 +1003,72 @@ export default function MeqaleManagement() {
                         value={section.text}
                         onChange={(e) => handleUpdateSection(idx, 'text', e.target.value)}
                         placeholder="Section content and body text..."
-                        className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                        className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
                       />
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Section 4: SEO Metadata */}
-              <div className="space-y-3 pt-2 border-t border-[#2e3146]">
-                <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5" />
+              {/* Section 5: SEO Metadata */}
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
+                <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
                   <span>SEO & Discoverability Metadata</span>
                 </h4>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Custom URL Slug</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Custom URL Slug</label>
                     <input
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
                       placeholder="e.g. anxiety-modern-life"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Meta Title</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Meta Title</label>
                     <input
                       type="text"
                       value={metaTitle}
                       onChange={(e) => setMetaTitle(e.target.value)}
                       placeholder="SEO Title..."
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Meta Description</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Meta Description</label>
                     <input
                       type="text"
                       value={metaDescription}
                       onChange={(e) => setMetaDescription(e.target.value)}
                       placeholder="SEO Description..."
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Meta Keywords (comma-separated)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Meta Keywords (comma-separated)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
                     placeholder="e.g. psixologiya, terapiya, mental health"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                   {previewKeywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1.5">
+                    <div className="flex flex-wrap gap-2 pt-1.5">
                       {previewKeywords.map((kw, i) => (
                         <span
                           key={i}
-                          className="px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[10px] font-mono flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-mono flex items-center gap-1.5"
                         >
-                          <Tag className="w-2.5 h-2.5" />
+                          <Tag className="w-3 h-3" />
                           {kw}
                         </span>
                       ))}
@@ -1076,38 +1076,38 @@ export default function MeqaleManagement() {
                   )}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
                     <span>Schema Markup (JSON-LD)</span>
-                    <span className="text-[10px] text-slate-400 font-mono">application/ld+json</span>
+                    <span className="text-xs text-slate-400 font-mono">application/ld+json</span>
                   </label>
                   <textarea
-                    rows={3}
+                    rows={4}
                     value={schemaMarkup}
                     onChange={(e) => setSchemaMarkup(e.target.value)}
                     placeholder='{"@context": "https://schema.org", "@type": "Article", "headline": "..."}'
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-emerald-400 font-mono placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-emerald-400 font-mono placeholder-slate-600 focus:outline-none focus:border-indigo-500 leading-relaxed transition-colors"
                   />
                   {jsonError && (
-                    <p className="text-[11px] text-rose-400 font-mono mt-1">{jsonError}</p>
+                    <p className="text-xs text-rose-400 font-mono mt-1">{jsonError}</p>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
+              <div className="flex justify-end gap-3 pt-4 border-t border-[#2e3146]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(99,102,241,0.3)]"
+                  className="px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(99,102,241,0.3)]"
                 >
-                  {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{editingItem ? 'Save Changes (PUT)' : 'Publish Article (POST)'}</span>
                 </button>
               </div>

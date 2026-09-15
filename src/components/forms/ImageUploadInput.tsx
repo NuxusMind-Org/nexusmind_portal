@@ -182,15 +182,15 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-2.5 ${className}`}>
       {/* Label and Mode Toggle Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-slate-300">
+          <label className="text-sm font-semibold text-slate-200">
             {label} {required && <span className="text-rose-400">*</span>}
           </label>
           {folder && (
-            <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${styles.badge}`}>
+            <span className={`text-xs px-2.5 py-0.5 rounded-full border font-mono ${styles.badge}`}>
               folder: {folder}
             </span>
           )}
@@ -199,9 +199,9 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
         <button
           type="button"
           onClick={() => setShowUrlInput(!showUrlInput)}
-          className="text-[11px] text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+          className="text-xs font-semibold text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
         >
-          <LinkIcon className="w-3 h-3" />
+          <LinkIcon className="w-3.5 h-3.5" />
           <span>{showUrlInput ? 'Hide URL text' : 'Direct URL edit'}</span>
         </button>
       </div>
@@ -218,9 +218,9 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
 
       {/* Main Upload / Preview Area */}
       {value ? (
-        <div className="relative p-3 bg-[#171827] border border-[#2e3146] rounded-xl flex items-center gap-3 group transition-all">
+        <div className="relative p-4 bg-[#171827] border border-[#2e3146] rounded-2xl flex items-center gap-4 group transition-all">
           {/* Thumbnail / Icon */}
-          <div className="w-16 h-16 rounded-lg bg-[#0e0f19] border border-[#26283b] flex items-center justify-center overflow-hidden shrink-0 relative">
+          <div className="w-20 h-20 rounded-xl bg-[#0e0f19] border border-[#26283b] flex items-center justify-center overflow-hidden shrink-0 relative">
             {!previewError ? (
               <img
                 src={value}
@@ -229,11 +229,11 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
                 onError={() => setPreviewError(true)}
               />
             ) : (
-              <ImageIcon className="w-6 h-6 text-slate-500" />
+              <ImageIcon className="w-8 h-8 text-slate-500" />
             )}
             {isUploading && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <Loader2 className="w-5 h-5 animate-spin text-white" />
+                <Loader2 className="w-6 h-6 animate-spin text-white" />
               </div>
             )}
           </div>
@@ -241,29 +241,29 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           {/* Details & Link */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <span className="text-xs font-semibold text-white truncate">Image Attached</span>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="text-sm font-bold text-white truncate">Image Attached</span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono truncate max-w-full">
+            <p className="text-xs text-slate-400 font-mono truncate max-w-full">
               {value}
             </p>
-            <div className="flex items-center gap-3 mt-1.5">
+            <div className="flex items-center gap-4 mt-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={disabled || isUploading}
-                className="text-[11px] font-medium text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+                className="text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
               >
-                <UploadCloud className="w-3 h-3" />
+                <UploadCloud className="w-3.5 h-3.5" />
                 <span>Replace file</span>
               </button>
               <a
                 href={value}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[11px] font-medium text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1"
+                className="text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1.5"
               >
-                <ExternalLink className="w-3 h-3" />
+                <ExternalLink className="w-3.5 h-3.5" />
                 <span>Open image</span>
               </a>
             </div>
@@ -275,7 +275,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
             onClick={handleClearImage}
             disabled={disabled || isUploading}
             title="Remove image"
-            className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors shrink-0 cursor-pointer"
+            className="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors shrink-0 cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -287,26 +287,26 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
-          className={`relative border-2 border-dashed rounded-xl p-4 bg-[#171827] flex flex-col items-center justify-center text-center gap-2 cursor-pointer transition-all duration-200 ${styles.dropzoneBorder} ${
+          className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 bg-[#171827] flex flex-col items-center justify-center text-center gap-3 cursor-pointer transition-all duration-200 ${styles.dropzoneBorder} ${
             disabled ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
           {isUploading ? (
-            <div className="flex flex-col items-center justify-center py-2 space-y-2">
-              <Loader2 className={`w-8 h-8 animate-spin ${styles.iconColor}`} />
-              <div className="text-xs font-semibold text-white">Uploading to {folder} folder...</div>
-              <div className="text-[10px] text-slate-400 font-mono">POST /upload?folder={folder}</div>
+            <div className="flex flex-col items-center justify-center py-3 space-y-2.5">
+              <Loader2 className={`w-10 h-10 animate-spin ${styles.iconColor}`} />
+              <div className="text-sm font-bold text-white">Uploading to {folder} folder...</div>
+              <div className="text-xs text-slate-400 font-mono">POST /upload?folder={folder}</div>
             </div>
           ) : (
             <>
-              <div className={`p-2.5 rounded-full bg-[#1b1c2b] border border-[#2e3146] ${styles.iconColor}`}>
-                <UploadCloud className="w-5 h-5" />
+              <div className={`p-3.5 rounded-full bg-[#1b1c2b] border border-[#2e3146] ${styles.iconColor}`}>
+                <UploadCloud className="w-8 h-8" />
               </div>
-              <div className="space-y-0.5">
-                <p className="text-xs font-semibold text-white">
+              <div className="space-y-1">
+                <p className="text-sm sm:text-base font-bold text-white">
                   <span className="underline decoration-dotted underline-offset-4">Click to browse</span> or drag and drop image
                 </p>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-xs text-slate-400">
                   PNG, JPG, WEBP, SVG or GIF up to {maxSizeMB}MB
                 </p>
               </div>
@@ -330,7 +330,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
                 setErrorMessage(null)
               }}
               placeholder={placeholder}
-              className={`w-full px-3.5 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none transition-colors ${styles.borderFocus}`}
+              className={`w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none transition-colors ${styles.borderFocus}`}
             />
           </div>
         </div>
@@ -338,15 +338,15 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="flex items-center gap-1.5 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+        <div className="flex items-center gap-2 text-sm text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3.5 py-2 rounded-xl">
+          <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {/* Helper text */}
       {helperText && !errorMessage && (
-        <p className="text-[11px] text-slate-500">{helperText}</p>
+        <p className="text-xs text-slate-500">{helperText}</p>
       )}
     </div>
   )

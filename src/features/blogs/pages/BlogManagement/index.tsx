@@ -535,12 +535,12 @@ export default function BlogManagement() {
       {/* FULL BLOG READER / DETAIL MODAL */}
       {viewingItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-4xl bg-[#141521] border border-[#2e3146] rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
-              <div className="flex items-center gap-2">
+            <div className="p-4 sm:p-5 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
+              <div className="flex items-center gap-2.5">
                 <FileText className="w-5 h-5 text-purple-400" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Blog Post Reader</span>
+                <span className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Blog Post Reader</span>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -549,14 +549,14 @@ export default function BlogManagement() {
                     setViewingItem(null)
                     handleOpenEditModal(toEdit)
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer"
                 >
-                  <Edit2 className="w-3 h-3" />
+                  <Edit2 className="w-3.5 h-3.5" />
                   <span>Edit</span>
                 </button>
                 <button
                   onClick={() => setViewingItem(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -564,10 +564,10 @@ export default function BlogManagement() {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto space-y-6">
+            <div className="p-6 sm:p-8 overflow-y-auto space-y-6">
               {/* Cover Image */}
               {(viewingItem.imageUrl || viewingItem.coverImage) && (
-                <div className="w-full h-72 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
+                <div className="w-full h-80 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
                   <img
                     src={viewingItem.imageUrl || viewingItem.coverImage}
                     alt={getLocalizedTitle(viewingItem.title)}
@@ -578,15 +578,15 @@ export default function BlogManagement() {
 
               {/* Tags & Metadata */}
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold text-xs">
+                <span className="px-3.5 py-1.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold text-xs sm:text-sm">
                   {viewingItem.category || 'General'}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5">
-                  <User className="w-3 h-3 text-purple-400" />
+                <span className="px-3.5 py-1.5 rounded-full bg-slate-800 text-slate-300 text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-purple-400" />
                   <span>{viewingItem.authorName || 'NexusMind Editorial'}</span>
                 </span>
                 {viewingItem.slug && (
-                  <span className="px-3 py-1 rounded-full bg-slate-800/60 text-slate-400 font-mono text-[11px]">
+                  <span className="px-3.5 py-1.5 rounded-full bg-slate-800/60 text-slate-400 font-mono text-xs">
                     slug: /{viewingItem.slug}
                   </span>
                 )}
@@ -598,65 +598,69 @@ export default function BlogManagement() {
                   {getLocalizedTitle(viewingItem.title)}
                 </h1>
                 {viewingItem.shortDescription && (
-                  <p className="text-sm font-medium text-purple-300/90 leading-relaxed italic">
-                    "{viewingItem.shortDescription}"
+                  <p className="text-sm sm:text-base text-slate-400 italic">
+                    {viewingItem.shortDescription}
                   </p>
                 )}
               </div>
 
               {/* Intro Text */}
               {viewingItem.introText && (
-                <div className="p-4 bg-[#1b1c2b] border-l-4 border-purple-500 rounded-r-xl text-xs text-slate-300 leading-relaxed">
+                <div className="p-4 sm:p-5 rounded-xl bg-[#1a1b2b] border border-[#282a40] text-sm sm:text-base text-slate-200 leading-relaxed font-normal">
                   {viewingItem.introText}
                 </div>
               )}
 
               {/* Structured Post Sections Reader */}
               {viewingItem.sections && viewingItem.sections.length > 0 ? (
-                <div className="space-y-5 pt-2">
-                  {viewingItem.sections.map((section, idx) => (
-                    <div key={idx} className="space-y-2">
-                      <h3 className="text-sm font-bold text-white flex items-center gap-2 pb-1 border-b border-[#222437]">
-                        <span className="w-5 h-5 rounded-full bg-purple-600/30 text-purple-400 text-[10px] font-mono flex items-center justify-center shrink-0">
-                          {idx + 1}
-                        </span>
-                        <span>{getLocalizedTitle(section.title)}</span>
-                      </h3>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
-                        {section.text}
-                      </p>
-                    </div>
-                  ))}
+                <div className="space-y-4 pt-4 border-t border-[#222437]">
+                  <h3 className="text-xs sm:text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="w-4 h-4" />
+                    <span>Post Breakdown ({viewingItem.sections.length})</span>
+                  </h3>
+                  <div className="space-y-3">
+                    {viewingItem.sections.map((sec, idx) => (
+                      <div key={idx} className="p-4 rounded-xl bg-[#171827] border border-[#25283e] space-y-2">
+                        {sec.title && (
+                          <h4 className="text-sm sm:text-base font-bold text-white">
+                            {typeof sec.title === 'string' ? sec.title : getLocalizedTitle(sec.title)}
+                          </h4>
+                        )}
+                        <p className="text-xs sm:text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+                          {sec.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : viewingItem.body ? (
-                <div className="space-y-3 text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                <div className="prose prose-invert max-w-none text-sm sm:text-base text-slate-300 whitespace-pre-wrap leading-relaxed border-t border-[#222437] pt-5">
                   {viewingItem.body}
                 </div>
               ) : null}
 
-              {/* SEO & Schema Metadata */}
-              {(viewingItem.metaTitle || viewingItem.metaDescription || viewingItem.schemaMarkup || viewingItem.schema_markup) && (
-                <div className="pt-4 border-t border-[#222437] space-y-3">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              {/* SEO / Meta Preview */}
+              {(viewingItem.metaTitle || viewingItem.metaDescription || (viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0)) && (
+                <div className="p-4 rounded-xl bg-[#10111a] border border-[#222437] space-y-2 text-xs">
+                  <div className="font-bold text-slate-400 flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-purple-400" />
-                    <span>SEO & Metadata Details</span>
-                  </h4>
-                  <div className="p-4 bg-[#10111a] rounded-xl border border-[#222437] space-y-2 text-xs">
-                    {viewingItem.metaTitle && (
-                      <p><span className="text-slate-400 font-semibold">Meta Title:</span> <span className="text-white">{viewingItem.metaTitle}</span></p>
-                    )}
-                    {viewingItem.metaDescription && (
-                      <p><span className="text-slate-400 font-semibold">Meta Description:</span> <span className="text-white">{viewingItem.metaDescription}</span></p>
-                    )}
-                    {(viewingItem.schemaMarkup || viewingItem.schema_markup) && (
-                      <div className="pt-2">
-                        <span className="text-slate-400 font-semibold block mb-1">Schema Markup (JSON-LD):</span>
-                        <pre className="p-2.5 bg-[#0a0b12] rounded-lg text-[10px] font-mono text-emerald-400 overflow-x-auto border border-[#1b1c2b]">
-                          {viewingItem.schemaMarkup || viewingItem.schema_markup}
-                        </pre>
-                      </div>
-                    )}
+                    <span>SEO Meta Preview</span>
                   </div>
+                  {viewingItem.metaTitle && (
+                    <div className="text-blue-400 font-medium sm:text-sm">{viewingItem.metaTitle}</div>
+                  )}
+                  {viewingItem.metaDescription && (
+                    <div className="text-slate-400 sm:text-sm">{viewingItem.metaDescription}</div>
+                  )}
+                  {viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {viewingItem.metaKeywords.map((kw, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-mono">
+                          #{kw}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -666,16 +670,16 @@ export default function BlogManagement() {
 
       {/* Detailed Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-5xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-400" />
+              <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
+                <FileText className="w-6 h-6 text-purple-400" />
                 <span>{editingItem ? 'Edit Blog Post (PUT)' : 'Create Blog Post (POST)'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -684,7 +688,7 @@ export default function BlogManagement() {
             <form onSubmit={handleSave} className="space-y-6">
               {/* Section 1: Multilingual Title & Content */}
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider">1. Multilingual Title & Content</h4>
+                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider">1. Multilingual Title & Content</h4>
                 
                 <MultilingualContentInput
                   title={titles}
@@ -699,25 +703,25 @@ export default function BlogManagement() {
                 />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Author Name (authorName)</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Author Name (authorName)</label>
                     <input
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       placeholder="e.g. NexusMind Editorial"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Category (category)</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Category (category)</label>
                     <input
                       type="text"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                       placeholder="e.g. Therapy, Mindset, Research"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
                 </div>
@@ -733,63 +737,64 @@ export default function BlogManagement() {
               </div>
 
               {/* Section 2: Summary & Intro */}
-              <div className="space-y-4 pt-2 border-t border-[#2e3146]">
-                <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider">2. Intro & Summary</h4>
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
+                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider">2. Intro & Summary</h4>
                 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Short Description (shortDescription)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Short Description (shortDescription)</label>
                   <input
                     type="text"
                     value={shortDescription}
                     onChange={(e) => setShortDescription(e.target.value)}
                     placeholder="Brief summary..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Intro Paragraph (introText)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Intro Paragraph (introText)</label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={introText}
                     onChange={(e) => setIntroText(e.target.value)}
                     placeholder="Introduction lead text..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Section 3: Additional Post Sections */}
-              <div className="space-y-3 pt-2 border-t border-[#2e3146]">
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5" />
+                    <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                      <Layers className="w-4 h-4" />
                       <span>Additional Sections (Optional)</span>
                     </h4>
-                    <p className="text-[11px] text-slate-400">Optional additional sub-sections if you wish to break the blog into multiple blocks.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Optional additional sub-sections if you wish to break the blog into multiple blocks.</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddSection}
-                    className="px-3 py-1.5 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                    className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-4 h-4" />
                     <span>Add Section</span>
                   </button>
                 </div>
 
                 <div className="space-y-3">
                   {sections.map((section, idx) => (
-                    <div key={idx} className="p-3.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-2 relative group">
+                    <div key={idx} className="p-4 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-3 relative group">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-purple-400 uppercase">Section #{idx + 1}</span>
+                        <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Section #{idx + 1}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSection(idx)}
-                          className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer"
+                          className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer flex items-center gap-1"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
+                          <span>Remove</span>
                         </button>
                       </div>
                       <input
@@ -797,15 +802,15 @@ export default function BlogManagement() {
                         value={typeof section.title === 'string' ? section.title : getLocalizedTitle(section.title)}
                         onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
                         placeholder="Section Heading..."
-                        className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2.5 bg-[#141521] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                       />
                       <textarea
-                        rows={4}
+                        rows={5}
                         required
                         value={section.text}
                         onChange={(e) => handleUpdateSection(idx, 'text', e.target.value)}
                         placeholder="Section content and body text..."
-                        className="w-full px-3 py-2 bg-[#141521] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-3 bg-[#141521] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                       />
                     </div>
                   ))}
@@ -813,64 +818,64 @@ export default function BlogManagement() {
               </div>
 
               {/* Section 4: SEO & Schema */}
-              <div className="space-y-3 pt-2 border-t border-[#2e3146]">
-                <h4 className="text-xs font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5" />
+              <div className="space-y-4 pt-4 border-t border-[#2e3146]">
+                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
                   <span>SEO & Schema Settings</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Custom Slug (slug)</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Custom Slug (slug)</label>
                     <input
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
                       placeholder="e.g. cbt-stress-management"
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-slate-300">Meta Title (metaTitle)</label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-slate-200">Meta Title (metaTitle)</label>
                     <input
                       type="text"
                       value={metaTitle}
                       onChange={(e) => setMetaTitle(e.target.value)}
                       placeholder="Search engine title..."
-                      className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Meta Description (metaDescription)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Meta Description (metaDescription)</label>
                   <textarea
-                    rows={2}
+                    rows={3}
                     value={metaDescription}
                     onChange={(e) => setMetaDescription(e.target.value)}
                     placeholder="Search engine preview description..."
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Keywords (Comma separated)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Keywords (Comma separated)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
                     placeholder="e.g. blog, mental health, advice"
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                   {previewKeywords.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1.5">
+                    <div className="flex flex-wrap gap-2 pt-1.5">
                       {previewKeywords.map((kw, i) => (
                         <span
                           key={i}
-                          className="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300 text-[10px] font-mono flex items-center gap-1"
+                          className="px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-mono flex items-center gap-1.5"
                         >
-                          <Tag className="w-2.5 h-2.5" />
+                          <Tag className="w-3 h-3" />
                           {kw}
                         </span>
                       ))}
@@ -878,38 +883,38 @@ export default function BlogManagement() {
                   )}
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300 flex items-center justify-between">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
                     <span>Schema Markup (JSON-LD)</span>
-                    <span className="text-[10px] text-slate-400 font-mono">application/ld+json</span>
+                    <span className="text-xs text-slate-400 font-mono">application/ld+json</span>
                   </label>
                   <textarea
-                    rows={3}
+                    rows={4}
                     value={schemaMarkup}
                     onChange={(e) => setSchemaMarkup(e.target.value)}
                     placeholder='{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "..."}'
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-emerald-400 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-emerald-400 font-mono placeholder-slate-600 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                   {jsonError && (
-                    <p className="text-[11px] text-rose-400 font-mono mt-1">{jsonError}</p>
+                    <p className="text-xs text-rose-400 font-mono mt-1">{jsonError}</p>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
+              <div className="flex justify-end gap-3.5 pt-4 border-t border-[#2e3146]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(168,85,247,0.3)]"
+                  className="px-7 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(168,85,247,0.3)] disabled:opacity-50"
                 >
-                  {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{editingItem ? 'Save Changes (PUT)' : 'Publish Post (POST)'}</span>
                 </button>
               </div>

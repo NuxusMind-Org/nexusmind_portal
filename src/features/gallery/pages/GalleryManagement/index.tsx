@@ -498,52 +498,52 @@ export default function GalleryManagement() {
 
       {/* Detailed Create / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-lg bg-[#141521] border border-[#2e3146] rounded-2xl p-6 shadow-2xl space-y-5 animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-emerald-400" />
+              <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
+                <ImageIcon className="w-6 h-6 text-emerald-400" />
                 <span>{editingItem ? 'Edit Gallery Asset (PUT)' : 'Upload Gallery Asset (POST)'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-300">Title (title)</label>
+            <form onSubmit={handleSave} className="space-y-5">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-200">Title (title)</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Individual Therapy Room 102"
-                  className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Media Type (mediaType)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Media Type (mediaType)</label>
                   <select
                     value={mediaType}
                     onChange={(e) => setMediaType(e.target.value as any)}
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                   >
                     <option value="IMAGE">IMAGE</option>
                     <option value="VIDEO">VIDEO</option>
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Category (category)</label>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-200">Category (category)</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                   >
                     <option value="TERAPIYALAR">TERAPIYALAR</option>
                     <option value="OTAQLAR">OTAQLAR</option>
@@ -571,20 +571,20 @@ export default function GalleryManagement() {
                 placeholder="https://example.com/thumbnail.jpg or upload thumbnail"
               />
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[#2e3146]">
+              <div className="flex justify-end gap-3.5 pt-4 border-t border-[#2e3146]">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors cursor-pointer"
+                  className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(16,185,129,0.3)]"
+                  className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(16,185,129,0.3)] disabled:opacity-50"
                 >
-                  {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{editingItem ? 'Save Changes (PUT)' : 'Save Asset (POST)'}</span>
                 </button>
               </div>
