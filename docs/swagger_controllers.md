@@ -54,7 +54,7 @@ Handles authentication, registration, password lifecycle, token refresh, and use
 | `POST` | `/auth/super-admin-login` | `superAdminLogin` | - | `AdminLoginRequest` | `AuthResponse` | Portal |
 | `POST` | `/auth/doctor-login` | `doctorLogin` | - | `LoginRequest` | `AuthResponse` | Portal |
 | `POST` | `/auth/doctor-panel-login` | `doctorPanelLogin` | - | `DoctorLoginRequest` | `AuthResponse` | Portal |
-| `POST` | `/auth/refresh` | `refresh` | - | `Record<string, string>` | `AuthResponse` | Both |
+| `POST` | `/auth/refresh` | `refresh` | - | `RefreshTokenRequest` | `AuthResponse` | Both |
 | `POST` | `/auth/logout` | `logout` | - | - | `string` | Both |
 | `PUT` | `/auth/change-password` | `changePassword` | Header: `Authorization` (string) | `ChangePasswordRequest` | `string` | Both |
 | `POST` | `/auth/forgot-password` | `forgotPassword` | - | `ForgotPasswordRequest` | `string` | Both |
@@ -343,6 +343,10 @@ export interface ResetPasswordWithOtpRequest {
   otp: string
   newPassword: string
   confirmPassword: string
+}
+
+export interface RefreshTokenRequest {
+  refreshToken?: string
 }
 
 export interface VerifyOtpRequest {
