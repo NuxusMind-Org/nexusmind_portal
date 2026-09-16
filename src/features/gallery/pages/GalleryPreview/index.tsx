@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { GalleryItemResponse } from '../../../../types/portalDtos'
+import { getLocalizedTitle } from '../../../../utils/multilingual'
 
 export default function GalleryPreview() {
   const { id } = useParams<{ id: string }>()
@@ -103,7 +104,7 @@ export default function GalleryPreview() {
           </button>
           <span className="text-slate-600">/</span>
           <span className="text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
-            {item.title || 'Untitled Asset'}
+            {getLocalizedTitle(item.title) || 'Untitled Asset'}
           </span>
         </div>
 
@@ -146,7 +147,7 @@ export default function GalleryPreview() {
           ) : mediaUrl ? (
             <img
               src={mediaUrl}
-              alt={item.title || 'Full size media'}
+              alt={getLocalizedTitle(item.title) || 'Full size media'}
               className="max-w-full max-h-[70vh] object-contain rounded-2xl shadow-2xl"
             />
           ) : (
@@ -170,7 +171,7 @@ export default function GalleryPreview() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            {item.title || 'Untitled Gallery Media Asset'}
+            {getLocalizedTitle(item.title) || 'Untitled Gallery Media Asset'}
           </h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">

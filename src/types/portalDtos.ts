@@ -109,13 +109,13 @@ export interface ContentSection {
 }
 
 export interface XeberSectionRequestDto {
-  title?: TitleDto | string
-  text?: string
+  title?: TitleDto
+  text?: TitleDto
 }
 
 export interface XeberSectionResponseDto {
-  title?: TitleDto | string
-  text?: string
+  title?: TitleDto
+  text?: TitleDto
   sectionOrder?: number
 }
 
@@ -127,13 +127,13 @@ export interface HighlightCard {
 }
 
 export interface MeqaleSectionRequestDto {
-  title?: TitleDto | string
-  text?: string
+  title: TitleDto   // required
+  text: TitleDto    // required
 }
 
 export interface MeqaleSectionResponseDto {
-  title?: TitleDto | string
-  text?: string
+  title?: TitleDto
+  text?: TitleDto
   sectionOrder?: number
 }
 
@@ -163,9 +163,9 @@ export interface BlogSectionResponse {
 
 export interface XeberRequestDto {
   title: TitleDto | string
-  shortDescription?: string
-  introText?: string
-  sections?: ContentSection[] | XeberSectionRequestDto[]
+  shortDescription?: TitleDto
+  introText?: TitleDto
+  sections?: XeberSectionRequestDto[]
   quote?: string
   quoteAuthor?: string
   imageUrl?: string
@@ -174,7 +174,7 @@ export interface XeberRequestDto {
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
   content?: string
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
   schemaMarkup?: string
   metaKeywords?: string[]
@@ -183,11 +183,12 @@ export interface XeberRequestDto {
 export interface XeberResponseDto {
   id: number
   title: TitleDto | string
-  shortDescription?: string
-  introText?: string
-  sections?: XeberSectionResponseDto[] | ContentSection[]
+  shortDescription?: TitleDto
+  introText?: TitleDto
+  sections?: XeberSectionResponseDto[]
   quote?: string
   quoteAuthor?: string
+  keywords?: string
   imageUrl?: string
   category?: string
   readTimeMinutes?: number
@@ -197,7 +198,7 @@ export interface XeberResponseDto {
   createdAt?: string
   updatedAt?: string
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
   schemaMarkup?: string
   metaKeywords?: string[]
@@ -205,9 +206,9 @@ export interface XeberResponseDto {
 
 export interface MeqaleRequestDto {
   title: TitleDto | string
-  shortDescription?: string
-  introText?: string
-  sections?: ContentSection[] | MeqaleSectionRequestDto[]
+  shortDescription?: TitleDto
+  introText?: TitleDto
+  sections?: MeqaleSectionRequestDto[]
   quote?: string
   highlightCards?: HighlightCard[] | MeqaleHighlightCardRequestDto[]
   imageUrl?: string
@@ -216,22 +217,23 @@ export interface MeqaleRequestDto {
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
   author?: string
   content?: string
+  keywords?: string
   schemaMarkup?: string
   metaKeywords?: string[]
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
 }
 
 export interface MeqaleResponseDto {
   id: number
   title: TitleDto | string
-  titleDto?: TitleDto
-  shortDescription?: string
-  introText?: string
-  sections?: MeqaleSectionResponseDto[] | ContentSection[]
+  shortDescription?: TitleDto
+  introText?: TitleDto
+  sections?: MeqaleSectionResponseDto[]
   quote?: string
   highlightCards?: MeqaleHighlightCardResponseDto[] | HighlightCard[]
+  keywords?: string
   imageUrl?: string
   category?: string
   doctorId?: number
@@ -243,7 +245,7 @@ export interface MeqaleResponseDto {
   schemaMarkup?: string
   metaKeywords?: string[]
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
 }
 
@@ -259,7 +261,7 @@ export interface BlogRequest {
   tags?: string[]
   body?: string
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
   schemaMarkup?: string
   metaKeywords?: string[]
@@ -281,7 +283,7 @@ export interface BlogResponse {
   tags?: string[]
   body?: string
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
   schemaMarkup?: string
   metaKeywords?: string[]
@@ -293,7 +295,8 @@ export interface BlogResponse {
 }
 
 export interface GalleryItemRequest {
-  title?: string
+  title?: TitleDto
+  altText?: TitleDto
   thumbnailUrl?: string
   mediaUrl: string
   imageUrl?: string
@@ -303,7 +306,8 @@ export interface GalleryItemRequest {
 
 export interface GalleryItemResponse {
   id: number
-  title?: string
+  title?: TitleDto
+  altText?: TitleDto
   thumbnailUrl?: string
   mediaUrl?: string
   imageUrl?: string

@@ -55,7 +55,7 @@ export default function BlogManagement() {
 
   // SEO & Schema Markup Fields
   const [metaTitle, setMetaTitle] = useState('')
-  const [metaDescription, setMetaDescription] = useState('')
+  const [metaDescription, setMetaDescription] = useState<TitleDto>(createEmptyTitleDto())
   const [slug, setSlug] = useState('')
   const [schemaMarkup, setSchemaMarkup] = useState('')
   const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
@@ -93,7 +93,7 @@ export default function BlogManagement() {
     setImageUrl('')
     setSections([])
     setMetaTitle('')
-    setMetaDescription('')
+    setMetaDescription(createEmptyTitleDto())
     setSlug('')
     setSchemaMarkup('')
     setMetaKeywordsInput('')
@@ -116,7 +116,7 @@ export default function BlogManagement() {
     setAuthorName(item.authorName || 'NexusMind Editorial')
     setImageUrl(item.imageUrl || item.coverImage || '')
     setMetaTitle(item.metaTitle || '')
-    setMetaDescription(item.metaDescription || '')
+    setMetaDescription(normalizeTitleDto(item.metaDescription))
     setSlug(item.slug || '')
     setSchemaMarkup(item.schemaMarkup || item.schema_markup || '')
     
@@ -228,7 +228,7 @@ export default function BlogManagement() {
       authorName: authorName.trim() || 'NexusMind Editorial',
       body: mainBodyFallback,
       metaTitle: metaTitle.trim() || undefined,
-      metaDescription: metaDescription.trim() || undefined,
+      metaDescription: isTitleValid(metaDescription) ? metaDescription : undefined,
       slug: slug.trim() || undefined,
       schemaMarkup: schemaMarkup.trim() || undefined,
       schema_markup: schemaMarkup.trim() || undefined,
@@ -650,7 +650,7 @@ export default function BlogManagement() {
                     <div className="text-blue-400 font-medium sm:text-sm">{viewingItem.metaTitle}</div>
                   )}
                   {viewingItem.metaDescription && (
-                    <div className="text-slate-400 sm:text-sm">{viewingItem.metaDescription}</div>
+                    <div className="text-slate-400 sm:text-sm">{getLocalizedTitle(viewingItem.metaDescription)}</div>
                   )}
                   {viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0 && (
                     <div className="flex flex-wrap gap-1 pt-1">
@@ -849,14 +849,22 @@ export default function BlogManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Meta Description (metaDescription)</label>
-                  <textarea
-                    rows={3}
-                    value={metaDescription}
-                    onChange={(e) => setMetaDescription(e.target.value)}
-                    placeholder="Search engine preview description..."
-                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
-                  />
+                  <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                    Meta Description (metaDescription)
+                    <span className="text-[10px] text-purple-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  </label>
+                  {(['az', 'en', 'ru'] as const).map((lang) => (
+                    <div key={lang} className="flex items-center gap-2">
+                      <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                      <textarea
+                        rows={2}
+                        value={metaDescription[lang]}
+                        onChange={(e) => setMetaDescription({ ...metaDescription, [lang]: e.target.value })}
+                        placeholder={`Search engine preview description (${lang})...`}
+                        className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-2">

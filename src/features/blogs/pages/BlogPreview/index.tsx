@@ -240,7 +240,7 @@ export default function BlogPreview() {
                 {item.metaTitle || localizedTitle}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                {item.metaDescription || item.shortDescription || item.introText || 'No meta description provided.'}
+                {getLocalizedTitle(item.metaDescription) || item.shortDescription || item.introText || 'No meta description provided.'}
               </p>
             </div>
           </div>

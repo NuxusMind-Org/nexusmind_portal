@@ -20,8 +20,9 @@ import {
   Play
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
-import type { GalleryItemResponse, GalleryItemRequest } from '../../../../types/portalDtos'
+import type { GalleryItemResponse, GalleryItemRequest, TitleDto } from '../../../../types/portalDtos'
 import { ImageUploadInput } from '../../../../components/forms'
+import { getLocalizedTitle, createEmptyTitleDto, normalizeTitleDto, isTitleValid } from '../../../../utils/multilingual'
 
 export default function GalleryManagement() {
   const navigate = useNavigate()
@@ -41,7 +42,8 @@ export default function GalleryManagement() {
   const [copiedUrl, setCopiedUrl] = useState(false)
 
   // Form Fields matching exact Backend Schema
-  const [title, setTitle] = useState('')
+  const [title, setTitle] = useState<TitleDto>(createEmptyTitleDto())
+  const [altText, setAltText] = useState<TitleDto>(createEmptyTitleDto())
   const [mediaUrl, setMediaUrl] = useState('')
   const [thumbnailUrl, setThumbnailUrl] = useState('')
   const [mediaType, setMediaType] = useState<'IMAGE' | 'VIDEO'>('IMAGE')
@@ -67,7 +69,8 @@ export default function GalleryManagement() {
 
   const handleOpenCreateModal = () => {
     setEditingItem(null)
-    setTitle('')
+    setTitle(createEmptyTitleDto())
+    setAltText(createEmptyTitleDto())
     setMediaUrl('')
     setThumbnailUrl('')
     setMediaType('IMAGE')
@@ -77,7 +80,8 @@ export default function GalleryManagement() {
 
   const handleOpenEditModal = (item: GalleryItemResponse) => {
     setEditingItem(item)
-    setTitle(item.title || '')
+    setTitle(normalizeTitleDto(item.title))
+    setAltText(normalizeTitleDto(item.altText))
     setMediaUrl(item.mediaUrl || item.imageUrl || '')
     setThumbnailUrl(item.thumbnailUrl || '')
     setMediaType((item.mediaType as any) || 'IMAGE')
@@ -91,7 +95,8 @@ export default function GalleryManagement() {
 
     setIsSaving(true)
     const payload: GalleryItemRequest = {
-      title: title.trim() || undefined,
+      title: isTitleValid(title) ? title : undefined,
+      altText: isTitleValid(altText) ? altText : undefined,
       thumbnailUrl: thumbnailUrl.trim() || undefined,
       mediaUrl: mediaUrl.trim(),
       imageUrl: mediaUrl.trim(),
@@ -136,8 +141,9 @@ export default function GalleryManagement() {
   }
 
   const filteredItems = items.filter((item) => {
+    const titleStr = getLocalizedTitle(item.title).toLowerCase()
     const matchesSearch =
-      (item.title && item.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      titleStr.includes(searchQuery.toLowerCase()) ||
       (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase()))
 
     const matchesCat = selectedCategory === 'ALL' || item.category === selectedCategory
@@ -304,7 +310,7 @@ export default function GalleryManagement() {
                   {displayImage ? (
                     <img
                       src={displayImage}
-                      alt={item.title || 'Gallery item'}
+                      alt={getLocalizedTitle(item.title) || 'Gallery item'}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -337,7 +343,7 @@ export default function GalleryManagement() {
                 <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
                   <div>
                     <h3 className="text-xs font-bold text-white truncate group-hover:text-emerald-300 transition-colors">
-                      {item.title || 'Untitled Asset'}
+                      {getLocalizedTitle(item.title) || 'Untitled Asset'}
                     </h3>
                     <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
                       {item.mediaUrl || item.imageUrl || 'No URL'}
@@ -398,7 +404,7 @@ export default function GalleryManagement() {
                   {lightboxItem.category || 'TERAPIYALAR'}
                 </span>
                 <h3 className="text-sm font-bold text-white truncate max-w-md">
-                  {lightboxItem.title || 'Media Asset Preview'}
+                  {getLocalizedTitle(lightboxItem.title) || 'Media Asset Preview'}
                 </h3>
               </div>
 
@@ -442,7 +448,7 @@ export default function GalleryManagement() {
               ) : (
                 <img
                   src={lightboxItem.mediaUrl || lightboxItem.imageUrl || lightboxItem.thumbnailUrl}
-                  alt={lightboxItem.title || 'Full size'}
+                  alt={getLocalizedTitle(lightboxItem.title) || 'Full size'}
                   className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl"
                 />
               )}
@@ -472,7 +478,7 @@ export default function GalleryManagement() {
             {/* Lightbox Footer Info */}
             <div className="p-4 border-t border-[#222437] bg-[#10111a] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="space-y-0.5">
-                <p className="text-slate-300 font-semibold">{lightboxItem.title || 'Untitled'}</p>
+                <p className="text-slate-300 font-semibold">{getLocalizedTitle(lightboxItem.title) || 'Untitled'}</p>
                 <p className="text-slate-500 font-mono text-[11px] truncate max-w-lg">
                   {lightboxItem.mediaUrl || lightboxItem.imageUrl}
                 </p>
@@ -515,14 +521,41 @@ export default function GalleryManagement() {
 
             <form onSubmit={handleSave} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">Title (title)</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Individual Therapy Room 102"
-                  className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
-                />
+                <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                  Title (title)
+                  <span className="text-[10px] text-emerald-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                </label>
+                {(['az', 'en', 'ru'] as const).map((lang) => (
+                  <div key={lang} className="flex items-center gap-2">
+                    <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                    <input
+                      type="text"
+                      value={title[lang]}
+                      onChange={(e) => setTitle({ ...title, [lang]: e.target.value })}
+                      placeholder={`e.g. Individual Therapy Room 102 (${lang})`}
+                      className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                  Alt Text (altText)
+                  <span className="text-[10px] text-emerald-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                </label>
+                {(['az', 'en', 'ru'] as const).map((lang) => (
+                  <div key={lang} className="flex items-center gap-2">
+                    <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                    <input
+                      type="text"
+                      value={altText[lang]}
+                      onChange={(e) => setAltText({ ...altText, [lang]: e.target.value })}
+                      placeholder={`Image alt text for accessibility (${lang})`}
+                      className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

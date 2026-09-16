@@ -27,6 +27,7 @@ import {
   createEmptyTitleDto,
   createEmptyMultilingualContent,
   normalizeTitleDto,
+  isTitleValid,
   type MultilingualContent
 } from '../../../../utils/multilingual'
 
@@ -47,8 +48,8 @@ export default function MeqaleManagement() {
   // Form Fields matching exact Backend Schema
   const [titles, setTitles] = useState<TitleDto>(createEmptyTitleDto())
   const [contents, setContents] = useState<MultilingualContent>(createEmptyMultilingualContent())
-  const [shortDescription, setShortDescription] = useState('')
-  const [introText, setIntroText] = useState('')
+  const [shortDescription, setShortDescription] = useState<TitleDto>(createEmptyTitleDto())
+  const [introText, setIntroText] = useState<TitleDto>(createEmptyTitleDto())
   const [quote, setQuote] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [category, setCategory] = useState('')
@@ -58,7 +59,7 @@ export default function MeqaleManagement() {
 
   // SEO & Keywords State
   const [metaTitle, setMetaTitle] = useState('')
-  const [metaDescription, setMetaDescription] = useState('')
+  const [metaDescription, setMetaDescription] = useState<TitleDto>(createEmptyTitleDto())
   const [slug, setSlug] = useState('')
   const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
   const [schemaMarkup, setSchemaMarkup] = useState('')
@@ -90,8 +91,8 @@ export default function MeqaleManagement() {
     setEditingItem(null)
     setTitles(createEmptyTitleDto())
     setContents(createEmptyMultilingualContent())
-    setShortDescription('')
-    setIntroText('')
+    setShortDescription(createEmptyTitleDto())
+    setIntroText(createEmptyTitleDto())
     setQuote('')
     setImageUrl('')
     setCategory('Psychology')
@@ -101,7 +102,7 @@ export default function MeqaleManagement() {
     setSections([{ title: 'Main Section', text: '' }])
     setHighlightCards([])
     setMetaTitle('')
-    setMetaDescription('')
+    setMetaDescription(createEmptyTitleDto())
     setSlug('')
     setMetaKeywordsInput('')
     setSchemaMarkup('')
@@ -111,15 +112,18 @@ export default function MeqaleManagement() {
 
   const handleOpenEditModal = (item: MeqaleResponseDto) => {
     setEditingItem(item)
-    setTitles(normalizeTitleDto(item.titleDto || item.title))
-    const firstSectionText = item.sections && item.sections.length > 0 ? item.sections[0].text : ''
+    setTitles(normalizeTitleDto(item.title))
+    const firstSection = item.sections && item.sections.length > 0 ? item.sections[0] : null
+    const firstSectionText = firstSection
+      ? (typeof firstSection.text === 'object' ? getLocalizedTitle(firstSection.text) : firstSection.text || '')
+      : ''
     setContents({
       az: item.content || firstSectionText || '',
-      en: (item.sections && item.sections.length > 1 ? item.sections[1].text : '') || '',
-      ru: (item.sections && item.sections.length > 2 ? item.sections[2].text : '') || ''
+      en: (item.sections && item.sections.length > 1 ? (typeof item.sections[1].text === 'object' ? getLocalizedTitle(item.sections[1].text) : item.sections[1].text) : '') || '',
+      ru: (item.sections && item.sections.length > 2 ? (typeof item.sections[2].text === 'object' ? getLocalizedTitle(item.sections[2].text) : item.sections[2].text) : '') || ''
     })
-    setShortDescription(item.shortDescription || '')
-    setIntroText(item.introText || '')
+    setShortDescription(normalizeTitleDto(item.shortDescription))
+    setIntroText(normalizeTitleDto(item.introText))
     setQuote(item.quote || '')
     setImageUrl(item.imageUrl || '')
     setCategory(item.category || 'Psychology')
@@ -127,7 +131,7 @@ export default function MeqaleManagement() {
     setStatus((item.status as any) || 'PUBLISHED')
     setAuthor(item.author || 'BPM Editorial')
     setMetaTitle(item.metaTitle || '')
-    setMetaDescription(item.metaDescription || '')
+    setMetaDescription(normalizeTitleDto(item.metaDescription))
     setSlug(item.slug || '')
     setMetaKeywordsInput(item.metaKeywords ? item.metaKeywords.join(', ') : '')
     setSchemaMarkup(item.schemaMarkup || '')
@@ -138,7 +142,7 @@ export default function MeqaleManagement() {
       setSections(
         item.sections.map((s) => ({
           title: typeof s.title === 'object' ? getLocalizedTitle(s.title) : s.title || '',
-          text: s.text || '',
+          text: typeof s.text === 'object' ? getLocalizedTitle(s.text) : s.text || '',
         }))
       )
     } else {
@@ -221,20 +225,20 @@ export default function MeqaleManagement() {
       .filter((s) => s.text && s.text.trim().length > 0)
       .map((s) => ({
         title: typeof s.title === 'object' ? s.title : { az: s.title || primaryTitle, en: s.title || primaryTitle, ru: s.title || primaryTitle },
-        text: s.text.trim()
+        text: { az: s.text.trim(), en: s.text.trim(), ru: s.text.trim() } as TitleDto
       }))
 
     // Add multilingual content sections if provided
     if (contents.en.trim()) {
       cleanedSections.push({
         title: { ...completeTitle, az: `${completeTitle.az} (EN)` },
-        text: contents.en.trim()
+        text: { az: contents.en.trim(), en: contents.en.trim(), ru: contents.en.trim() } as TitleDto
       })
     }
     if (contents.ru.trim()) {
       cleanedSections.push({
         title: { ...completeTitle, az: `${completeTitle.az} (RU)` },
-        text: contents.ru.trim()
+        text: { az: contents.ru.trim(), en: contents.ru.trim(), ru: contents.ru.trim() } as TitleDto
       })
     }
 
@@ -242,7 +246,7 @@ export default function MeqaleManagement() {
       .filter((c) => c.title && c.title.trim().length > 0)
       .map((c) => ({ icon: c.icon?.trim() || 'Sparkles', title: c.title.trim(), text: c.text?.trim() || '' }))
 
-    const mainContentFallback = contents.az.trim() || (cleanedSections.length > 0 ? cleanedSections[0].text : '') || introText.trim() || shortDescription.trim() || primaryTitle
+    const mainContentFallback = contents.az.trim() || (cleanedSections.length > 0 ? getLocalizedTitle(cleanedSections[0].text) : '') || getLocalizedTitle(introText).trim() || getLocalizedTitle(shortDescription).trim() || primaryTitle
 
     const parsedKeywords = metaKeywordsInput
       .split(',')
@@ -251,19 +255,19 @@ export default function MeqaleManagement() {
 
     const payload: MeqaleRequestDto = {
       title: completeTitle,
-      shortDescription: shortDescription.trim() || undefined,
-      introText: introText.trim() || undefined,
+      shortDescription: isTitleValid(shortDescription) ? shortDescription : undefined,
+      introText: isTitleValid(introText) ? introText : undefined,
       quote: quote.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
       category: category.trim() || 'Psychology',
       author: author.trim() || 'BPM Editorial',
       doctorId: doctorId !== '' ? Number(doctorId) : undefined,
       status: status,
-      sections: cleanedSections.length > 0 ? cleanedSections : [{ title: completeTitle, text: mainContentFallback }],
+      sections: cleanedSections.length > 0 ? cleanedSections : [{ title: completeTitle, text: { az: mainContentFallback, en: mainContentFallback, ru: mainContentFallback } }],
       highlightCards: cleanedCards.length > 0 ? cleanedCards : undefined,
       content: mainContentFallback,
       metaTitle: metaTitle.trim() || undefined,
-      metaDescription: metaDescription.trim() || undefined,
+      metaDescription: isTitleValid(metaDescription) ? metaDescription : undefined,
       slug: slug.trim() || undefined,
       schemaMarkup: schemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
@@ -300,7 +304,7 @@ export default function MeqaleManagement() {
   }
 
   const filteredItems = items.filter((item) => {
-    const rawTitle = item.titleDto || item.title
+    const rawTitle = item.title
     const localizedTitle = getLocalizedTitle(rawTitle)
     const allTitles = typeof rawTitle === 'object' && rawTitle !== null
       ? `${rawTitle.az || ''} ${rawTitle.en || ''} ${rawTitle.ru || ''}`
@@ -309,8 +313,8 @@ export default function MeqaleManagement() {
     return (
       localizedTitle.toLowerCase().includes(q) ||
       allTitles.toLowerCase().includes(q) ||
-      (item.shortDescription && item.shortDescription.toLowerCase().includes(q)) ||
-      (item.introText && item.introText.toLowerCase().includes(q)) ||
+      (item.shortDescription && getLocalizedTitle(item.shortDescription).toLowerCase().includes(q)) ||
+      (item.introText && getLocalizedTitle(item.introText).toLowerCase().includes(q)) ||
       (item.author && item.author.toLowerCase().includes(q)) ||
       (item.category && item.category.toLowerCase().includes(q))
     )
@@ -426,7 +430,7 @@ export default function MeqaleManagement() {
                   {displayImg ? (
                     <img
                       src={displayImg}
-                      alt={getLocalizedTitle(item.titleDto || item.title)}
+                      alt={getLocalizedTitle(item.title)}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
@@ -463,10 +467,10 @@ export default function MeqaleManagement() {
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-indigo-300 transition-colors">
-                      {getLocalizedTitle(item.titleDto || item.title)}
+                      {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                      {item.shortDescription || item.introText || item.content || 'No summary available.'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'No summary available.'}
                     </p>
 
                     {/* Section / Highlights Indicators */}
@@ -540,7 +544,7 @@ export default function MeqaleManagement() {
                       onClick={() => navigate(`/org/meqale/${item.id}`)}
                       className="px-5 py-4 font-medium text-white max-w-xs truncate cursor-pointer hover:text-indigo-300 transition-colors"
                     >
-                      {getLocalizedTitle(item.titleDto || item.title)}
+                      {getLocalizedTitle(item.title)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-300 font-medium">
                       {item.author || 'BPM Editorial'}
@@ -635,7 +639,7 @@ export default function MeqaleManagement() {
                 <div className="w-full h-72 rounded-xl overflow-hidden bg-[#0d0e17] border border-[#222437]">
                   <img
                     src={viewingItem.imageUrl}
-                    alt={getLocalizedTitle(viewingItem.titleDto || viewingItem.title)}
+                    alt={getLocalizedTitle(viewingItem.title)}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -664,11 +668,11 @@ export default function MeqaleManagement() {
               {/* Title & Description */}
               <div className="space-y-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  {getLocalizedTitle(viewingItem.titleDto || viewingItem.title)}
+                  {getLocalizedTitle(viewingItem.title)}
                 </h1>
                 {viewingItem.shortDescription && (
                   <p className="text-sm font-medium text-indigo-300/90 leading-relaxed italic">
-                    "{viewingItem.shortDescription}"
+                    &quot;{getLocalizedTitle(viewingItem.shortDescription)}&quot;
                   </p>
                 )}
               </div>
@@ -676,7 +680,7 @@ export default function MeqaleManagement() {
               {/* Intro Text */}
               {viewingItem.introText && (
                 <div className="p-4 bg-[#1b1c2b] border-l-4 border-indigo-500 rounded-r-xl text-xs text-slate-300 leading-relaxed">
-                  {viewingItem.introText}
+                  {getLocalizedTitle(viewingItem.introText)}
                 </div>
               )}
 
@@ -718,7 +722,7 @@ export default function MeqaleManagement() {
                         <span>{typeof section.title === 'object' ? getLocalizedTitle(section.title) : section.title}</span>
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
-                        {section.text}
+                        {typeof section.text === 'object' ? getLocalizedTitle(section.text) : section.text}
                       </p>
                     </div>
                   ))}
@@ -857,25 +861,43 @@ export default function MeqaleManagement() {
                 <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">2. Intro & Featured Quote</h4>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Short Description (shortDescription)</label>
-                  <input
-                    type="text"
-                    value={shortDescription}
-                    onChange={(e) => setShortDescription(e.target.value)}
-                    placeholder="Brief summary for card previews..."
-                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
-                  />
+                  <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                    Short Description (shortDescription)
+                    <span className="text-[10px] text-indigo-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  </label>
+                  {(['az', 'en', 'ru'] as const).map((lang) => (
+                    <div key={lang} className="flex items-center gap-2">
+                      <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                      <input
+                        type="text"
+                        value={shortDescription[lang]}
+                        onChange={(e) => setShortDescription({ ...shortDescription, [lang]: e.target.value })}
+                        placeholder={`Brief summary for card previews (${lang})...`}
+                        className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Intro Paragraph (introText)</label>
-                  <textarea
-                    rows={3}
-                    value={introText}
-                    onChange={(e) => setIntroText(e.target.value)}
-                    placeholder="Lead in paragraph for the article header..."
-                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed transition-colors"
-                  />
+                  <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                    Intro Paragraph (introText)
+                    <span className="text-[10px] text-indigo-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  </label>
+                  {(['az', 'en', 'ru'] as const).map((lang) => (
+                    <div key={lang} className="flex items-center gap-2">
+                      <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                      <textarea
+                        rows={2}
+                        value={introText[lang]}
+                        onChange={(e) => setIntroText({ ...introText, [lang]: e.target.value })}
+                        placeholder={`Lead-in paragraph (${lang})...`}
+                        className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed transition-colors"
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-2">
@@ -1041,14 +1063,22 @@ export default function MeqaleManagement() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Meta Description</label>
-                    <input
-                      type="text"
-                      value={metaDescription}
-                      onChange={(e) => setMetaDescription(e.target.value)}
-                      placeholder="SEO Description..."
-                      className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
-                    />
+                    <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                      Meta Description
+                      <span className="text-[10px] text-indigo-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                    </label>
+                    {(['az', 'en', 'ru'] as const).map((lang) => (
+                      <div key={lang} className="flex items-center gap-2">
+                        <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                        <input
+                          type="text"
+                          value={metaDescription[lang]}
+                          onChange={(e) => setMetaDescription({ ...metaDescription, [lang]: e.target.value })}
+                          placeholder={`SEO Description (${lang})...`}
+                          className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
 

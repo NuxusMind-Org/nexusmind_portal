@@ -25,6 +25,7 @@ import {
   createEmptyTitleDto,
   createEmptyMultilingualContent,
   normalizeTitleDto,
+  isTitleValid,
   type MultilingualContent
 } from '../../../../utils/multilingual'
 
@@ -45,8 +46,8 @@ export default function XeberManagement() {
   // Detailed Form State
   const [titles, setTitles] = useState<TitleDto>(createEmptyTitleDto())
   const [contents, setContents] = useState<MultilingualContent>(createEmptyMultilingualContent())
-  const [shortDescription, setShortDescription] = useState('')
-  const [introText, setIntroText] = useState('')
+  const [shortDescription, setShortDescription] = useState<TitleDto>(createEmptyTitleDto())
+  const [introText, setIntroText] = useState<TitleDto>(createEmptyTitleDto())
   const [category, setCategory] = useState('')
   const [imageUrl, setImageUrl] = useState('')
   const [quote, setQuote] = useState('')
@@ -56,7 +57,7 @@ export default function XeberManagement() {
 
   // SEO & Keywords State
   const [metaTitle, setMetaTitle] = useState('')
-  const [metaDescription, setMetaDescription] = useState('')
+  const [metaDescription, setMetaDescription] = useState<TitleDto>(createEmptyTitleDto())
   const [slug, setSlug] = useState('')
   const [metaKeywordsInput, setMetaKeywordsInput] = useState('')
   const [schemaMarkup, setSchemaMarkup] = useState('')
@@ -84,8 +85,8 @@ export default function XeberManagement() {
     setEditingItem(null)
     setTitles(createEmptyTitleDto())
     setContents(createEmptyMultilingualContent())
-    setShortDescription('')
-    setIntroText('')
+    setShortDescription(createEmptyTitleDto())
+    setIntroText(createEmptyTitleDto())
     setCategory('General')
     setImageUrl('')
     setQuote('')
@@ -93,7 +94,7 @@ export default function XeberManagement() {
     setReadTimeMinutes(5)
     setStatus('PUBLISHED')
     setMetaTitle('')
-    setMetaDescription('')
+    setMetaDescription(createEmptyTitleDto())
     setSlug('')
     setMetaKeywordsInput('')
     setSchemaMarkup('')
@@ -104,14 +105,17 @@ export default function XeberManagement() {
   const handleOpenEditModal = (item: XeberResponseDto) => {
     setEditingItem(item)
     setTitles(normalizeTitleDto(item.title))
-    const firstSectionText = item.sections && item.sections.length > 0 ? item.sections[0].text : ''
+    const firstSection = item.sections && item.sections.length > 0 ? item.sections[0] : null
+    const firstSectionText = firstSection
+      ? (typeof firstSection.text === 'object' ? getLocalizedTitle(firstSection.text) : firstSection.text)
+      : ''
     setContents({
       az: item.content || firstSectionText || '',
-      en: (item.sections && item.sections.length > 1 ? item.sections[1].text : '') || '',
-      ru: (item.sections && item.sections.length > 2 ? item.sections[2].text : '') || ''
+      en: (item.sections && item.sections.length > 1 ? (typeof item.sections[1].text === 'object' ? getLocalizedTitle(item.sections[1].text) : item.sections[1].text) : '') || '',
+      ru: (item.sections && item.sections.length > 2 ? (typeof item.sections[2].text === 'object' ? getLocalizedTitle(item.sections[2].text) : item.sections[2].text) : '') || ''
     })
-    setShortDescription(item.shortDescription || '')
-    setIntroText(item.introText || '')
+    setShortDescription(normalizeTitleDto(item.shortDescription))
+    setIntroText(normalizeTitleDto(item.introText))
     setCategory(item.category || 'General')
     setImageUrl(item.imageUrl || '')
     setQuote(item.quote || '')
@@ -119,7 +123,7 @@ export default function XeberManagement() {
     setReadTimeMinutes(item.readTimeMinutes || 5)
     setStatus((item.status as any) || 'PUBLISHED')
     setMetaTitle(item.metaTitle || '')
-    setMetaDescription(item.metaDescription || '')
+    setMetaDescription(normalizeTitleDto(item.metaDescription))
     setSlug(item.slug || '')
     setMetaKeywordsInput(item.metaKeywords ? item.metaKeywords.join(', ') : '')
     setSchemaMarkup(item.schemaMarkup || '')
@@ -152,11 +156,16 @@ export default function XeberManagement() {
       ru: titles.ru.trim() || primaryTitle
     }
 
-    const mainText = contents.az.trim() || contents.en.trim() || contents.ru.trim() || introText.trim() || primaryTitle
-    const sectionsPayload = [
-      { title: completeTitle, text: contents.az.trim() || mainText },
-      ...(contents.en.trim() ? [{ title: { ...completeTitle, az: `${completeTitle.az} (EN)` }, text: contents.en.trim() }] : []),
-      ...(contents.ru.trim() ? [{ title: { ...completeTitle, az: `${completeTitle.az} (RU)` }, text: contents.ru.trim() }] : [])
+    const mainText = contents.az.trim() || contents.en.trim() || contents.ru.trim() || introText.az?.trim() || primaryTitle
+    const sectionsPayload: XeberRequestDto['sections'] = [
+      {
+        title: completeTitle,
+        text: {
+          az: contents.az.trim() || mainText,
+          en: contents.en.trim() || mainText,
+          ru: contents.ru.trim() || mainText
+        }
+      }
     ]
 
     const parsedKeywords = metaKeywordsInput
@@ -166,8 +175,8 @@ export default function XeberManagement() {
 
     const payload: XeberRequestDto = {
       title: completeTitle,
-      shortDescription: shortDescription.trim() || undefined,
-      introText: introText.trim() || undefined,
+      shortDescription: isTitleValid(shortDescription) ? shortDescription : undefined,
+      introText: isTitleValid(introText) ? introText : undefined,
       sections: sectionsPayload,
       quote: quote.trim() || undefined,
       quoteAuthor: quoteAuthor.trim() || undefined,
@@ -177,7 +186,7 @@ export default function XeberManagement() {
       status: status,
       content: mainText,
       metaTitle: metaTitle.trim() || undefined,
-      metaDescription: metaDescription.trim() || undefined,
+      metaDescription: isTitleValid(metaDescription) ? metaDescription : undefined,
       slug: slug.trim() || undefined,
       schemaMarkup: schemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
@@ -219,11 +228,17 @@ export default function XeberManagement() {
       ? `${item.title.az || ''} ${item.title.en || ''} ${item.title.ru || ''}`
       : item.title || ''
     const q = searchQuery.toLowerCase()
+    const shortDescText = typeof item.shortDescription === 'object'
+      ? `${item.shortDescription?.az || ''} ${item.shortDescription?.en || ''} ${item.shortDescription?.ru || ''}`
+      : ''
+    const introTextStr = typeof item.introText === 'object'
+      ? `${item.introText?.az || ''} ${item.introText?.en || ''} ${item.introText?.ru || ''}`
+      : ''
     return (
       localizedTitle.toLowerCase().includes(q) ||
       allTitles.toLowerCase().includes(q) ||
-      (item.shortDescription && item.shortDescription.toLowerCase().includes(q)) ||
-      (item.introText && item.introText.toLowerCase().includes(q)) ||
+      shortDescText.toLowerCase().includes(q) ||
+      introTextStr.toLowerCase().includes(q) ||
       (item.content && item.content.toLowerCase().includes(q)) ||
       (item.category && item.category.toLowerCase().includes(q))
     )
@@ -376,7 +391,7 @@ export default function XeberManagement() {
                       {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                      {item.shortDescription || item.introText || item.content || 'No summary available.'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'No summary available.'}
                     </p>
                   </div>
 
@@ -456,7 +471,7 @@ export default function XeberManagement() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate">
-                      {item.shortDescription || item.introText || item.content || 'N/A'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'N/A'}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -562,7 +577,7 @@ export default function XeberManagement() {
                 </h1>
                 {viewingItem.shortDescription && (
                   <p className="text-sm font-medium text-violet-300/90 leading-relaxed italic">
-                    "{viewingItem.shortDescription}"
+                    &quot;{getLocalizedTitle(viewingItem.shortDescription)}&quot;
                   </p>
                 )}
               </div>
@@ -570,7 +585,7 @@ export default function XeberManagement() {
               {/* Intro Text */}
               {viewingItem.introText && (
                 <div className="p-4 bg-[#1b1c2b] border-l-4 border-violet-500 rounded-r-xl text-xs text-slate-300 leading-relaxed">
-                  {viewingItem.introText}
+                  {getLocalizedTitle(viewingItem.introText)}
                 </div>
               )}
 
@@ -606,7 +621,7 @@ export default function XeberManagement() {
                       <p><span className="text-slate-400 font-semibold">Meta Title:</span> <span className="text-white">{viewingItem.metaTitle}</span></p>
                     )}
                     {viewingItem.metaDescription && (
-                      <p><span className="text-slate-400 font-semibold">Meta Description:</span> <span className="text-white">{viewingItem.metaDescription}</span></p>
+                      <p><span className="text-slate-400 font-semibold">Meta Description:</span> <span className="text-white">{getLocalizedTitle(viewingItem.metaDescription)}</span></p>
                     )}
                     {viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
@@ -713,25 +728,43 @@ export default function XeberManagement() {
               />
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">Short Description</label>
-                <input
-                  type="text"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
-                  placeholder="Brief summary for cards..."
-                  className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
-                />
+                <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-violet-400" />
+                  Short Description
+                  <span className="text-[10px] text-violet-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                </label>
+                {(['az', 'en', 'ru'] as const).map((lang) => (
+                  <div key={lang} className="flex items-center gap-2">
+                    <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                    <input
+                      type="text"
+                      value={shortDescription[lang]}
+                      onChange={(e) => setShortDescription({ ...shortDescription, [lang]: e.target.value })}
+                      placeholder={`Brief summary (${lang})...`}
+                      className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">Intro Text</label>
-                <textarea
-                  rows={3}
-                  value={introText}
-                  onChange={(e) => setIntroText(e.target.value)}
-                  placeholder="Introductory paragraph..."
-                  className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 leading-relaxed transition-colors"
-                />
+                <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-violet-400" />
+                  Intro Text
+                  <span className="text-[10px] text-violet-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                </label>
+                {(['az', 'en', 'ru'] as const).map((lang) => (
+                  <div key={lang} className="flex items-center gap-2">
+                    <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                    <textarea
+                      rows={2}
+                      value={introText[lang]}
+                      onChange={(e) => setIntroText({ ...introText, [lang]: e.target.value })}
+                      placeholder={`Introductory paragraph (${lang})...`}
+                      className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 leading-relaxed transition-colors"
+                    />
+                  </div>
+                ))}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -792,14 +825,22 @@ export default function XeberManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Meta Description</label>
-                  <textarea
-                    rows={3}
-                    value={metaDescription}
-                    onChange={(e) => setMetaDescription(e.target.value)}
-                    placeholder="Search engine preview description..."
-                    className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 leading-relaxed transition-colors"
-                  />
+                  <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+                    Meta Description
+                    <span className="text-[10px] text-violet-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  </label>
+                  {(['az', 'en', 'ru'] as const).map((lang) => (
+                    <div key={lang} className="flex items-center gap-2">
+                      <span className="w-6 text-xs font-bold text-slate-400 uppercase shrink-0">{lang}</span>
+                      <textarea
+                        rows={2}
+                        value={metaDescription[lang]}
+                        onChange={(e) => setMetaDescription({ ...metaDescription, [lang]: e.target.value })}
+                        placeholder={`Search engine description (${lang})...`}
+                        className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 leading-relaxed transition-colors"
+                      />
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-2">

@@ -114,7 +114,7 @@ Manages press releases and news items under `/xeber`. Root titles and section ti
 
 ### 2.5. Article Controller (`article-controller`)
 
-Manages professional psychologist articles under `/meqale`. Root titles and section titles use multilingual `TitleDto` (`az`, `en`, `ru`). In response, the multilingual title is mapped to `titleDto`. Formally supports SEO metadata (`metaTitle`, `metaDescription`, `slug`).
+Manages professional psychologist articles under `/meqale`. Root titles and section titles use multilingual `TitleDto` (`az`, `en`, `ru`). Formally supports SEO metadata (`metaTitle`, `metaDescription`, `slug`).
 
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
@@ -190,7 +190,7 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 | `GET` | `/appointments/{id}/notes` | `getNote` | Path: `id` (int64) | - | `SessionNoteDto` | Portal |
 | `POST` | `/appointments/{id}/notes` | `addNote` | Path: `id` (int64) | `CreateSessionNoteRequest` | `SessionNoteDto` | Portal |
 | `POST` | `/appointments/{id}/join-token` | `getJoinToken` | Path: `id` (int64) | - | `Record<string, string>` | Both |
-| `POST` | `/appointments/doctors/me/profile-image` | `uploadProfileImage` | - | `multipart/form-data`: `file` (binary) | `Record<string, string>` | Portal |
+| `POST` | `/appointments/doctors/me/profile-image` | `uploadProfileImage` | - | `application/json`: `file` (binary) | `Record<string, string>` | Portal |
 | `GET` | `/appointments/stats` | `getStats` | - | - | `AppointmentStatsDto` | Portal |
 | `GET` | `/appointments/doctor/stats` | `getDoctorStats` | - | - | `AppointmentStatsDto` | Portal |
 
@@ -323,6 +323,7 @@ export interface DoctorLoginRequest {
 }
 
 export interface AuthResponse {
+  id?: number
   token: string
   refreshToken: string
 }
@@ -378,12 +379,13 @@ export interface ProfileResponse {
 }
 
 export interface PasientRegisterDto {
+  id?: number
   name: string
   surname: string
   age?: number // min: 17, max: 45
   email: string
   password: string
-  phone?: string // pattern: ^\+994(50|51|55|70|77|10|99)\d{7}$
+  phone?: string // pattern: ^\\+994(50|51|55|70|77|10|99)\\d{7}$
 }
 
 export interface PasientRegisterEntity {
@@ -413,19 +415,19 @@ export interface PasientRegisterEntity {
 ```typescript
 export interface XeberSectionRequestDto {
   title?: TitleDto
-  text?: string
+  text?: TitleDto
 }
 
 export interface XeberSectionResponseDto {
   title?: TitleDto
-  text?: string
+  text?: TitleDto
   sectionOrder?: number
 }
 
 export interface XeberRequestDto {
   title: TitleDto // required
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto
+  introText?: TitleDto
   sections?: XeberSectionRequestDto[]
   quote?: string
   quoteAuthor?: string
@@ -434,7 +436,7 @@ export interface XeberRequestDto {
   readTimeMinutes?: number
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
   schemaMarkup?: string
   metaKeywords?: string[]
@@ -443,11 +445,12 @@ export interface XeberRequestDto {
 export interface XeberResponseDto {
   id: number
   title?: TitleDto
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto
+  introText?: TitleDto
   sections?: XeberSectionResponseDto[]
   quote?: string
   quoteAuthor?: string
+  keywords?: string
   imageUrl?: string
   category?: string
   readTimeMinutes?: number
@@ -456,7 +459,7 @@ export interface XeberResponseDto {
   createdAt?: string
   updatedAt?: string
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
   schemaMarkup?: string
   metaKeywords?: string[]
@@ -471,8 +474,8 @@ export interface PageXeberResponseDto extends Page<XeberResponseDto> {}
 
 ```typescript
 export interface MeqaleSectionRequestDto {
-  title?: TitleDto
-  text?: string
+  title: TitleDto   // required
+  text: TitleDto    // required
 }
 
 export interface MeqaleSectionResponseDto {
@@ -496,8 +499,8 @@ export interface MeqaleHighlightCardResponseDto {
 
 export interface MeqaleRequestDto {
   title: TitleDto // required
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto
+  introText?: TitleDto
   sections?: MeqaleSectionRequestDto[]
   quote?: string
   highlightCards?: MeqaleHighlightCardRequestDto[]
@@ -505,21 +508,23 @@ export interface MeqaleRequestDto {
   category?: string
   doctorId?: number
   status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  keywords?: string
   schemaMarkup?: string
   metaKeywords?: string[]
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
 }
 
 export interface MeqaleResponseDto {
   id: number
-  titleDto?: TitleDto // Backend response property is named 'titleDto'
-  shortDescription?: string
-  introText?: string
+  title?: TitleDto
+  shortDescription?: TitleDto
+  introText?: TitleDto
   sections?: MeqaleSectionResponseDto[]
   quote?: string
   highlightCards?: MeqaleHighlightCardResponseDto[]
+  keywords?: string
   imageUrl?: string
   category?: string
   doctorId?: number
@@ -529,7 +534,7 @@ export interface MeqaleResponseDto {
   schemaMarkup?: string
   metaKeywords?: string[]
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
 }
 
@@ -594,20 +599,22 @@ export interface PageBlogResponse extends Page<BlogResponse> {}
 
 ```typescript
 export interface GalleryItemRequest {
-  title: string
+  title: TitleDto
   thumbnailUrl: string
   mediaUrl?: string
   mediaType: 'IMAGE' | 'VIDEO'
   category: 'TERAPIYALAR' | 'OTAQLAR' | 'TELIMLER'
+  altText?: TitleDto
 }
 
 export interface GalleryItemResponse {
   id: number
-  title?: string
+  title?: TitleDto
   thumbnailUrl?: string
   mediaUrl?: string
   mediaType?: string
   category?: string
+  altText?: TitleDto
   categoryLabel?: string
   popularityScore?: number
   createdAt?: string
@@ -685,17 +692,20 @@ export interface DoctorResponseDto {
   age?: number
   phone?: string
   cvUrl?: string
+  title?: TitleDto
+  bio?: TitleDto
+  major?: TitleDto
 }
 
 export interface DoctorDto {
   id: number
   username?: string
   fullName?: string
-  title?: string
+  title?: TitleDto
   price?: number
   experienceYear?: number
   rating?: number
-  bio?: string
+  bio?: TitleDto
   imageUrl?: string
   languages?: string[]
   education?: string[]
@@ -710,16 +720,16 @@ export interface DoctorEntity {
   surname?: string
   fatherName?: string
   university?: string
-  major?: string
+  major?: TitleDto
   imageURl?: string
-  bio?: string
+  bio?: TitleDto
   price?: number
   age?: number
   experienceYear?: number
   profileImageUrl?: string
   email?: string
   password?: string
-  title?: string
+  title?: TitleDto
   rating?: number
   role?: 'SUPER_ADMIN' | 'BPM' | 'DOCTOR' | 'PATIENT' | 'SEO'
   languages?: string[]
@@ -851,7 +861,7 @@ export interface OnboardingResponse {
 
 export interface JournalEntryRequest {
   mood: 'VERY_LOW' | 'LOW' | 'NEUTRAL' | 'GOOD' | 'VERY_GOOD'
-  thoughts?: string
+  thoughts?: TitleDto
 }
 
 export interface JournalEntryResponse {
@@ -860,7 +870,7 @@ export interface JournalEntryResponse {
   mood?: string
   moodLabel?: string
   moodScore?: number
-  thoughts?: string
+  thoughts?: TitleDto
   createdAt?: string
   updatedAt?: string
 }

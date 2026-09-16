@@ -298,6 +298,27 @@ export default function DashboardOverview() {
     }
 
     const mainText = (multilingualContent.az || multilingualContent.en || multilingualContent.ru || formContent || formIntroText || formTitle).trim()
+    const contentDto: TitleDto = {
+      az: multilingualContent.az?.trim() || mainText,
+      en: multilingualContent.en?.trim() || mainText,
+      ru: multilingualContent.ru?.trim() || mainText,
+    }
+    const shortDescDto: TitleDto | undefined = formShortDesc.trim() ? {
+      az: formShortDesc.trim(),
+      en: formShortDesc.trim(),
+      ru: formShortDesc.trim(),
+    } : undefined
+    const introTextDto: TitleDto | undefined = formIntroText.trim() ? {
+      az: formIntroText.trim(),
+      en: formIntroText.trim(),
+      ru: formIntroText.trim(),
+    } : undefined
+    const metaDescDto: TitleDto | undefined = formMetaDesc.trim() ? {
+      az: formMetaDesc.trim(),
+      en: formMetaDesc.trim(),
+      ru: formMetaDesc.trim(),
+    } : undefined
+
     const parsedKeywords = formMetaKeywords
       .split(',')
       .map((k) => k.trim())
@@ -305,9 +326,9 @@ export default function DashboardOverview() {
 
     const payload: XeberRequestDto = {
       title: completeTitle,
-      shortDescription: formShortDesc.trim() || undefined,
-      introText: formIntroText.trim() || undefined,
-      sections: mainText ? [{ title: completeTitle, text: mainText }] : undefined,
+      shortDescription: shortDescDto,
+      introText: introTextDto,
+      sections: mainText ? [{ title: completeTitle, text: contentDto }] : undefined,
       quote: formQuote.trim() || undefined,
       category: formCategory.trim() || 'General',
       imageUrl: formImageUrl.trim() || undefined,
@@ -315,7 +336,7 @@ export default function DashboardOverview() {
       status: formStatus,
       content: mainText,
       metaTitle: formMetaTitle.trim() || undefined,
-      metaDescription: formMetaDesc.trim() || undefined,
+      metaDescription: metaDescDto,
       slug: formSlug.trim() || undefined,
       schemaMarkup: formSchemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
@@ -352,6 +373,27 @@ export default function DashboardOverview() {
     }
 
     const mainText = (multilingualContent.az || multilingualContent.en || multilingualContent.ru || formContent || formIntroText || formTitle).trim()
+    const contentDto: TitleDto = {
+      az: multilingualContent.az?.trim() || mainText,
+      en: multilingualContent.en?.trim() || mainText,
+      ru: multilingualContent.ru?.trim() || mainText,
+    }
+    const shortDescDto: TitleDto | undefined = formShortDesc.trim() ? {
+      az: formShortDesc.trim(),
+      en: formShortDesc.trim(),
+      ru: formShortDesc.trim(),
+    } : undefined
+    const introTextDto: TitleDto | undefined = formIntroText.trim() ? {
+      az: formIntroText.trim(),
+      en: formIntroText.trim(),
+      ru: formIntroText.trim(),
+    } : undefined
+    const metaDescDto: TitleDto | undefined = formMetaDesc.trim() ? {
+      az: formMetaDesc.trim(),
+      en: formMetaDesc.trim(),
+      ru: formMetaDesc.trim(),
+    } : undefined
+
     const parsedKeywords = formMetaKeywords
       .split(',')
       .map((k) => k.trim())
@@ -359,9 +401,9 @@ export default function DashboardOverview() {
 
     const payload: MeqaleRequestDto = {
       title: completeTitle,
-      shortDescription: formShortDesc.trim() || undefined,
-      introText: formIntroText.trim() || undefined,
-      sections: mainText ? [{ title: completeTitle, text: mainText }] : undefined,
+      shortDescription: shortDescDto,
+      introText: introTextDto,
+      sections: mainText ? [{ title: completeTitle, text: contentDto }] : undefined,
       quote: formQuote.trim() || undefined,
       category: formCategory.trim() || 'Psychology',
       doctorId: formDoctorId ? Number(formDoctorId) : undefined,
@@ -369,6 +411,8 @@ export default function DashboardOverview() {
       imageUrl: formImageUrl.trim() || undefined,
       status: formStatus,
       content: mainText,
+      metaTitle: formMetaTitle.trim() || undefined,
+      metaDescription: metaDescDto,
       schemaMarkup: formSchemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
@@ -420,7 +464,11 @@ export default function DashboardOverview() {
       coverImage: formImageUrl.trim() || undefined,
       body: mainText,
       metaTitle: formMetaTitle.trim() || undefined,
-      metaDescription: formMetaDesc.trim() || undefined,
+      metaDescription: formMetaDesc.trim() ? {
+        az: formMetaDesc.trim(),
+        en: formMetaDesc.trim(),
+        ru: formMetaDesc.trim(),
+      } : undefined,
       slug: formSlug.trim() || undefined,
       schemaMarkup: formSchemaMarkup.trim() || undefined,
       schema_markup: formSchemaMarkup.trim() || undefined,
@@ -448,7 +496,11 @@ export default function DashboardOverview() {
     if (!formImageUrl.trim()) return
     setIsSavingContent(true)
     const payload: GalleryItemRequest = {
-      title: formTitle.trim() || undefined,
+      title: formTitle.trim() ? {
+        az: formTitle.trim(),
+        en: formTitle.trim(),
+        ru: formTitle.trim(),
+      } : undefined,
       mediaUrl: formImageUrl.trim(),
       imageUrl: formImageUrl.trim(),
       mediaType: formMediaType,
@@ -728,7 +780,7 @@ export default function DashboardOverview() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {item.shortDescription || item.introText || item.content || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'N/A'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
@@ -790,7 +842,7 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {meqaleList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.titleDto || item.title)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.author || 'Super Admin'}
@@ -798,7 +850,7 @@ export default function DashboardOverview() {
                             </td>
                             <td className="py-3 px-4 text-slate-400">{item.category || 'Psychology'}</td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {item.shortDescription || item.introText || item.content || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'N/A'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
@@ -924,7 +976,7 @@ export default function DashboardOverview() {
                           <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-900 relative">
                             <img
                               src={displayImg}
-                              alt={item.title || 'Gallery Item'}
+                              alt={getLocalizedTitle(item.title) || 'Gallery Item'}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 ;(e.target as HTMLImageElement).src =
@@ -933,7 +985,7 @@ export default function DashboardOverview() {
                             />
                           </div>
                           <div className="flex items-center justify-between pt-1">
-                            <span className="text-xs font-bold text-white truncate">{item.title || 'Asset'}</span>
+                            <span className="text-xs font-bold text-white truncate">{getLocalizedTitle(item.title) || 'Asset'}</span>
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleOpenEditItem('gallery', item)}
