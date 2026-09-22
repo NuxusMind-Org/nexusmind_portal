@@ -182,7 +182,7 @@ function StageInner({
 
       {/* Local PiP camera */}
       {localTrack && isCameraEnabled && (
-        <div className="absolute top-8 right-8 w-44 sm:w-56 aspect-video rounded-xl overflow-hidden z-20 border-2 border-[#2e3146] shadow-2xl">
+        <div className="absolute top-3 right-3 w-28 sm:top-6 sm:right-6 sm:w-40 md:top-8 md:right-8 md:w-44 aspect-video rounded-xl overflow-hidden z-20 border-2 border-[#2e3146] shadow-2xl">
           <VideoTrack
             ref={localVideoRef as React.RefObject<HTMLVideoElement>}
             trackRef={localTrack}
