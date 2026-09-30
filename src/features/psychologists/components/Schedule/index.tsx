@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   ChevronLeft,
   ChevronRight,
@@ -59,6 +60,7 @@ const resolveNumericId = (val: unknown): number | null => {
 }
 
 export default function Schedule({ psychologistId }: ScheduleProps = {}) {
+  const { t, i18n } = useTranslation()
   const { profile } = useUserStore()
   const activePsychologistId =
     resolveNumericId(psychologistId) ??
@@ -66,8 +68,29 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
     resolveNumericId(profile?.id) ??
     1
 
+  const getStatusLabel = (status?: string) => {
+    switch (status?.toUpperCase()) {
+      case 'SCHEDULED': return t('psychologistDashboard.statusScheduled', { defaultValue: 'Scheduled' })
+      case 'WAITING': return t('psychologistDashboard.statusWaiting', { defaultValue: 'Waiting' })
+      case 'IN_PROGRESS': return t('psychologistDashboard.statusInProgress', { defaultValue: 'In Progress' })
+      case 'COMPLETED': return t('psychologistDashboard.statusCompleted', { defaultValue: 'Completed' })
+      case 'CANCELLED': return t('psychologistDashboard.statusCancelled', { defaultValue: 'Cancelled' })
+      default: return status || t('psychologistDashboard.statusScheduled', { defaultValue: 'Scheduled' })
+    }
+  }
+
+  const getModeLabel = (mode?: string) => {
+    switch (mode?.toUpperCase()) {
+      case 'VR': return t('psychologistDashboard.modeVr', { defaultValue: 'VR Session' })
+      case 'VIDEO_CALL': return t('psychologistDashboard.modeVideo', { defaultValue: 'Online Video Call' })
+      case 'APP': return t('psychologistDashboard.modeApp', { defaultValue: 'App Session' })
+      default: return mode || 'Session'
+    }
+  }
+
   const [viewMode, setViewMode] = useState<ViewMode>('day')
   const [currentDate, setCurrentDate] = useState(dayjs())
+  const [now, setNow] = useState(dayjs())
   const [appointments, setAppointments] = useState<AppointmentDto[]>([])
   const [workingHours, setWorkingHours] = useState<Record<DayOfWeek, number[]>>({
     MONDAY: [],
@@ -124,7 +147,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
       console.error('Failed to load appointments:', err)
       const errorMsg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to load schedule appointments.'
+        t('psychologistDashboard.failedToLoad', { defaultValue: 'Failed to load schedule appointments.' })
       setError(errorMsg)
     } finally {
       setIsLoading(false)
@@ -146,7 +169,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           console.error('Failed to load appointments:', err)
           const errorMsg =
             (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-            'Failed to load schedule appointments.'
+            t('psychologistDashboard.failedToLoad', { defaultValue: 'Failed to load schedule appointments.' })
           setError(errorMsg)
         }
       })
@@ -201,6 +224,11 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   }
 
   // Current day details for Day View
+  useEffect(() => {
+    const timer = setInterval(() => setNow(dayjs()), 60_000)
+    return () => clearInterval(timer)
+  }, [])
+
   const currentDateStr = currentDate.format('YYYY-MM-DD')
   const todayDayOfWeek = currentDate.format('dddd').toUpperCase() as DayOfWeek
   const todayHours = workingHours[todayDayOfWeek] ?? []
@@ -208,6 +236,17 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
     () => getAppointmentsForDate(appointments, currentDateStr),
     [appointments, currentDateStr]
   )
+
+  const isViewingToday = currentDate.isSame(dayjs(), 'day')
+
+  const visibleDayAppointments = useMemo(() => {
+    if (!isViewingToday) return dayAppointments
+    const currentHour = now.hour()
+    return dayAppointments.filter((app) => {
+      const { hour } = extractHourMinute(app.appointmentTime)
+      return hour >= currentHour
+    })
+  }, [dayAppointments, isViewingToday, now])
 
   // Current week details for Week View
   const currentWeekStart = useMemo(() => currentDate.startOf('isoWeek'), [currentDate])
@@ -240,17 +279,17 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   // Header Title Formatting
   const headerTitle = useMemo(() => {
     if (viewMode === 'day') {
-      return currentDate.format('MMMM D, YYYY')
+      return currentDate.locale(i18n.language).format('MMMM D, YYYY')
     }
     if (viewMode === 'week') {
       const endOfWeek = currentWeekStart.add(6, 'day')
       if (currentWeekStart.month() === endOfWeek.month()) {
-        return `${currentWeekStart.format('MMM D')} - ${endOfWeek.format('D, YYYY')}`
+        return `${currentWeekStart.locale(i18n.language).format('MMM D')} - ${endOfWeek.locale(i18n.language).format('D, YYYY')}`
       }
-      return `${currentWeekStart.format('MMM D')} - ${endOfWeek.format('MMM D, YYYY')}`
+      return `${currentWeekStart.locale(i18n.language).format('MMM D')} - ${endOfWeek.locale(i18n.language).format('MMM D, YYYY')}`
     }
-    return currentDate.format('MMMM YYYY')
-  }, [viewMode, currentDate, currentWeekStart])
+    return currentDate.locale(i18n.language).format('MMMM YYYY')
+  }, [viewMode, currentDate, currentWeekStart, i18n.language])
 
   return (
     <div className="bg-[#11121d] border border-[#202235] rounded-xl flex flex-col min-h-[600px] lg:h-[calc(100vh-8rem)] shadow-lg overflow-hidden relative">
@@ -264,9 +303,9 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
             <div className="min-w-0">
               <h2 className="text-base sm:text-lg font-bold text-white tracking-wide truncate">{headerTitle}</h2>
               <p className="text-[11px] font-semibold text-slate-400 truncate">
-                {viewMode === 'day' && currentDate.format('dddd')}
-                {viewMode === 'week' && 'Weekly Schedule Overview'}
-                {viewMode === 'month' && 'Monthly Caseload Calendar'}
+                {viewMode === 'day' && currentDate.locale(i18n.language).format('dddd')}
+                {viewMode === 'week' && t('psychologistDashboard.weeklyScheduleOverview', { defaultValue: 'Weekly Schedule Overview' })}
+                {viewMode === 'month' && t('psychologistDashboard.monthlyCaseloadCalendar', { defaultValue: 'Monthly Caseload Calendar' })}
               </p>
             </div>
           </div>
@@ -275,7 +314,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           <div className="flex items-center gap-1 bg-[#141521] border border-[#2e3146] rounded-lg p-1 shrink-0">
             <button
               onClick={handlePrev}
-              title="Previous"
+              title={t('psychologistDashboard.btnPrev', { defaultValue: 'Previous' })}
               className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235]"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -284,11 +323,11 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
               onClick={handleToday}
               className="px-3 py-1 text-xs font-bold text-slate-300 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235]"
             >
-              Today
+              {t('psychologistDashboard.btnToday', { defaultValue: 'Today' })}
             </button>
             <button
               onClick={handleNext}
-              title="Next"
+              title={t('psychologistDashboard.btnNext', { defaultValue: 'Next' })}
               className="p-1 text-slate-400 hover:text-white transition-colors cursor-pointer rounded-md hover:bg-[#202235]"
             >
               <ChevronRight className="w-4 h-4" />
@@ -299,7 +338,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           <button
             onClick={loadAppointments}
             disabled={isLoading}
-            title="Refresh appointments"
+            title={t('psychologistDashboard.btnRefresh', { defaultValue: 'Refresh appointments' })}
             className="p-2 bg-[#141521] border border-[#2e3146] text-slate-400 hover:text-white rounded-lg hover:bg-[#202235] transition-colors cursor-pointer disabled:opacity-50 shrink-0"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-violet-400' : ''}`} />
@@ -308,7 +347,11 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
 
         {/* View Mode Toggles */}
         <div className="flex p-1 bg-[#141521] border border-[#2e3146] rounded-lg w-full sm:w-auto justify-between sm:justify-start shrink-0">
-          {(['day', 'week', 'month'] as ViewMode[]).map((mode) => (
+          {([
+            { mode: 'day' as ViewMode, label: t('psychologistDashboard.viewDay', { defaultValue: 'Day' }) },
+            { mode: 'week' as ViewMode, label: t('psychologistDashboard.viewWeek', { defaultValue: 'Week' }) },
+            { mode: 'month' as ViewMode, label: t('psychologistDashboard.viewMonth', { defaultValue: 'Month' }) },
+          ]).map(({ mode, label }) => (
             <button
               key={mode}
               onClick={() => setViewMode(mode)}
@@ -318,7 +361,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                   : 'text-slate-400 hover:text-slate-200 hover:bg-[#202235]'
               }`}
             >
-              {mode}
+              {label}
             </button>
           ))}
         </div>
@@ -335,7 +378,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
             onClick={loadAppointments}
             className="underline hover:text-white font-bold cursor-pointer ml-4"
           >
-            Retry
+            {t('common.retry', { defaultValue: 'Retry' })}
           </button>
         </div>
       )}
@@ -347,7 +390,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           <div className="absolute inset-0 bg-[#11121d]/80 backdrop-blur-sm z-30 flex flex-col items-center justify-center gap-3">
             <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
             <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-              Loading active sessions...
+              {t('psychologistDashboard.loadingSessions', { defaultValue: 'Loading active sessions...' })}
             </p>
           </div>
         )}
@@ -359,10 +402,10 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <span>{currentDate.format('dddd, MMMM D, YYYY')}</span>
+                <span>{currentDate.locale(i18n.language).format('dddd, MMMM D, YYYY')}</span>
                 {currentDate.isSame(dayjs(), 'day') && (
                   <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                    TODAY
+                    {t('psychologistDashboard.todayBadge', { defaultValue: 'TODAY' })}
                   </span>
                 )}
               </h3>
@@ -370,12 +413,13 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                 {todayHours.length > 0 && (
                   <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    {todayHours.length}h Available
+                    {t('psychologistDashboard.availableHours', { count: todayHours.length, defaultValue: `${todayHours.length}h Available` })}
                   </span>
                 )}
                 <span className="bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                  {dayAppointments.length} {dayAppointments.length === 1 ? 'Session' : 'Sessions'}{' '}
-                  Today
+                  {visibleDayAppointments.length === 1
+                    ? t('psychologistDashboard.sessionCountSingle', { count: 1, defaultValue: '1 Session Today' })
+                    : t('psychologistDashboard.sessionCountPlural', { count: visibleDayAppointments.length, defaultValue: `${visibleDayAppointments.length} Sessions Today` })}
                 </span>
               </div>
             </div>
@@ -386,8 +430,10 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
 
               {DISPLAY_HOURS.map((hour) => {
                 const isWorkingHour = todayHours.includes(hour)
+                const isHourPast = isViewingToday && hour < now.hour()
+
                 // Filter appointments starting in this hour slot
-                const slotAppointments = dayAppointments.filter((app) => {
+                const slotAppointments = visibleDayAppointments.filter((app) => {
                   const { hour: appHour } = extractHourMinute(app.appointmentTime)
                   return appHour === hour
                 })
@@ -397,7 +443,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                     key={hour}
                     className={`flex min-h-20 border-b border-[#202235]/60 relative group transition-colors ${
                       isWorkingHour ? 'bg-emerald-500/[0.03]' : ''
-                    }`}
+                    } ${isHourPast ? 'opacity-30 pointer-events-none' : ''}`}
                   >
                     {/* Hour Label */}
                     <div className="w-16 pr-3 text-right pt-2.5 shrink-0 select-none">
@@ -416,7 +462,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                       {isWorkingHour && (
                         <div
                           className="absolute left-0 top-1 bottom-1 w-1 bg-emerald-500/40 rounded-full"
-                          title="Working Hour"
+                          title={t('psychologistDashboard.workingHour', { defaultValue: 'Working Hour' })}
                         />
                       )}
 
@@ -442,9 +488,9 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                                   </div>
                                   <div>
                                     <h4 className="text-sm font-bold text-white group-hover/card:text-violet-300 transition-colors flex items-center gap-2">
-                                      {app.patientName || 'Anonymous Patient'}
+                                      {app.patientName || t('psychologistDashboard.anonymousPatient', { defaultValue: 'Anonymous Patient' })}
                                       {app.hasNote && (
-                                        <span title="Notes Logged">
+                                        <span title={t('psychologistDashboard.notesLogged', { defaultValue: 'Notes Logged' })}>
                                           <FileText className="w-3.5 h-3.5 text-emerald-400" />
                                         </span>
                                       )}
@@ -469,14 +515,14 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                                     {app.mode === 'VR' && <Eye className="w-3 h-3" />}
                                     {app.mode === 'VIDEO_CALL' && <Video className="w-3 h-3" />}
                                     {app.mode === 'APP' && <Smartphone className="w-3 h-3" />}
-                                    {modeBadge.shortLabel}
+                                    {getModeLabel(app.mode)}
                                   </span>
 
                                   {/* Status Badge */}
                                   <span
                                     className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider border ${statusBadge.bg} ${statusBadge.text} ${statusBadge.border}`}
                                   >
-                                    {statusBadge.label}
+                                    {getStatusLabel(app.status)}
                                   </span>
                                 </div>
                               </div>
@@ -499,12 +545,16 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           <div className="space-y-4 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                Active Week: {currentWeekStart.format('MMM D')} &ndash;{' '}
-                {currentWeekStart.add(6, 'day').format('MMM D, YYYY')}
+                {t('psychologistDashboard.activeWeek', {
+                  start: currentWeekStart.locale(i18n.language).format('MMM D'),
+                  end: currentWeekStart.add(6, 'day').locale(i18n.language).format('MMM D, YYYY'),
+                  defaultValue: `Active Week: ${currentWeekStart.format('MMM D')} – ${currentWeekStart.add(6, 'day').format('MMM D, YYYY')}`
+                })}
               </h3>
               <span className="bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                {weekAppointments.length}{' '}
-                {weekAppointments.length === 1 ? 'Session' : 'Sessions'} This Week
+                {weekAppointments.length === 1
+                  ? t('psychologistDashboard.sessionsThisWeekSingle', { count: 1, defaultValue: '1 Session This Week' })
+                  : t('psychologistDashboard.sessionsThisWeekPlural', { count: weekAppointments.length, defaultValue: `${weekAppointments.length} Sessions This Week` })}
               </span>
             </div>
 
@@ -515,7 +565,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                   <div className="grid grid-cols-8 border-b border-[#202235] bg-[#1a1b2b] shrink-0 sticky top-0 z-20">
                     <div className="p-3 border-r border-[#202235] flex items-center justify-center">
                       <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                        TIME
+                        {t('psychologistDashboard.timeHeader', { defaultValue: 'TIME' })}
                       </span>
                     </div>
                     {weekDays.map((day) => {
@@ -533,7 +583,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                               isToday ? 'text-violet-300 font-black' : 'text-slate-400'
                             }`}
                           >
-                            {day.format('ddd')}
+                            {day.locale(i18n.language).format('ddd')}
                           </p>
                           <p
                             className={`text-base font-black mt-0.5 ${
@@ -594,7 +644,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                                     className="bg-[#1b1d2e] hover:bg-[#252840] border border-violet-500/30 hover:border-violet-400 rounded-lg p-1.5 transition-all cursor-pointer z-10 shadow-sm overflow-hidden group/event"
                                   >
                                     <p className="text-[11px] font-bold text-white group-hover/event:text-violet-300 truncate">
-                                      {app.patientName || 'Patient'}
+                                      {app.patientName || t('psychologistDashboard.patient', { defaultValue: 'Patient' })}
                                     </p>
                                     <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 mt-0.5">
                                       <span>{timeStr}</span>
@@ -624,11 +674,15 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
           <div className="space-y-4 h-full flex flex-col">
             <div className="flex items-center justify-between mb-4 shrink-0 flex-wrap gap-2">
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
-                {currentDate.format('MMMM YYYY')} Overview
+                {t('psychologistDashboard.monthOverview', {
+                  monthYear: currentDate.locale(i18n.language).format('MMMM YYYY'),
+                  defaultValue: `${currentDate.format('MMMM YYYY')} Overview`
+                })}
               </h3>
               <span className="bg-violet-500/10 text-violet-400 border border-violet-500/20 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider">
-                {monthAppointments.length}{' '}
-                {monthAppointments.length === 1 ? 'Session' : 'Sessions'} This Month
+                {monthAppointments.length === 1
+                  ? t('psychologistDashboard.sessionsThisMonthSingle', { count: 1, defaultValue: '1 Session This Month' })
+                  : t('psychologistDashboard.sessionsThisMonthPlural', { count: monthAppointments.length, defaultValue: `${monthAppointments.length} Sessions This Month` })}
               </span>
             </div>
 
@@ -637,12 +691,14 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                 <div className="min-w-[520px] flex-1 flex flex-col">
                   {/* Days Header */}
                   <div className="grid grid-cols-7 border-b border-[#202235] bg-[#1a1b2b] shrink-0">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                    {weekDays.map((day) => (
                       <div
-                        key={day}
+                        key={day.format('ddd')}
                         className="p-3 text-center border-r border-[#202235] last:border-0 text-slate-400"
                       >
-                        <p className="text-[11px] font-bold uppercase tracking-widest">{day}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest">
+                          {day.locale(i18n.language).format('ddd')}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -682,7 +738,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
 
                             {count > 0 && (
                               <span className="text-[10px] font-extrabold text-violet-300 bg-violet-500/20 border border-violet-500/30 px-1.5 py-0.5 rounded-full">
-                                {count} {count === 1 ? 'session' : 'sessions'}
+                                {count} {count === 1 ? t('psychologistDashboard.sessionLabelSingle', { defaultValue: 'session' }) : t('psychologistDashboard.sessionLabelPlural', { defaultValue: 'sessions' })}
                               </span>
                             )}
                           </div>
@@ -697,14 +753,14 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                                     key={s.id}
                                     className="text-[11px] font-semibold text-slate-300 bg-[#1e2035] border border-violet-500/20 rounded px-1.5 py-0.5 truncate flex items-center justify-between"
                                   >
-                                    <span className="truncate">{s.patientName || 'Patient'}</span>
+                                    <span className="truncate">{s.patientName || t('psychologistDashboard.patient', { defaultValue: 'Patient' })}</span>
                                     <span className="text-violet-400 font-bold ml-1">{timeStr}</span>
                                   </div>
                                 )
                               })}
                               {count > 2 && (
                                 <p className="text-[10px] font-bold text-slate-500 text-right pr-1">
-                                  +{count - 2} more
+                                  {t('psychologistDashboard.moreSessions', { count: count - 2, defaultValue: `+${count - 2} more` })}
                                 </p>
                               )}
                             </div>
@@ -733,20 +789,20 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-white tracking-wide">
-                    Appointment Details
+                    {t('psychologistDashboard.appointmentDetails', { defaultValue: 'Appointment Details' })}
                   </h3>
                   <span className="text-[10px] font-bold text-slate-500 bg-[#1b1c2b] px-2 py-0.5 rounded border border-[#2e3146]">
                     #{selectedAppointment.id}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 font-semibold mt-0.5">
-                  Synchronized live session data via Appointments API
+                  {t('psychologistDashboard.syncLiveData', { defaultValue: 'Synchronized live session data via Appointments API' })}
                 </p>
               </div>
 
               <button
                 onClick={handleCloseModal}
-                title="Close"
+                title={t('psychologistDashboard.close', { defaultValue: 'Close' })}
                 className="p-2.5 bg-[#1b1c2b] border border-[#2e3146] hover:border-slate-500 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -756,7 +812,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
             {isDetailsLoading && (
               <div className="flex items-center justify-center py-4 text-violet-400 gap-2 text-xs font-bold">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Fetching real-time session metadata...</span>
+                <span>{t('psychologistDashboard.fetchingDetails', { defaultValue: 'Fetching real-time session metadata...' })}</span>
               </div>
             )}
 
@@ -768,11 +824,11 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-bold text-white text-base">
-                    {detailedAppointment.patientName || 'Anonymous Patient'}
+                    {detailedAppointment.patientName || t('psychologistDashboard.anonymousPatient', { defaultValue: 'Anonymous Patient' })}
                   </h4>
                   {detailedAppointment.doctorName && (
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Assigned Doctor: {detailedAppointment.doctorName}
+                      {t('psychologistDashboard.assignedDoctor', { name: detailedAppointment.doctorName, defaultValue: `Assigned Doctor: ${detailedAppointment.doctorName}` })}
                     </p>
                   )}
                 </div>
@@ -784,7 +840,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                       formatAppointmentStatus(detailedAppointment.status).border
                     }`}
                   >
-                    {formatAppointmentStatus(detailedAppointment.status).label}
+                    {getStatusLabel(detailedAppointment.status)}
                   </span>
                 </div>
               </div>
@@ -796,14 +852,14 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                 {/* Date */}
                 <div className="space-y-1 bg-[#1b1c2b]/40 p-3 rounded-xl border border-[#222437]/60">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Session Date
+                    {t('psychologistDashboard.sessionDate', { defaultValue: 'Session Date' })}
                   </span>
                   <div className="flex items-center gap-1.5 text-slate-200 mt-1 font-bold">
                     <CalendarIcon className="w-3.5 h-3.5 text-violet-400" />
                     <span>
                       {detailedAppointment.appointmentDate
-                        ? dayjs(detailedAppointment.appointmentDate).format('MMMM D, YYYY')
-                        : 'Not specified'}
+                        ? dayjs(detailedAppointment.appointmentDate).locale(i18n.language).format('MMMM D, YYYY')
+                        : t('psychologistDashboard.notSpecified', { defaultValue: 'Not specified' })}
                     </span>
                   </div>
                 </div>
@@ -811,7 +867,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                 {/* Time */}
                 <div className="space-y-1 bg-[#1b1c2b]/40 p-3 rounded-xl border border-[#222437]/60">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Scheduled Time
+                    {t('psychologistDashboard.scheduledTime', { defaultValue: 'Scheduled Time' })}
                   </span>
                   <div className="flex items-center gap-1.5 text-slate-200 mt-1 font-bold">
                     <Clock className="w-3.5 h-3.5 text-violet-400" />
@@ -822,7 +878,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                 {/* Delivery Mode */}
                 <div className="space-y-1 bg-[#1b1c2b]/40 p-3 rounded-xl border border-[#222437]/60">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Delivery Mode
+                    {t('psychologistDashboard.deliveryMode', { defaultValue: 'Delivery Mode' })}
                   </span>
                   <div className="flex items-center gap-1.5 text-slate-200 mt-1 font-bold">
                     {detailedAppointment.mode === 'VR' && (
@@ -834,25 +890,25 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                     {detailedAppointment.mode === 'APP' && (
                       <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
                     )}
-                    <span>{formatAppointmentMode(detailedAppointment.mode).label}</span>
+                    <span>{getModeLabel(detailedAppointment.mode)}</span>
                   </div>
                 </div>
 
                 {/* Clinical Notes Status */}
                 <div className="space-y-1 bg-[#1b1c2b]/40 p-3 rounded-xl border border-[#222437]/60">
                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                    Clinical Notes
+                    {t('psychologistDashboard.clinicalNotes', { defaultValue: 'Clinical Notes' })}
                   </span>
                   <div className="flex items-center gap-1.5 mt-1 font-bold">
                     {detailedAppointment.hasNote ? (
                       <span className="text-emerald-400 flex items-center gap-1">
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Notes Recorded
+                        {t('psychologistDashboard.notesRecorded', { defaultValue: 'Notes Recorded' })}
                       </span>
                     ) : (
                       <span className="text-amber-400 flex items-center gap-1">
                         <FileText className="w-3.5 h-3.5" />
-                        Pending Notes
+                        {t('psychologistDashboard.pendingNotes', { defaultValue: 'Pending Notes' })}
                       </span>
                     )}
                   </div>
@@ -867,7 +923,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                   onClick={handleCloseModal}
                   className="px-4 py-2 text-xs font-bold text-slate-300 hover:text-white bg-[#1b1c2b] hover:bg-[#252840] border border-[#2e3146] rounded-xl transition-colors cursor-pointer"
                 >
-                  Close
+                  {t('psychologistDashboard.close', { defaultValue: 'Close' })}
                 </button>
 
                 {detailedAppointment.roomUrl ? (
@@ -878,17 +934,20 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                     className="px-4 py-2 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-xl transition-all shadow-md shadow-violet-600/30 flex items-center gap-2 cursor-pointer"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Join Clinical Room
+                    {t('psychologistDashboard.joinClinicalRoom', { defaultValue: 'Join Clinical Room' })}
                   </a>
                 ) : (
                   <button
                     onClick={() => {
-                      alert(`Session room for Appointment #${detailedAppointment.id} will open shortly.`)
+                      alert(t('psychologistDashboard.roomOpeningAlert', {
+                        id: detailedAppointment.id,
+                        defaultValue: `Session room for Appointment #${detailedAppointment.id} will open shortly.`
+                      }))
                     }}
                     className="px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl transition-all shadow-md shadow-violet-600/20 flex items-center gap-2 cursor-pointer"
                   >
                     <Video className="w-4 h-4" />
-                    Start Session
+                    {t('psychologistDashboard.startSession', { defaultValue: 'Start Session' })}
                   </button>
                 )}
               </div>

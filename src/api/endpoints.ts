@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
     ADD_PATIENT: '/auth/add',
     PATIENT_BY_ID: (id: number | string) => `/auth/${id}`,
     PATIENT_MOOD: (patientId: number | string) => `/auth/${patientId}/mood`,
+    REFRESH: '/auth/refresh',
   },
   XEBER: {
     BASE: '/xeber',

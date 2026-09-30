@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Save, FileText, CheckCircle2 } from 'lucide-react';
 
 export default function Notebook() {
+  const { t } = useTranslation();
   const [note, setNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -28,7 +30,7 @@ export default function Notebook() {
             <FileText className="w-5 h-5 text-violet-400" />
           </div>
           <h2 className="text-lg font-bold text-white tracking-wide">
-            Quick Notes
+            {t('psychologistDashboard.quickNotes', { defaultValue: 'Quick Notes' })}
           </h2>
         </div>
         
@@ -40,16 +42,19 @@ export default function Notebook() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Saving...
+              {t('psychologistDashboard.saving', { defaultValue: 'Saving...' })}
             </span>
           ) : lastSaved ? (
             <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500 uppercase tracking-wider bg-emerald-500/10 px-3 py-1.5 rounded-full">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {t('psychologistDashboard.savedAt', {
+                time: lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                defaultValue: `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+              })}
             </span>
           ) : (
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Draft
+              {t('psychologistDashboard.draft', { defaultValue: 'Draft' })}
             </span>
           )}
         </div>
@@ -60,7 +65,7 @@ export default function Notebook() {
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Start typing your session notes here..."
+          placeholder={t('psychologistDashboard.notebookPlaceholder', { defaultValue: 'Start typing your session notes here...' })}
           className="w-full h-full min-h-[160px] resize-none bg-transparent p-6 text-sm text-slate-300 placeholder-slate-600 focus:outline-none custom-scrollbar leading-relaxed"
           spellCheck={false}
         />
@@ -76,7 +81,7 @@ export default function Notebook() {
           }}
         >
           <Save className="w-4 h-4" />
-          Save Note
+          {t('psychologistDashboard.saveNoteBtn', { defaultValue: 'Save Note' })}
         </button>
       </div>
     </div>

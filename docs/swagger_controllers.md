@@ -31,6 +31,8 @@ This document provides a comprehensive and up-to-date technical reference of all
 | **Onboarding (`/onboarding/*`)** | Read-Only | Read-Only | Read-Only | Submit, Check Status, Get Mine | No Access |
 | **Journal (`/journal/*`)** | No Access | No Access | No Access | Full CRUD (Today, History, Single) | No Access |
 | **Chat & Webhook (`/chat/*`, `/api/webhooks/*`)** | No Access | No Access | View Messages | View Messages | LiveKit Webhook Handler |
+| **Notifications (`/api/notifications/*`)** | Full Access (Send Email, View Templates) | Full Access (Send Email, View Templates) | Send Email, View Templates | View Templates | No Access |
+| **Search (`/search/*`)** | Full Search (Journal, Doctors, Content) | Full Search (Journal, Doctors, Content) | Full Search | Full Search | Search Doctors & Content |
 | **File Upload (`/upload`)** | Full Access (Upload Images/Assets) | Full Access (Upload Images/Assets) | Full Access | Full Access | No Access |
 
 ---
@@ -59,6 +61,7 @@ Handles authentication, registration, password lifecycle, token refresh, and use
 | `PUT` | `/auth/change-password` | `changePassword` | Header: `Authorization` (string) | `ChangePasswordRequest` | `string` | Both |
 | `POST` | `/auth/forgot-password` | `forgotPassword` | - | `ForgotPasswordRequest` | `string` | Both |
 | `POST` | `/auth/reset-password` | `resetPassword` | - | `ResetPasswordWithOtpRequest` | `string` | Both |
+| `POST` | `/auth/upload` | `uploadRegistrationImage` | - | `multipart/form-data`: `file` (binary) | `string` | Both |
 | `PUT` | `/auth/{patientId}/mood` | `updateMood` | Path: `patientId` (int64)<br>Query: `mood` (`SAD` \| `HAPPY` \| `TIRED` \| `CALM` \| `NORMAL`) | - | `200 OK` | Web |
 
 ---
@@ -191,6 +194,7 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 | `POST` | `/appointments/{id}/notes` | `addNote` | Path: `id` (int64) | `CreateSessionNoteRequest` | `SessionNoteDto` | Portal |
 | `POST` | `/appointments/{id}/join-token` | `getJoinToken` | Path: `id` (int64) | - | `Record<string, string>` | Both |
 | `POST` | `/appointments/doctors/me/profile-image` | `uploadProfileImage` | - | `application/json`: `file` (binary) | `Record<string, string>` | Portal |
+| `POST` | `/appointments/compare-face` | `comparePatientFace` | - | `multipart/form-data`: `file` (binary) | `boolean` | Portal |
 | `GET` | `/appointments/stats` | `getStats` | - | - | `AppointmentStatsDto` | Portal |
 | `GET` | `/appointments/doctor/stats` | `getDoctorStats` | - | - | `AppointmentStatsDto` | Portal |
 
@@ -285,6 +289,29 @@ Handles multipart binary file uploads and asset storage across content domains (
 | Method | Endpoint | Operation ID | Parameters / Headers | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
 | `POST` | `/upload` | `uploadImage` | Query: `folder` (string, optional - e.g. `news`, `blogs`, `articles`, `gallery`)<br>Header: `Authorization` (string) | `multipart/form-data`:<br>`file` (binary, required) | `FileUploadResponseDto` | Both (Portal & Web) |
+
+---
+
+### 2.15. Notification Controller (`notification-controller`)
+
+Handles transactional and operational email notifications dispatched via predefined system templates.
+
+| Method | Endpoint | Operation ID | Parameters / Headers | Request Body | Response Schema | Scope |
+|---|---|---|---|---|---|---|
+| `POST` | `/api/notifications/email` | `sendEmail` | - | `EmailNotificationRequest` | `EmailNotificationResponse` | Both (Portal & Web) |
+| `GET` | `/api/notifications/templates` | `getTemplates` | - | - | `string[]` (`NotificationTemplate[]`) | Both (Portal & Web) |
+
+---
+
+### 2.16. Search Controller (`search-controller`)
+
+Provides unified backend search endpoints across patient journal logs, verified specialists/doctors, and all published platform content (articles, blogs, news).
+
+| Method | Endpoint | Operation ID | Parameters | Response Schema | Scope |
+|---|---|---|---|---|---|
+| `GET` | `/search/journal` | `searchJournal` | Query: `q` (string, required)<br>Query: `page` (int32, default: `0`)<br>Query: `size` (int32, default: `10`) | `JournalEntryResponse[]` | Web / Patient |
+| `GET` | `/search/doctors` | `searchDoctors` | Query: `q` (string, required)<br>Query: `lang` (string, default: `az`) | `DoctorSearchResult[]` | Both (Portal & Web) |
+| `GET` | `/search/content` | `searchContent` | Query: `q` (string, required)<br>Query: `lang` (string, default: `az`)<br>Query: `page` (int32, default: `0`)<br>Query: `size` (int32, default: `10`) | `ContentSearchResult[]` | Both (Portal & Web) |
 
 ---
 
@@ -900,6 +927,68 @@ export interface SiteSettingsResponseDto {
 
 export interface FileUploadResponseDto {
   imageUrl?: string
+}
+```
+
+---
+
+### 3.11. Notification & Search DTOs
+
+```typescript
+export type NotificationTemplate =
+  | 'SESSION_REMINDER_24H'
+  | 'SESSION_REMINDER_3H'
+  | 'SESSION_REMINDER_30MIN'
+  | 'OTP_CODE'
+  | 'SESSION_CONFIRMED'
+  | 'RESCHEDULE_CONFIRMED'
+  | 'RESCHEDULE_REQUEST'
+  | 'SPECIALIST_AVAILABILITY'
+  | 'PAYMENT_RECEIPT'
+  | 'SESSION_FEEDBACK'
+  | 'RECOMMENDED_MATERIALS'
+  | 'MILESTONE'
+  | 'HABIT_DAILY'
+  | 'MOOD_CHECK'
+  | 'BREATHING'
+  | 'JOURNAL'
+  | 'PSYCH_FACT'
+  | 'DAILY_RECOMMENDATION'
+  | 'PODCAST_AND_BOOK_OF_DAY'
+  | 'SCHEDULE_UPDATED'
+  | 'FAVORITE_AVAILABLE'
+  | 'WELCOME'
+  | 'GUIDE_NEKSI'
+  | 'FIRST_SESSION'
+  | 'INACTIVE_15_DAYS'
+  | 'INACTIVE_30_DAYS'
+  | 'INACTIVE_60_DAYS'
+  | 'NEW_SPECIALISTS'
+
+export interface EmailNotificationRequest {
+  to: string
+  template: NotificationTemplate
+  params?: Record<string, string>
+}
+
+export interface EmailNotificationResponse {
+  success: boolean
+  message: string
+  template: NotificationTemplate
+  sentAt: string
+}
+
+export interface DoctorSearchResult {
+  id: number
+  fullName?: string
+  title?: string
+  bio?: string
+}
+
+export interface ContentSearchResult {
+  type: string
+  id: number
+  title: string
 }
 ```
 

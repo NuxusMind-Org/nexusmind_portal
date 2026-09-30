@@ -11,5 +11,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: [
+      'dayjs',
+      'react',
+      'react-dom',
+      'react-dom/client',
+      'react/jsx-dev-runtime',
+      'react-i18next',
+      'i18next',
+    ],
+    exclude: ['dayjs/locale/az', 'dayjs/locale/ru', 'dayjs/locale/tr'],
+  },
 })
 

@@ -24,7 +24,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   
   const navigate = useNavigate()
-  const setToken = useAuthStore((state) => state.setToken)
+  const setTokens = useAuthStore((state) => state.setTokens)
   const setTenantId = useAuthStore((state) => state.setTenantId)
   const setProfile = useUserStore((state) => state.setProfile)
 
@@ -96,6 +96,7 @@ export default function Login() {
 
       const { res, roleUsed } = authResult
       const token = res.token || res.accessToken || (typeof res === 'string' ? res : '')
+      const refreshToken = (typeof res === 'object' && res ? (res.refreshToken || null) : null)
 
       if (!token) {
         throw new Error('Invalid token received from server.')
@@ -106,8 +107,8 @@ export default function Login() {
       const rawRole = res.role || claims?.role || (claims?.roles && claims.roles[0]) || roleUsed
       const normalizedRole = normalizeRole(rawRole)
 
-      // Store Auth token and Tenant ID
-      setToken(token)
+      // Store Auth token, refresh token, and Tenant ID
+      setTokens(token, refreshToken)
       setTenantId(claims?.tenantId || null)
 
       // Extract numeric ID for psychologist / doctor or standard user ID

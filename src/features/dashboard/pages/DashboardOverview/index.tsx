@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useUserStore } from '../../../../store/userStore'
 import { contentService } from '../../../../api/services/contentService'
 import type {
@@ -40,6 +41,7 @@ import type { TitleDto, MultilingualContent } from '../../../../utils/multilingu
 export default function DashboardOverview() {
   const profile = useUserStore((state) => state.profile)
   const navigate = useNavigate()
+  const { t, i18n } = useTranslation()
 
   // Content State
   const [xeberList, setXeberList] = useState<XeberResponseDto[]>([])
@@ -194,7 +196,7 @@ export default function DashboardOverview() {
     setEditingItem(item)
     if (type === 'xeber') {
       const normalizedTitle = normalizeTitleDto(item.title)
-      setFormTitle(getLocalizedTitle(item.title))
+      setFormTitle(getLocalizedTitle(item.title, i18n.language))
       setMultilingualTitle(normalizedTitle)
       const primaryText = item.content || (item.sections && item.sections[0]?.text) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
@@ -213,9 +215,9 @@ export default function DashboardOverview() {
       const kw = item.metaKeywords
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'meqale') {
-      const titleObj = item.titleDto || item.title
+      const titleObj = (item as any).titleDto || item.title
       const normalizedTitle = normalizeTitleDto(titleObj)
-      setFormTitle(getLocalizedTitle(titleObj))
+      setFormTitle(getLocalizedTitle(titleObj, i18n.language))
       setMultilingualTitle(normalizedTitle)
       const primaryText = item.content || (item.sections && item.sections[0]?.text) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
@@ -233,7 +235,7 @@ export default function DashboardOverview() {
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'blog') {
       const normalizedTitle = normalizeTitleDto(item.title)
-      setFormTitle(getLocalizedTitle(item.title))
+      setFormTitle(getLocalizedTitle(item.title, i18n.language))
       setMultilingualTitle(normalizedTitle)
       const primaryText = item.body || (item.sections && item.sections[0]?.text) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
@@ -250,7 +252,7 @@ export default function DashboardOverview() {
       const kw = item.metaKeywords || item.meta_keywords
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'gallery') {
-      setFormTitle(item.title || '')
+      setFormTitle(getLocalizedTitle(item.title, i18n.language) || item.title || '')
       setFormImageUrl(item.mediaUrl || item.imageUrl || '')
       setFormCategory(item.category || 'TERAPIYALAR')
       setFormMediaType(item.mediaType || 'IMAGE')
@@ -260,7 +262,7 @@ export default function DashboardOverview() {
 
   // Delete Content Item
   const handleDeleteContentItem = async (type: 'xeber' | 'meqale' | 'blog' | 'gallery', id: number) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return
+    if (!window.confirm(t('adminDashboard.confirmDelete'))) return
     try {
       if (type === 'xeber') {
         await contentService.deleteXeber(id)
@@ -277,7 +279,7 @@ export default function DashboardOverview() {
       }
     } catch (err) {
       console.error('Failed to delete item', err)
-      alert('Failed to delete item.')
+      alert(t('adminDashboard.deleteFailed'))
     }
   }
 
@@ -285,7 +287,7 @@ export default function DashboardOverview() {
   const handleSaveXeber = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isTitleValid(multilingualTitle) && !formTitle.trim()) {
-      alert('Please provide at least Azerbaijani title.')
+      alert(t('adminDashboard.promptTitleRequired'))
       return
     }
     setIsSavingContent(true)
@@ -351,7 +353,7 @@ export default function DashboardOverview() {
       fetchContentData()
     } catch (err) {
       console.error('Failed to save news', err)
-      alert('Failed to save news item.')
+      alert(t('adminDashboard.saveNewsFailed'))
     } finally {
       setIsSavingContent(false)
     }
@@ -360,7 +362,7 @@ export default function DashboardOverview() {
   const handleSaveMeqale = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isTitleValid(multilingualTitle) && !formTitle.trim()) {
-      alert('Please provide at least Azerbaijani title.')
+      alert(t('adminDashboard.promptTitleRequired'))
       return
     }
     setIsSavingContent(true)
@@ -426,7 +428,7 @@ export default function DashboardOverview() {
       fetchContentData()
     } catch (err) {
       console.error('Failed to save article', err)
-      alert('Failed to save article.')
+      alert(t('adminDashboard.saveArticleFailed'))
     } finally {
       setIsSavingContent(false)
     }
@@ -435,7 +437,7 @@ export default function DashboardOverview() {
   const handleSaveBlog = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isTitleValid(multilingualTitle) && !formTitle.trim()) {
-      alert('Please provide at least Azerbaijani title.')
+      alert(t('adminDashboard.promptTitleRequired'))
       return
     }
     setIsSavingContent(true)
@@ -485,7 +487,7 @@ export default function DashboardOverview() {
       fetchContentData()
     } catch (err) {
       console.error('Failed to save blog post', err)
-      alert('Failed to save blog post.')
+      alert(t('adminDashboard.saveBlogFailed'))
     } finally {
       setIsSavingContent(false)
     }
@@ -516,7 +518,7 @@ export default function DashboardOverview() {
       fetchContentData()
     } catch (err) {
       console.error('Failed to save gallery item', err)
-      alert('Failed to save gallery item.')
+      alert(t('adminDashboard.saveGalleryFailed'))
     } finally {
       setIsSavingContent(false)
     }
@@ -527,9 +529,9 @@ export default function DashboardOverview() {
       {/* Title & Subtitle Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-white">Super Admin Overview</h2>
+          <h2 className="text-2xl font-bold text-white">{t('adminDashboard.superAdminTitle')}</h2>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Monitor platform telemetry, publish global content, and manage portal resources across all controllers.
+            {t('adminDashboard.superAdminSubtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -537,7 +539,7 @@ export default function DashboardOverview() {
             onClick={fetchContentData}
             className="flex items-center gap-2 py-2 px-4 bg-[#141521] hover:bg-[#1a1c2d] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
           >
-            <span>Refresh Content</span>
+            <span>{t('adminDashboard.refreshContent')}</span>
           </button>
         </div>
       </div>
@@ -554,11 +556,11 @@ export default function DashboardOverview() {
               <Newspaper className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              News Controller
+              {t('adminDashboard.newsController')}
             </span>
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total News Articles</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('adminDashboard.totalNewsArticles')}</p>
             <h3 className="text-2xl font-extrabold text-white mt-1">{xeberList.length}</h3>
           </div>
         </div>
@@ -573,11 +575,11 @@ export default function DashboardOverview() {
               <BookOpen className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Article Controller
+              {t('adminDashboard.articleController')}
             </span>
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Published Articles</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('adminDashboard.publishedArticles')}</p>
             <h3 className="text-2xl font-extrabold text-white mt-1">{meqaleList.length}</h3>
           </div>
         </div>
@@ -592,11 +594,11 @@ export default function DashboardOverview() {
               <FileText className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Blog Controller
+              {t('adminDashboard.blogController')}
             </span>
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Blog Posts</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('adminDashboard.totalBlogPosts')}</p>
             <h3 className="text-2xl font-extrabold text-white mt-1">{blogList.length}</h3>
           </div>
         </div>
@@ -611,11 +613,11 @@ export default function DashboardOverview() {
               <ImageIcon className="w-5 h-5" />
             </div>
             <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Gallery Controller
+              {t('adminDashboard.galleryController')}
             </span>
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Gallery Assets</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t('adminDashboard.galleryAssets')}</p>
             <h3 className="text-2xl font-extrabold text-white mt-1">{galleryList.length}</h3>
           </div>
         </div>
@@ -624,9 +626,9 @@ export default function DashboardOverview() {
       {/* Quick Action Bar for Super Admin Content Publishing */}
       <div className="bg-[#141521] border border-[#222437] p-6 rounded-xl shadow-md space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Content Quick Actions</h4>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('adminDashboard.quickActionsTitle')}</h4>
           <span className="text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-            POST / PUT / DELETE Controls
+            {t('adminDashboard.quickActionsBadge')}
           </span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -637,7 +639,7 @@ export default function DashboardOverview() {
             <div className="p-2.5 bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-lg group-hover:bg-violet-600 group-hover:text-white transition-all">
               <Plus className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">Create News</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">{t('adminDashboard.createNews')}</span>
           </button>
 
           <button
@@ -647,7 +649,7 @@ export default function DashboardOverview() {
             <div className="p-2.5 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-all">
               <Plus className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">Create Article</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">{t('adminDashboard.createArticle')}</span>
           </button>
 
           <button
@@ -657,7 +659,7 @@ export default function DashboardOverview() {
             <div className="p-2.5 bg-purple-600/10 text-purple-400 border border-purple-500/20 rounded-lg group-hover:bg-purple-600 group-hover:text-white transition-all">
               <Plus className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">Create Blog</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">{t('adminDashboard.createBlog')}</span>
           </button>
 
           <button
@@ -667,7 +669,7 @@ export default function DashboardOverview() {
             <div className="p-2.5 bg-emerald-600/10 text-emerald-400 border border-emerald-500/20 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-all">
               <Plus className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">Upload Asset</span>
+            <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider leading-tight">{t('adminDashboard.uploadAsset')}</span>
           </button>
         </div>
       </div>
@@ -676,7 +678,7 @@ export default function DashboardOverview() {
       <div className="bg-[#141521] border border-[#222437] rounded-xl shadow-md p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#222437] pb-4">
           <div className="flex items-center gap-3">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Live Content Registry</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider">{t('adminDashboard.liveRegistryTitle')}</h4>
           </div>
 
           {/* Navigation Tabs */}
@@ -688,7 +690,7 @@ export default function DashboardOverview() {
               }`}
             >
               <Newspaper className="w-3.5 h-3.5" />
-              <span>News ({xeberList.length})</span>
+              <span>{t('adminDashboard.newsTab', { count: xeberList.length })}</span>
             </button>
 
             <button
@@ -698,7 +700,7 @@ export default function DashboardOverview() {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Articles ({meqaleList.length})</span>
+              <span>{t('adminDashboard.articlesTab', { count: meqaleList.length })}</span>
             </button>
 
             <button
@@ -708,7 +710,7 @@ export default function DashboardOverview() {
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>Blogs ({blogList.length})</span>
+              <span>{t('adminDashboard.blogsTab', { count: blogList.length })}</span>
             </button>
 
             <button
@@ -718,7 +720,7 @@ export default function DashboardOverview() {
               }`}
             >
               <ImageIcon className="w-3.5 h-3.5" />
-              <span>Gallery ({galleryList.length})</span>
+              <span>{t('adminDashboard.galleryTab', { count: galleryList.length })}</span>
             </button>
           </div>
         </div>
@@ -727,7 +729,7 @@ export default function DashboardOverview() {
         {isContentLoading ? (
           <div className="p-12 flex flex-col items-center justify-center gap-3 text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
-            <span className="text-xs font-semibold">Loading content items...</span>
+            <span className="text-xs font-semibold">{t('adminDashboard.loadingContent')}</span>
           </div>
         ) : (
           <div>
@@ -735,36 +737,36 @@ export default function DashboardOverview() {
             {contentTab === 'xeber' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-slate-400">Manage News Articles (/xeber)</span>
+                  <span className="text-xs font-semibold text-slate-400">{t('adminDashboard.manageNews')}</span>
                   <button
                     onClick={() => navigate('/org/xeber')}
                     className="text-xs font-bold text-violet-400 hover:text-violet-300 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Full Xeber View</span>
+                    <span>{t('adminDashboard.fullNewsView')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
 
                 {xeberList.length === 0 ? (
                   <div className="p-8 text-center text-slate-500 text-xs bg-[#10111a] rounded-xl">
-                    No news items available. Click "+ Create News" above to publish one.
+                    {t('adminDashboard.noNews')}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                          <th className="py-3 px-4">Title</th>
-                          <th className="py-3 px-4">Category</th>
-                          <th className="py-3 px-4">Status</th>
-                          <th className="py-3 px-4">Summary</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thTitle')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thCategory')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thStatus')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thSummary')}</th>
+                          <th className="py-3 px-4 text-right">{t('adminDashboard.thActions')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {xeberList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, i18n.language)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.category || 'General'}
@@ -776,11 +778,15 @@ export default function DashboardOverview() {
                                   ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' 
                                   : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
                               }`}>
-                                {item.status || 'PUBLISHED'}
+                                {item.status === 'PUBLISHED' 
+                                  ? t('adminDashboard.statusPublished') 
+                                  : item.status === 'DRAFT' 
+                                  ? t('adminDashboard.statusDraft') 
+                                  : t('adminDashboard.statusArchived')}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription, i18n.language) || getLocalizedTitle(item.introText, i18n.language) || item.content || 'N/A'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
@@ -813,36 +819,36 @@ export default function DashboardOverview() {
             {contentTab === 'meqale' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-slate-400">Manage Articles (/meqale)</span>
+                  <span className="text-xs font-semibold text-slate-400">{t('adminDashboard.manageArticles')}</span>
                   <button
                     onClick={() => navigate('/org/meqale')}
                     className="text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Full Article View</span>
+                    <span>{t('adminDashboard.fullArticlesView')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
 
                 {meqaleList.length === 0 ? (
                   <div className="p-8 text-center text-slate-500 text-xs bg-[#10111a] rounded-xl">
-                    No articles available. Click "+ Create Article" above to publish one.
+                    {t('adminDashboard.noArticles')}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                          <th className="py-3 px-4">Title</th>
-                          <th className="py-3 px-4">Author</th>
-                          <th className="py-3 px-4">Category</th>
-                          <th className="py-3 px-4">Summary</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thTitle')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thAuthor')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thCategory')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thSummary')}</th>
+                          <th className="py-3 px-4 text-right">{t('adminDashboard.thActions')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {meqaleList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, i18n.language)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.author || 'Super Admin'}
@@ -850,7 +856,7 @@ export default function DashboardOverview() {
                             </td>
                             <td className="py-3 px-4 text-slate-400">{item.category || 'Psychology'}</td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription, i18n.language) || getLocalizedTitle(item.introText, i18n.language) || item.content || 'N/A'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
@@ -883,36 +889,36 @@ export default function DashboardOverview() {
             {contentTab === 'blogs' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-slate-400">Manage Blog Posts (/blog)</span>
+                  <span className="text-xs font-semibold text-slate-400">{t('adminDashboard.manageBlogs')}</span>
                   <button
                     onClick={() => navigate('/org/blogs')}
                     className="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Full Blog View</span>
+                    <span>{t('adminDashboard.fullBlogsView')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
 
                 {blogList.length === 0 ? (
                   <div className="p-8 text-center text-slate-500 text-xs bg-[#10111a] rounded-xl">
-                    No blog posts available. Click "+ Create Blog" above to publish one.
+                    {t('adminDashboard.noBlogs')}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                          <th className="py-3 px-4">Title</th>
-                          <th className="py-3 px-4">Author</th>
-                          <th className="py-3 px-4">Category</th>
-                          <th className="py-3 px-4">Summary</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thTitle')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thAuthor')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thCategory')}</th>
+                          <th className="py-3 px-4">{t('adminDashboard.thSummary')}</th>
+                          <th className="py-3 px-4 text-right">{t('adminDashboard.thActions')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {blogList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, i18n.language)}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.authorName || 'NexusMind Editorial'}
@@ -953,19 +959,19 @@ export default function DashboardOverview() {
             {contentTab === 'gallery' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-semibold text-slate-400">Manage Gallery Items (/gallery)</span>
+                  <span className="text-xs font-semibold text-slate-400">{t('adminDashboard.manageGallery')}</span>
                   <button
                     onClick={() => navigate('/org/gallery')}
                     className="text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Full Gallery View</span>
+                    <span>{t('adminDashboard.fullGalleryView')}</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
 
                 {galleryList.length === 0 ? (
                   <div className="p-8 text-center text-slate-500 text-xs bg-[#10111a] rounded-xl">
-                    No gallery items available. Click "+ Upload Asset" above to add one.
+                    {t('adminDashboard.noGallery')}
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -976,7 +982,7 @@ export default function DashboardOverview() {
                           <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-900 relative">
                             <img
                               src={displayImg}
-                              alt={getLocalizedTitle(item.title) || 'Gallery Item'}
+                              alt={getLocalizedTitle(item.title, i18n.language) || 'Gallery Item'}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 ;(e.target as HTMLImageElement).src =
@@ -985,7 +991,7 @@ export default function DashboardOverview() {
                             />
                           </div>
                           <div className="flex items-center justify-between pt-1">
-                            <span className="text-xs font-bold text-white truncate">{getLocalizedTitle(item.title) || 'Asset'}</span>
+                            <span className="text-xs font-bold text-white truncate">{getLocalizedTitle(item.title, i18n.language) || 'Asset'}</span>
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleOpenEditItem('gallery', item)}
@@ -1019,7 +1025,7 @@ export default function DashboardOverview() {
           <div className="w-full max-w-5xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white">
-                {editingItem ? 'PUT Edit News Item (/xeber)' : 'POST Create News Item (/xeber)'}
+                {editingItem ? t('adminDashboard.editNewsTitle') : t('adminDashboard.createNewsTitle')}
               </h3>
               <button onClick={() => setActiveModal(null)} className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
@@ -1032,14 +1038,14 @@ export default function DashboardOverview() {
                 content={multilingualContent}
                 onContentChange={setMultilingualContent}
                 accentColor="violet"
-                titleLabel="News Title"
-                contentLabel="News Body Content"
+                titleLabel={t('adminDashboard.newsTitleLabel')}
+                contentLabel={t('adminDashboard.newsBodyLabel')}
                 requiredLanguages={['az']}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Category</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.categoryLabel')}</label>
                   <input
                     type="text"
                     value={formCategory}
@@ -1049,7 +1055,7 @@ export default function DashboardOverview() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Read Time (Minutes)</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.readTimeLabel')}</label>
                   <input
                     type="number"
                     value={formReadTime}
@@ -1061,36 +1067,36 @@ export default function DashboardOverview() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Status</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.statusLabel')}</label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as any)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-violet-500 transition-colors"
                   >
-                    <option value="PUBLISHED">PUBLISHED</option>
-                    <option value="DRAFT">DRAFT</option>
-                    <option value="ARCHIVED">ARCHIVED</option>
+                    <option value="PUBLISHED">{t('adminDashboard.statusPublished')}</option>
+                    <option value="DRAFT">{t('adminDashboard.statusDraft')}</option>
+                    <option value="ARCHIVED">{t('adminDashboard.statusArchived')}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Short Description</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.shortDescLabel')}</label>
                   <input
                     type="text"
                     value={formShortDesc}
                     onChange={(e) => setFormShortDesc(e.target.value)}
-                    placeholder="Summary..."
+                    placeholder={t('adminDashboard.shortDescPlaceholder')}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                 </div>
               </div>
 
               <ImageUploadInput
-                label="News Image (imageUrl)"
+                label={t('adminDashboard.newsImageLabel')}
                 value={formImageUrl}
                 onChange={setFormImageUrl}
                 folder="news"
                 accentColor="violet"
-                placeholder="https://... or upload a news cover image"
+                placeholder={t('adminDashboard.newsImagePlaceholder')}
               />
 
               {/* SEO Section */}
@@ -1098,28 +1104,28 @@ export default function DashboardOverview() {
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-violet-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <span>SEO & Metadata</span>
+                    <span>{t('adminDashboard.seoTitle')}</span>
                   </h4>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Meta Title (metaTitle)</label>
+                    <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.metaTitleLabel')}</label>
                     <input
                       type="text"
                       value={formMetaTitle}
                       onChange={(e) => setFormMetaTitle(e.target.value)}
-                      placeholder="Meta Title (metaTitle)..."
+                      placeholder={t('adminDashboard.metaTitlePlaceholder')}
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Custom Slug (slug)</label>
+                    <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.slugLabel')}</label>
                     <input
                       type="text"
                       value={formSlug}
                       onChange={(e) => setFormSlug(e.target.value)}
-                      placeholder="Slug (e.g. news-slug)..."
+                      placeholder={t('adminDashboard.slugPlaceholderNews')}
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
@@ -1128,13 +1134,13 @@ export default function DashboardOverview() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-violet-400" />
-                    <span>Keywords (metaKeywords)</span>
+                    <span>{t('adminDashboard.keywordsLabel')}</span>
                   </label>
                   <input
                     type="text"
                     value={formMetaKeywords}
                     onChange={(e) => setFormMetaKeywords(e.target.value)}
-                    placeholder="e.g. news, update, clinic, mental health"
+                    placeholder={t('adminDashboard.keywordsPlaceholderNews')}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                   {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).length > 0 && (
@@ -1151,7 +1157,7 @@ export default function DashboardOverview() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Code className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                    <span>{t('adminDashboard.schemaMarkupLabel')}</span>
                   </label>
                   <textarea
                     rows={3}
@@ -1169,7 +1175,7 @@ export default function DashboardOverview() {
                   onClick={() => setActiveModal(null)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -1177,7 +1183,7 @@ export default function DashboardOverview() {
                   className="px-7 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(139,92,246,0.3)] disabled:opacity-50"
                 >
                   {isSavingContent && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Create News (POST)'}</span>
+                  <span>{editingItem ? t('adminDashboard.saveNewsBtn') : t('adminDashboard.createNewsBtn')}</span>
                 </button>
               </div>
             </form>
@@ -1191,7 +1197,7 @@ export default function DashboardOverview() {
           <div className="w-full max-w-5xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white">
-                {editingItem ? 'PUT Edit Article (/meqale)' : 'POST Create Article (/meqale)'}
+                {editingItem ? t('adminDashboard.editArticleTitle') : t('adminDashboard.createArticleTitle')}
               </h3>
               <button onClick={() => setActiveModal(null)} className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
@@ -1204,14 +1210,14 @@ export default function DashboardOverview() {
                 content={multilingualContent}
                 onContentChange={setMultilingualContent}
                 accentColor="indigo"
-                titleLabel="Article Title"
-                contentLabel="Article Body Content"
+                titleLabel={t('adminDashboard.articleTitleLabel')}
+                contentLabel={t('adminDashboard.articleBodyLabel')}
                 requiredLanguages={['az']}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Author</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.authorLabel')}</label>
                   <input
                     type="text"
                     value={formAuthor}
@@ -1221,7 +1227,7 @@ export default function DashboardOverview() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Category</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.categoryLabel')}</label>
                   <input
                     type="text"
                     value={formCategory}
@@ -1234,46 +1240,46 @@ export default function DashboardOverview() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Doctor ID (doctorId)</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.doctorIdLabel')}</label>
                   <input
                     type="number"
                     value={formDoctorId}
                     onChange={(e) => setFormDoctorId(e.target.value)}
-                    placeholder="Optional Doctor ID..."
+                    placeholder={t('adminDashboard.doctorIdPlaceholder')}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 font-mono transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Status</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.statusLabel')}</label>
                   <select
                     value={formStatus}
                     onChange={(e) => setFormStatus(e.target.value as any)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
                   >
-                    <option value="PUBLISHED">PUBLISHED</option>
-                    <option value="DRAFT">DRAFT</option>
-                    <option value="ARCHIVED">ARCHIVED</option>
+                    <option value="PUBLISHED">{t('adminDashboard.statusPublished')}</option>
+                    <option value="DRAFT">{t('adminDashboard.statusDraft')}</option>
+                    <option value="ARCHIVED">{t('adminDashboard.statusArchived')}</option>
                   </select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">Short Description</label>
+                <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.shortDescLabel')}</label>
                 <input
                   type="text"
                   value={formShortDesc}
                   onChange={(e) => setFormShortDesc(e.target.value)}
-                  placeholder="Summary..."
+                  placeholder={t('adminDashboard.shortDescPlaceholder')}
                   className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>
               <ImageUploadInput
-                label="Article Cover Image (imageUrl)"
+                label={t('adminDashboard.articleImageLabel')}
                 value={formImageUrl}
                 onChange={setFormImageUrl}
                 folder="articles"
                 accentColor="indigo"
-                placeholder="https://... or upload an article cover"
+                placeholder={t('adminDashboard.articleImagePlaceholder')}
               />
 
               {/* SEO Section */}
@@ -1281,20 +1287,20 @@ export default function DashboardOverview() {
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <span>SEO & Metadata</span>
+                    <span>{t('adminDashboard.seoTitle')}</span>
                   </h4>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Keywords (metaKeywords)</span>
+                    <span>{t('adminDashboard.keywordsLabel')}</span>
                   </label>
                   <input
                     type="text"
                     value={formMetaKeywords}
                     onChange={(e) => setFormMetaKeywords(e.target.value)}
-                    placeholder="e.g. mental health, articles, research, clinical"
+                    placeholder={t('adminDashboard.keywordsPlaceholderArticle')}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                   {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).length > 0 && (
@@ -1311,7 +1317,7 @@ export default function DashboardOverview() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Code className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                    <span>{t('adminDashboard.schemaMarkupLabel')}</span>
                   </label>
                   <textarea
                     rows={3}
@@ -1329,7 +1335,7 @@ export default function DashboardOverview() {
                   onClick={() => setActiveModal(null)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -1337,7 +1343,7 @@ export default function DashboardOverview() {
                   className="px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(99,102,241,0.3)] disabled:opacity-50"
                 >
                   {isSavingContent && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Create Article (POST)'}</span>
+                  <span>{editingItem ? t('adminDashboard.saveArticleBtn') : t('adminDashboard.createArticleBtn')}</span>
                 </button>
               </div>
             </form>
@@ -1351,7 +1357,7 @@ export default function DashboardOverview() {
           <div className="w-full max-w-5xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white">
-                {editingItem ? 'PUT Edit Blog Post (/blog)' : 'POST Create Blog Post (/blog)'}
+                {editingItem ? t('adminDashboard.editBlogTitle') : t('adminDashboard.createBlogTitle')}
               </h3>
               <button onClick={() => setActiveModal(null)} className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
@@ -1364,14 +1370,14 @@ export default function DashboardOverview() {
                 content={multilingualContent}
                 onContentChange={setMultilingualContent}
                 accentColor="purple"
-                titleLabel="Blog Title"
-                contentLabel="Blog Body Content"
+                titleLabel={t('adminDashboard.blogTitleLabel')}
+                contentLabel={t('adminDashboard.blogBodyLabel')}
                 requiredLanguages={['az']}
               />
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Author Name</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.authorNameLabel')}</label>
                   <input
                     type="text"
                     value={formAuthor}
@@ -1381,7 +1387,7 @@ export default function DashboardOverview() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Category</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.categoryLabel')}</label>
                   <input
                     type="text"
                     value={formCategory}
@@ -1393,21 +1399,21 @@ export default function DashboardOverview() {
               </div>
 
               <ImageUploadInput
-                label="Blog Cover Image (imageUrl)"
+                label={t('adminDashboard.blogImageLabel')}
                 value={formImageUrl}
                 onChange={setFormImageUrl}
                 folder="blogs"
                 accentColor="purple"
-                placeholder="https://... or upload a blog cover"
+                placeholder={t('adminDashboard.blogImagePlaceholder')}
               />
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">Short Description</label>
+                <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.shortDescLabel')}</label>
                 <input
                   type="text"
                   value={formShortDesc}
                   onChange={(e) => setFormShortDesc(e.target.value)}
-                  placeholder="Summary..."
+                  placeholder={t('adminDashboard.shortDescPlaceholder')}
                   className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
               </div>
@@ -1417,28 +1423,28 @@ export default function DashboardOverview() {
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <span>SEO & Metadata</span>
+                    <span>{t('adminDashboard.seoTitle')}</span>
                   </h4>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Meta Title (metaTitle)</label>
+                    <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.metaTitleLabel')}</label>
                     <input
                       type="text"
                       value={formMetaTitle}
                       onChange={(e) => setFormMetaTitle(e.target.value)}
-                      placeholder="Meta Title (metaTitle)..."
+                      placeholder={t('adminDashboard.metaTitlePlaceholder')}
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Custom Slug (slug)</label>
+                    <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.slugLabel')}</label>
                     <input
                       type="text"
                       value={formSlug}
                       onChange={(e) => setFormSlug(e.target.value)}
-                      placeholder="Slug (e.g. blog-slug)..."
+                      placeholder={t('adminDashboard.slugPlaceholderBlog')}
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
@@ -1447,13 +1453,13 @@ export default function DashboardOverview() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Tag className="w-3.5 h-3.5 text-purple-400" />
-                    <span>Keywords (metaKeywords)</span>
+                    <span>{t('adminDashboard.keywordsLabel')}</span>
                   </label>
                   <input
                     type="text"
                     value={formMetaKeywords}
                     onChange={(e) => setFormMetaKeywords(e.target.value)}
-                    placeholder="e.g. blog, mental health, therapy, mind"
+                    placeholder={t('adminDashboard.keywordsPlaceholderBlog')}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                   {formMetaKeywords.split(',').map((k) => k.trim()).filter((k) => k.length > 0).length > 0 && (
@@ -1470,7 +1476,7 @@ export default function DashboardOverview() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Code className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>JSON-LD Schema Markup (schemaMarkup)</span>
+                    <span>{t('adminDashboard.schemaMarkupLabel')}</span>
                   </label>
                   <textarea
                     rows={3}
@@ -1488,7 +1494,7 @@ export default function DashboardOverview() {
                   onClick={() => setActiveModal(null)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -1496,7 +1502,7 @@ export default function DashboardOverview() {
                   className="px-7 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(168,85,247,0.3)] disabled:opacity-50"
                 >
                   {isSavingContent && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Create Blog (POST)'}</span>
+                  <span>{editingItem ? t('adminDashboard.saveBlogBtn') : t('adminDashboard.createBlogBtn')}</span>
                 </button>
               </div>
             </form>
@@ -1510,7 +1516,7 @@ export default function DashboardOverview() {
           <div className="w-full max-w-3xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 animate-scale-up max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white">
-                {editingItem ? 'PUT Edit Gallery Item (/gallery)' : 'POST Create Gallery Item (/gallery)'}
+                {editingItem ? t('adminDashboard.editGalleryTitle') : t('adminDashboard.createGalleryTitle')}
               </h3>
               <button onClick={() => setActiveModal(null)} className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
@@ -1518,18 +1524,18 @@ export default function DashboardOverview() {
             </div>
             <form onSubmit={handleSaveGallery} className="space-y-5">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-200">Title</label>
+                <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.assetTitleLabel')}</label>
                 <input
                   type="text"
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="Asset title..."
+                  placeholder={t('adminDashboard.assetTitlePlaceholder')}
                   className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Media Type</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.mediaTypeLabel')}</label>
                   <select
                     value={formMediaType}
                     onChange={(e) => setFormMediaType(e.target.value as any)}
@@ -1540,7 +1546,7 @@ export default function DashboardOverview() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Category</label>
+                  <label className="text-sm font-semibold text-slate-200">{t('adminDashboard.categoryLabel')}</label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
@@ -1553,13 +1559,13 @@ export default function DashboardOverview() {
                 </div>
               </div>
               <ImageUploadInput
-                label="Gallery Media File (imageUrl / mediaUrl)"
+                label={t('adminDashboard.galleryImageLabel')}
                 value={formImageUrl}
                 onChange={setFormImageUrl}
                 folder="gallery"
                 accentColor="emerald"
                 required
-                placeholder="https://... or upload gallery media asset"
+                placeholder={t('adminDashboard.galleryImagePlaceholder')}
               />
               <div className="flex justify-end gap-3.5 pt-4 border-t border-[#2e3146]">
                 <button
@@ -1567,7 +1573,7 @@ export default function DashboardOverview() {
                   onClick={() => setActiveModal(null)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
@@ -1575,7 +1581,7 @@ export default function DashboardOverview() {
                   className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(16,185,129,0.3)] disabled:opacity-50"
                 >
                   {isSavingContent && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Create Asset (POST)'}</span>
+                  <span>{editingItem ? t('adminDashboard.saveAssetBtn') : t('adminDashboard.createAssetBtn')}</span>
                 </button>
               </div>
             </form>
@@ -1590,9 +1596,9 @@ export default function DashboardOverview() {
       {/* Title & Subtitle Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Organization Overview</h2>
+          <h2 className="text-3xl font-extrabold text-white tracking-tight">{t('adminDashboard.orgAdminTitle')}</h2>
           <p className="text-xs text-slate-400 font-semibold mt-1">
-            BPM Admin Portal - Content Management & Organization Operations.
+            {t('adminDashboard.orgAdminSubtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -1601,7 +1607,7 @@ export default function DashboardOverview() {
             className="flex items-center gap-2 py-2 px-3.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Content</span>
+            <span>{t('adminDashboard.newContent')}</span>
           </button>
         </div>
       </div>
@@ -1617,12 +1623,12 @@ export default function DashboardOverview() {
               <Newspaper className="w-4.5 h-4.5" />
             </div>
             <span className="text-[9px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Controller
+              {t('adminDashboard.newsController')}
             </span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">News Management (Xəbər)</p>
-            <h3 className="text-2xl font-extrabold text-white mt-1">{xeberList.length} Announcements</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('adminDashboard.totalNewsArticles')}</p>
+            <h3 className="text-2xl font-extrabold text-white mt-1">{t('adminDashboard.newsAnnouncements', { count: xeberList.length })}</h3>
           </div>
         </div>
 
@@ -1635,12 +1641,12 @@ export default function DashboardOverview() {
               <BookOpen className="w-4.5 h-4.5" />
             </div>
             <span className="text-[9px] font-bold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Controller
+              {t('adminDashboard.articleController')}
             </span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Articles (Məqalə)</p>
-            <h3 className="text-2xl font-extrabold text-white mt-1">{meqaleList.length} Articles</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('adminDashboard.publishedArticles')}</p>
+            <h3 className="text-2xl font-extrabold text-white mt-1">{t('adminDashboard.articlesCount', { count: meqaleList.length })}</h3>
           </div>
         </div>
 
@@ -1653,12 +1659,12 @@ export default function DashboardOverview() {
               <FileText className="w-4.5 h-4.5" />
             </div>
             <span className="text-[9px] font-bold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Controller
+              {t('adminDashboard.blogController')}
             </span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Blog Management</p>
-            <h3 className="text-2xl font-extrabold text-white mt-1">{blogList.length} Blog Posts</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('adminDashboard.totalBlogPosts')}</p>
+            <h3 className="text-2xl font-extrabold text-white mt-1">{t('adminDashboard.blogsCount', { count: blogList.length })}</h3>
           </div>
         </div>
 
@@ -1671,12 +1677,12 @@ export default function DashboardOverview() {
               <ImageIcon className="w-4.5 h-4.5" />
             </div>
             <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded uppercase tracking-wider">
-              Controller
+              {t('adminDashboard.galleryController')}
             </span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Gallery Management</p>
-            <h3 className="text-2xl font-extrabold text-white mt-1">{galleryList.length} Gallery Photos</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('adminDashboard.galleryAssets')}</p>
+            <h3 className="text-2xl font-extrabold text-white mt-1">{t('adminDashboard.galleryPhotos', { count: galleryList.length })}</h3>
           </div>
         </div>
       </div>
@@ -1704,10 +1710,10 @@ export default function DashboardOverview() {
         <div className="bg-slate-900/40 rounded-2xl p-8 border border-slate-800 text-white relative overflow-hidden shadow-md">
           <div className="relative z-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              Welcome back, {profile?.name || 'User'}!
+              {t('adminDashboard.welcomeTitle', { name: profile?.name || 'User' })}
             </h2>
             <p className="text-slate-400 text-sm font-medium">
-              Here's an overview of the activities, schedules, and metrics under your control today.
+              {t('adminDashboard.welcomeSubtitle')}
             </p>
           </div>
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-violet-600/10 to-transparent pointer-events-none"></div>

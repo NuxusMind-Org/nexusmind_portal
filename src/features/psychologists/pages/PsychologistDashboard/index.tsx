@@ -1,8 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import Schedule from '../../components/Schedule';
 import Notebook from '../../components/Notebook';
 import ClockWidget from '../../components/ClockWidget';
 
 export function PsychologistDashboard() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1600px] mx-auto h-full flex flex-col relative overflow-x-hidden">
       {/* Background ambient glow */}
@@ -13,13 +16,13 @@ export function PsychologistDashboard() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 relative z-10">
         <div>
           <h1 className="text-2xl font-black tracking-tight text-white uppercase drop-shadow-md flex items-center gap-3">
-            Psychologist Panel
+            {t('psychologistDashboard.panelTitle', { defaultValue: 'Psychologist Panel' })}
             <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">
-              WORKSPACE
+              {t('psychologistDashboard.workspaceBadge', { defaultValue: 'WORKSPACE' })}
             </span>
           </h1>
           <p className="text-sm font-semibold text-slate-400 tracking-wide mt-1">
-            Manage your schedule and take quick notes for your sessions.
+            {t('psychologistDashboard.panelSubtitle', { defaultValue: 'Manage your schedule and take quick notes for your sessions.' })}
           </p>
         </div>
       </div>

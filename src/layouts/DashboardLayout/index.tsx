@@ -105,6 +105,16 @@ export default function DashboardLayout() {
         return t('common.analytics', { defaultValue: 'Analytics' })
       case 'Settings':
         return t('common.settings', { defaultValue: 'Settings' })
+      case 'News (Xəbər)':
+        return t('nav.news', { defaultValue: 'News (Xəbər)' })
+      case 'Articles (Məqalə)':
+        return t('nav.articles', { defaultValue: 'Articles (Məqalə)' })
+      case 'Blog Posts':
+        return t('nav.blogs', { defaultValue: 'Blog Posts' })
+      case 'Gallery':
+        return t('nav.gallery', { defaultValue: 'Gallery' })
+      case 'SEO Management':
+        return t('nav.seoManagement', { defaultValue: 'SEO Management' })
       default:
         return label
     }
@@ -204,7 +214,9 @@ export default function DashboardLayout() {
                 <div className="w-5 h-5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded flex items-center justify-center font-bold text-[10px]">
                   BPM
                 </div>
-                <span className="text-[10px] font-extrabold text-slate-500 tracking-wider">CURRENT ORGANIZATION:</span>
+                <span className="text-[10px] font-extrabold text-slate-500 tracking-wider">
+                  {t('nav.currentOrg', { defaultValue: 'CURRENT ORGANIZATION:' })}
+                </span>
                 <span className="text-white font-bold">BPM - Bakı Psixologiya Mərkəzi</span>
                 <span className="text-slate-500 text-[10px]">🔒</span>
               </div>
