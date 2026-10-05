@@ -155,9 +155,11 @@ export default function PsychologistsList() {
         ]
         const avatarColor = colorPalettes[idx % colorPalettes.length]
 
-        const specs = doc.specialization
-          ? doc.specialization.split(',').map((s) => s.trim())
-          : ['Clinical Psychology', 'Mental Health']
+        const rawSpecs = doc.specializations || (doc.specialization ? [doc.specialization] : [])
+        const specs =
+          Array.isArray(rawSpecs) && rawSpecs.length > 0
+            ? rawSpecs.flatMap((s) => (typeof s === 'string' ? s.split(',') : [])).map((s) => s.trim())
+            : ['Clinical Psychology', 'Mental Health']
 
         return {
           id: String(doc.id),

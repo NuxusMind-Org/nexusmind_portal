@@ -38,9 +38,18 @@ export const appointmentService = {
   },
 
   // Get specific appointment details by appointment ID
+  // Normalizes both single object and array responses from GET /appointments/{id}
   getAppointmentById: async (id: number | string): Promise<AppointmentDto> => {
-    const response = await api.get<AppointmentDto>(API_ENDPOINTS.APPOINTMENTS.BY_ID(id))
-    return response.data
+    const numericId = typeof id === 'number' ? id : parseInt(String(id), 10)
+    const response = await api.get<AppointmentDto | AppointmentDto[]>(
+      API_ENDPOINTS.APPOINTMENTS.BY_ID(id)
+    )
+    const data = response.data
+    if (Array.isArray(data)) {
+      const match = data.find((item) => item.id === numericId)
+      return match || data[0] || ({} as AppointmentDto)
+    }
+    return data
   },
 
   // Create a new appointment
@@ -93,10 +102,27 @@ export const appointmentService = {
     return response.data
   },
 
-
-  // Get appointment statistics
+  // Get general appointment statistics
   getAppointmentStats: async (): Promise<AppointmentStatsDto> => {
     const response = await api.get<AppointmentStatsDto>(API_ENDPOINTS.APPOINTMENTS.STATS)
     return response.data
+  },
+
+  // Get doctor specific appointment statistics (GET /appointments/doctor/stats)
+  getDoctorStats: async (): Promise<AppointmentStatsDto> => {
+    const response = await api.get<AppointmentStatsDto>(API_ENDPOINTS.APPOINTMENTS.DOCTOR_STATS)
+    return response.data
+  },
+
+  // Compare patient face for telehealth verification (POST /appointments/compare-face)
+  comparePatientFace: async (file: File): Promise<boolean> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post<boolean>(API_ENDPOINTS.APPOINTMENTS.COMPARE_FACE, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return Boolean(response.data)
   },
 }

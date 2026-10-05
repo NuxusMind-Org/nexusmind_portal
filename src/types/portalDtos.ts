@@ -79,17 +79,13 @@ export interface SiteSettingsRequestDto {
 }
 
 export interface SiteSettingsResponseDto {
-  id?: number
-  siteName?: string
-  siteDescription?: string
-  logoUrl?: string
-  faviconUrl?: string
-  contactEmail?: string
-  contactPhone?: string
-  footerText?: string
-  maintenanceMode?: boolean
-  socialLinks?: Record<string, string>
+  customHeadScripts?: string
+  customBodyScripts?: string
+  robotsTxt?: string
+  llmsTxt?: string
   updatedAt?: string
+  custom_head_scripts?: string
+  custom_body_scripts?: string
   [key: string]: unknown
 }
 
@@ -347,8 +343,14 @@ export interface DaySchedule {
   hours: number[]
 }
 
+export type DayTemplate = DaySchedule
+
 export interface SaveScheduleRequest {
   days: DaySchedule[]
+}
+
+export interface SaveWeeklyTemplateRequest {
+  days?: DayTemplate[]
 }
 
 // GET response from /doctors/me/working-hours/template mirrors the POST body
@@ -381,41 +383,82 @@ export interface PatientDto {
 
 export interface PasientRegisterDto {
   id?: number
+  name?: string
+  surname?: string
   fullName?: string
   email?: string
   password?: string
   phone?: string
   birthDate?: string
+  age?: number
   gender?: string
   address?: string
   mood?: PatientMood
+  registrationImageUrl?: string
+  [key: string]: unknown
+}
+
+export interface PasientRegisterEntity {
+  id: number
+  name?: string
+  surname?: string
+  email?: string
+  age?: number
+  password?: string
+  phone?: string
+  deletedAt?: string
+  mood?: PatientMood
+  moodUpdatedDate?: string
+  profileImageUrl?: string
+  status?: 'TELEBE' | 'ISCI' | 'DIGER' | string
+  language?: 'AZ' | 'EN' | 'RU' | string
+  twoFactorEnabled?: boolean
+  appointments?: AppointmentDto[]
+  verified?: boolean
   [key: string]: unknown
 }
 
 export interface DoctorDto {
   id: number
+  username?: string
   fullName?: string
   name?: string
-  email: string
+  email?: string
   specialization?: string
+  specializations?: string[]
+  title?: TitleDto
+  price?: number
+  experienceYear?: number
+  rating?: number
+  bio?: TitleDto
+  imageUrl?: string
+  avatarUrl?: string
   status?: string
   phone?: string
-  avatarUrl?: string
   licenseNumber?: string
   patientCount?: number
   sessionCount?: number
   satisfactionRate?: number
   nextAvailability?: string
   joinedDate?: string
+  languages?: string[]
+  education?: string[]
+  certificates?: string[]
+  trainings?: string[]
   [key: string]: unknown
 }
 
 export interface DoctorRegisterDto {
-  fullName: string
-  email: string
-  password: string
-  specialization: string
+  name?: string
+  surname?: string
+  fatherName?: string
+  fullName?: string
+  email?: string
+  password?: string
+  specialization?: string
+  age?: number
   phone?: string
+  cv?: File | string
 }
 
 // Profile DTOs
@@ -474,8 +517,11 @@ export interface JournalEntryResponse {
 
 // SEO Management DTOs
 export interface SeoScriptsDto {
+  customHeadScripts?: string
+  customBodyScripts?: string
   custom_head_scripts?: string
   custom_body_scripts?: string
+  [key: string]: unknown
 }
 
 export interface SitemapUrlEntry {
@@ -517,8 +563,11 @@ export type AppointmentMode = 'VR' | 'VIDEO_CALL' | 'APP'
 
 export interface AppointmentDto {
   id: number
+  patientId?: number
   patientName?: string
+  doctorId?: number
   doctorName?: string
+  doctorProfileImageUrl?: string
   appointmentDate?: string
   appointmentTime?: LocalTime | string
   status?: AppointmentStatus
@@ -549,13 +598,16 @@ export interface SessionNoteDto {
 }
 
 export interface CreateSessionNoteRequest {
-  subjective?: string
-  objective?: string
-  assessment?: string
-  plan?: string
+  subjective: string
+  objective: string
+  assessment: string
+  plan: string
 }
 
 export interface AppointmentStatsDto {
+  todayCount?: number
+  weekCount?: number
+  monthCount?: number
   totalAppointments?: number
   completedAppointments?: number
   upcomingAppointments?: number
@@ -578,8 +630,10 @@ export interface ChatMessageResponseDto {
   senderId?: number | string
   senderName?: string
   senderRole?: string
-  message: string
+  message?: string
+  content?: string
   timestamp?: string
+  sentAt?: string
   createdAt?: string
   [key: string]: unknown
 }

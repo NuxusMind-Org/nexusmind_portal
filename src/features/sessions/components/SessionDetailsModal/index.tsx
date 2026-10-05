@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react'
-import { X, Calendar, Clock, Video, Eye, AlertCircle, FileText, Loader2 } from 'lucide-react'
+import {
+  X,
+  Calendar,
+  Clock,
+  Video,
+  Eye,
+  AlertCircle,
+  FileText,
+  Loader2,
+  Edit3,
+  Save,
+  Plus,
+} from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { appointmentService } from '../../../../api'
 import type { Session } from '../../types/session'
@@ -19,10 +31,16 @@ export default function SessionDetailsModal({
   onClose,
   onJoinRoom,
 }: SessionDetailsModalProps) {
-
   const { t } = useTranslation()
   const [notes, setNotes] = useState<SessionNoteDto | null>(null)
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
+  const [isEditingNotes, setIsEditingNotes] = useState(false)
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
+  const [noteSubjective, setNoteSubjective] = useState('')
+  const [noteObjective, setNoteObjective] = useState('')
+  const [noteAssessment, setNoteAssessment] = useState('')
+  const [notePlan, setNotePlan] = useState('')
+  const [noteFeedback, setNoteFeedback] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -31,16 +49,25 @@ export default function SessionDetailsModal({
       return
     }
 
+    setIsLoadingNotes(true)
     appointmentService
       .getAppointmentNotes(session.id)
       .then((res: SessionNoteDto) => {
         if (isMounted) {
           setNotes(res)
+          setNoteSubjective(res.subjective || '')
+          setNoteObjective(res.objective || '')
+          setNoteAssessment(res.assessment || '')
+          setNotePlan(res.plan || '')
         }
       })
       .catch(() => {
         if (isMounted) {
           setNotes(null)
+          setNoteSubjective('')
+          setNoteObjective('')
+          setNoteAssessment('')
+          setNotePlan('')
         }
       })
       .finally(() => {
@@ -54,6 +81,28 @@ export default function SessionDetailsModal({
     }
   }, [isOpen, session?.id])
 
+  const handleSaveNotes = async () => {
+    if (!session?.id) return
+    setIsSavingNotes(true)
+    setNoteFeedback(null)
+    try {
+      const res = await appointmentService.addAppointmentNote(session.id, {
+        subjective: noteSubjective,
+        objective: noteObjective,
+        assessment: noteAssessment,
+        plan: notePlan,
+      })
+      setNotes(res)
+      setIsEditingNotes(false)
+      setNoteFeedback('Klinik qeyd uğurla saxlanıldı!')
+      setTimeout(() => setNoteFeedback(null), 3000)
+    } catch (err) {
+      console.error('Failed to save notes:', err)
+      setNoteFeedback('Xəta: Qeydi saxlamaq mümkün olmadı.')
+    } finally {
+      setIsSavingNotes(false)
+    }
+  }
 
   if (!isOpen || !session) return null
 
@@ -181,40 +230,147 @@ export default function SessionDetailsModal({
           </div>
         </div>
 
-        {/* Clinical SOAP Notes (if available or completed) */}
-        {isLoadingNotes ? (
-          <div className="p-3 bg-[#1b1c2b]/30 border border-[#222437]/50 rounded-lg flex items-center justify-center gap-2 text-xs text-slate-400">
-            <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
-            <span>Loading clinical notes...</span>
-          </div>
-        ) : hasSoapContent ? (
-          <div className="space-y-2 bg-[#1b1c2b]/40 border border-[#222437] p-3.5 rounded-xl text-xs">
+        {/* Clinical SOAP Notes */}
+        <div className="space-y-2 bg-[#1b1c2b]/40 border border-[#222437] p-3.5 rounded-xl text-xs">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-slate-300 font-bold text-xs uppercase tracking-wider">
               <FileText className="w-3.5 h-3.5 text-violet-400" />
               <span>Clinical Session Notes (SOAP)</span>
             </div>
-            {notes?.subjective && (
-              <p className="text-slate-400">
-                <strong className="text-slate-300">S:</strong> {notes.subjective}
-              </p>
-            )}
-            {notes?.objective && (
-              <p className="text-slate-400">
-                <strong className="text-slate-300">O:</strong> {notes.objective}
-              </p>
-            )}
-            {notes?.assessment && (
-              <p className="text-slate-400">
-                <strong className="text-slate-300">A:</strong> {notes.assessment}
-              </p>
-            )}
-            {notes?.plan && (
-              <p className="text-slate-400">
-                <strong className="text-slate-300">P:</strong> {notes.plan}
-              </p>
+            {!isEditingNotes && (
+              <button
+                type="button"
+                onClick={() => setIsEditingNotes(true)}
+                className="flex items-center gap-1 text-[11px] font-semibold text-violet-400 hover:text-violet-300 transition-colors cursor-pointer"
+              >
+                {hasSoapContent ? (
+                  <>
+                    <Edit3 className="w-3 h-3" />
+                    <span>Düzəliş et</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-3 h-3" />
+                    <span>Qeyd əlavə et</span>
+                  </>
+                )}
+              </button>
             )}
           </div>
-        ) : null}
+
+          {noteFeedback && (
+            <div className="p-2 text-[11px] rounded bg-violet-500/10 border border-violet-500/20 text-violet-300">
+              {noteFeedback}
+            </div>
+          )}
+
+          {isLoadingNotes ? (
+            <div className="p-3 rounded-lg flex items-center justify-center gap-2 text-xs text-slate-400">
+              <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+              <span>Loading clinical notes...</span>
+            </div>
+          ) : isEditingNotes ? (
+            <div className="space-y-3 pt-2">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Subjective (S)
+                </label>
+                <textarea
+                  value={noteSubjective}
+                  onChange={(e) => setNoteSubjective(e.target.value)}
+                  placeholder="Patient reports / complaints..."
+                  rows={2}
+                  className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Objective (O)
+                </label>
+                <textarea
+                  value={noteObjective}
+                  onChange={(e) => setNoteObjective(e.target.value)}
+                  placeholder="Clinical observations, vital signs..."
+                  rows={2}
+                  className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Assessment (A)
+                </label>
+                <textarea
+                  value={noteAssessment}
+                  onChange={(e) => setNoteAssessment(e.target.value)}
+                  placeholder="Analysis, progress, diagnosis..."
+                  rows={2}
+                  className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
+                  Plan (P)
+                </label>
+                <textarea
+                  value={notePlan}
+                  onChange={(e) => setNotePlan(e.target.value)}
+                  placeholder="Treatment plan, interventions, next appointment..."
+                  rows={2}
+                  className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setIsEditingNotes(false)}
+                  disabled={isSavingNotes}
+                  className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 rounded cursor-pointer"
+                >
+                  Ləğv et
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveNotes}
+                  disabled={isSavingNotes}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded text-xs font-bold uppercase tracking-wider disabled:opacity-50 cursor-pointer shadow"
+                >
+                  {isSavingNotes ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isSavingNotes ? 'Saxlanılır...' : 'Yadda Saxla'}</span>
+                </button>
+              </div>
+            </div>
+          ) : hasSoapContent ? (
+            <div className="space-y-1.5 pt-1">
+              {notes?.subjective && (
+                <p className="text-slate-400">
+                  <strong className="text-slate-300">S:</strong> {notes.subjective}
+                </p>
+              )}
+              {notes?.objective && (
+                <p className="text-slate-400">
+                  <strong className="text-slate-300">O:</strong> {notes.objective}
+                </p>
+              )}
+              {notes?.assessment && (
+                <p className="text-slate-400">
+                  <strong className="text-slate-300">A:</strong> {notes.assessment}
+                </p>
+              )}
+              {notes?.plan && (
+                <p className="text-slate-400">
+                  <strong className="text-slate-300">P:</strong> {notes.plan}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-slate-500 text-xs italic pt-1">Bu sessiya üçün SOAP qeydi mövcud deyil.</p>
+          )}
+        </div>
 
         {/* Status indicator row */}
         <div className="flex items-center justify-between text-xs font-semibold">

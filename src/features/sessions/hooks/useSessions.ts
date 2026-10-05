@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { appointmentService } from '../../../api'
 import { useUserStore } from '../../../store/userStore'
 import type { Session, TimeFilter } from '../types/session'
+import type { AppointmentStatsDto } from '../../../types/portalDtos'
 import {
   mapAppointmentToSession,
   filterSessionsByInterval,
@@ -26,8 +27,8 @@ export function useSessions() {
     resolveNumericId(profile?.id) ??
     1
 
-
   const [sessions, setSessions] = useState<Session[]>([])
+  const [doctorStats, setDoctorStats] = useState<AppointmentStatsDto | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
@@ -43,10 +44,22 @@ export function useSessions() {
     setError(null)
 
     try {
-      const data = await appointmentService.getAppointmentsByPsychologistId(activeDoctorId)
-      const mapped = (data || []).map((app) => mapAppointmentToSession(app))
-      const sorted = sortSessionsChronologically(mapped)
-      setSessions(sorted)
+      const [data, stats] = await Promise.allSettled([
+        appointmentService.getAppointmentsByPsychologistId(activeDoctorId),
+        appointmentService.getDoctorStats(),
+      ])
+
+      if (data.status === 'fulfilled') {
+        const mapped = (data.value || []).map((app) => mapAppointmentToSession(app))
+        const sorted = sortSessionsChronologically(mapped)
+        setSessions(sorted)
+      } else {
+        throw data.reason
+      }
+
+      if (stats.status === 'fulfilled') {
+        setDoctorStats(stats.value)
+      }
     } catch (err: unknown) {
       console.error('Failed to load appointments for psychologist:', err)
       const errorMsg =
@@ -65,53 +78,64 @@ export function useSessions() {
       return
     }
 
-    appointmentService
-      .getAppointmentsByPsychologistId(activeDoctorId)
-      .then((data) => {
-        if (isMounted) {
-          const mapped = (data || []).map((app) => mapAppointmentToSession(app))
-          const sorted = sortSessionsChronologically(mapped)
-          setSessions(sorted)
-        }
-      })
-      .catch((err: unknown) => {
-        if (isMounted) {
-          console.error('Failed to load appointments for psychologist:', err)
-          const errorMsg =
-            (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-            'Failed to load therapy sessions from server.'
-          setError(errorMsg)
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      })
+    Promise.allSettled([
+      appointmentService.getAppointmentsByPsychologistId(activeDoctorId),
+      appointmentService.getDoctorStats(),
+    ]).then(([appointmentsResult, statsResult]) => {
+      if (!isMounted) return
+
+      if (appointmentsResult.status === 'fulfilled') {
+        const mapped = (appointmentsResult.value || []).map((app) =>
+          mapAppointmentToSession(app)
+        )
+        const sorted = sortSessionsChronologically(mapped)
+        setSessions(sorted)
+      } else {
+        console.error('Failed to load appointments for psychologist:', appointmentsResult.reason)
+        const errorMsg =
+          (appointmentsResult.reason as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || 'Failed to load therapy sessions from server.'
+        setError(errorMsg)
+      }
+
+      if (statsResult.status === 'fulfilled') {
+        setDoctorStats(statsResult.value)
+      }
+
+      setIsLoading(false)
+    })
 
     return () => {
       isMounted = false
     }
   }, [activeDoctorId])
 
-
   // Computed time-interval subsets
   const todaySessions = useMemo(() => filterSessionsByInterval(sessions, 'today'), [sessions])
   const weekSessions = useMemo(() => filterSessionsByInterval(sessions, 'week'), [sessions])
   const monthSessions = useMemo(() => filterSessionsByInterval(sessions, 'month'), [sessions])
 
-  // Computed metrics excluding cancelled sessions
+  // Computed metrics with live backend stats priority
   const todayActiveCount = useMemo(
-    () => todaySessions.filter((s) => s.status !== 'Cancelled').length,
-    [todaySessions]
+    () =>
+      typeof doctorStats?.todayCount === 'number'
+        ? doctorStats.todayCount
+        : todaySessions.filter((s) => s.status !== 'Cancelled').length,
+    [doctorStats?.todayCount, todaySessions]
   )
   const weekActiveCount = useMemo(
-    () => weekSessions.filter((s) => s.status !== 'Cancelled').length,
-    [weekSessions]
+    () =>
+      typeof doctorStats?.weekCount === 'number'
+        ? doctorStats.weekCount
+        : weekSessions.filter((s) => s.status !== 'Cancelled').length,
+    [doctorStats?.weekCount, weekSessions]
   )
   const monthActiveCount = useMemo(
-    () => monthSessions.filter((s) => s.status !== 'Cancelled').length,
-    [monthSessions]
+    () =>
+      typeof doctorStats?.monthCount === 'number'
+        ? doctorStats.monthCount
+        : monthSessions.filter((s) => s.status !== 'Cancelled').length,
+    [doctorStats?.monthCount, monthSessions]
   )
 
   const getSessionsForFilter = useCallback(

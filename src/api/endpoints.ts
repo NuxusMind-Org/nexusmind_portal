@@ -46,6 +46,8 @@ export const API_ENDPOINTS = {
   },
   DOCTORS: {
     REGISTER: '/doctors/register',
+    ME_PATIENTS: '/doctors/me/patients',
+    ALL_DOCTORS: '/doctors/doctors',
     WORKING_HOURS_ME: '/doctors/me/working-hours/template',
     WORKING_HOURS_AVAILABLE: (doctorId: number | string) => `/doctors/${doctorId}/working-hours/available`,
   },
@@ -59,7 +61,10 @@ export const API_ENDPOINTS = {
     PHOTO: '/profile/photo',
   },
   SITE_SETTINGS: {
-    BASE: '/admin/site-settings',
+    SCRIPTS: '/site-settings/scripts',
+    ROBOTS: '/robots.txt',
+    SITEMAP: '/sitemap.xml',
+    LLMS: '/llms.txt',
   },
   OTP: {
     VERIFY: '/otp/verify',
@@ -71,10 +76,10 @@ export const API_ENDPOINTS = {
     SAVE_TODAY: '/journal',
   },
   SEO: {
-    SCRIPTS: '/seo/scripts',
-    ROBOTS: '/seo/robots',
-    SITEMAP: '/seo/sitemap',
-    LLMS: '/seo/llms',
+    SCRIPTS: '/site-settings/scripts',
+    ROBOTS: '/robots.txt',
+    SITEMAP: '/sitemap.xml',
+    LLMS: '/llms.txt',
   },
   APPOINTMENTS: {
     BASE: '/appointments',
@@ -83,7 +88,10 @@ export const API_ENDPOINTS = {
     CANCEL: (id: number | string) => `/appointments/${id}/cancel`,
     NOTES: (id: number | string) => `/appointments/${id}/notes`,
     JOIN_TOKEN: (id: number | string) => `/appointments/${id}/join-token`,
+    PROFILE_IMAGE: '/appointments/doctors/me/profile-image',
+    COMPARE_FACE: '/appointments/compare-face',
     STATS: '/appointments/stats',
+    DOCTOR_STATS: '/appointments/doctor/stats',
   },
   CHAT: {
     MESSAGES: (appointmentId: number | string) => `/chat/${appointmentId}/messages`,

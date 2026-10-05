@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Search, UserPlus, SlidersHorizontal, AlertCircle } from 'lucide-react'
+import { Search, UserPlus, SlidersHorizontal, AlertCircle, RefreshCw, Loader2 } from 'lucide-react'
 import PatientCard from '../../components/PatientCard'
 import PatientDetailsModal from '../../components/PatientDetailsModal'
 import type { Patient } from '../../types/patient'
+import { doctorService } from '../../../../api'
+import type { PasientRegisterEntity } from '../../../../types/portalDtos'
 
 const INITIAL_PATIENTS: Patient[] = [
   {
@@ -73,13 +75,66 @@ const INITIAL_PATIENTS: Patient[] = [
   }
 ]
 
+const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patient => {
+  const name = [entity.name, entity.surname].filter(Boolean).join(' ') || `Patient #${entity.id}`
+  const avatarColors = [
+    'from-teal-500/20 to-emerald-500/20 text-emerald-400',
+    'from-slate-700/50 to-slate-800/50 text-slate-400',
+    'from-violet-600/20 to-indigo-600/20 text-violet-400',
+    'from-teal-600/20 to-cyan-600/20 text-teal-400',
+    'from-purple-600/20 to-pink-600/20 text-purple-400',
+  ]
+  const avatarColor = avatarColors[index % avatarColors.length]
+  const moodStr = entity.mood
+    ? entity.mood.charAt(0).toUpperCase() + entity.mood.slice(1).toLowerCase()
+    : 'Stable'
+  const priority: 'High' | 'Medium' | 'Normal' =
+    entity.mood === 'SAD' ? 'High' : entity.mood === 'TIRED' ? 'Medium' : 'Normal'
+  const statusTag =
+    entity.status === 'TELEBE' ? 'Tələbə' : entity.status === 'ISCI' ? 'İşçi' : 'Pasiyent'
+
+  return {
+    id: String(entity.id),
+    name,
+    email: entity.email || 'N/A',
+    phone: entity.phone || 'N/A',
+    avatarColor,
+    status: 'Active',
+    priority,
+    tag: statusTag,
+    lastSession: entity.moodUpdatedDate ? `Mood updated ${entity.moodUpdatedDate}` : 'N/A',
+    nextSession: 'Scheduled',
+    mood: moodStr,
+  }
+}
+
 export default function PatientsList() {
   const { t } = useTranslation()
   const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPriority, setSelectedPriority] = useState<string>('All')
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
+
+  const loadPatients = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const data = await doctorService.getMyPatients()
+      if (Array.isArray(data) && data.length > 0) {
+        setPatients(data.map(mapEntityToPatient))
+      }
+    } catch (err) {
+      console.warn('Could not load live patients list from /doctors/me/patients:', err)
+      // Fallback to initial patients
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadPatients()
+  }, [loadPatients])
 
   const handleAddPatient = () => {
     // Prevent adding duplicates
@@ -146,13 +201,24 @@ export default function PatientsList() {
             {t('patients.subtitle')}
           </p>
         </div>
-        <button 
-          onClick={handleAddPatient}
-          className="flex items-center gap-2 py-2.5 px-4 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
-        >
-          <UserPlus className="w-4 h-4 text-white" />
-          <span>{t('patients.addPatient')}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => loadPatients()}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-[#141521] hover:bg-[#1b1c2b] border border-[#222437] hover:border-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
+            title="Refresh Patients"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-violet-400' : ''}`} />
+            <span>Yenilə</span>
+          </button>
+          <button 
+            onClick={handleAddPatient}
+            className="flex items-center gap-2 py-2 px-4 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
+          >
+            <UserPlus className="w-4 h-4 text-white" />
+            <span>{t('patients.addPatient')}</span>
+          </button>
+        </div>
       </div>
 
       {/* Caseload Metrics Overview */}
@@ -219,7 +285,12 @@ export default function PatientsList() {
       </div>
 
       {/* Grid List */}
-      {filteredPatients.length === 0 ? (
+      {isLoading ? (
+        <div className="bg-[#141521]/50 border border-[#222437] p-16 rounded-xl flex flex-col items-center justify-center space-y-3">
+          <Loader2 className="w-8 h-8 text-violet-400 animate-spin" />
+          <p className="text-sm font-semibold text-slate-300">Pasiyent siyahısı yüklənir...</p>
+        </div>
+      ) : filteredPatients.length === 0 ? (
         <div className="bg-[#141521]/50 border border-[#222437] p-12 rounded-xl text-center space-y-2">
           <p className="text-sm font-semibold text-slate-400">{t('patients.noPatients')}</p>
           <p className="text-xs text-slate-500 font-medium">{t('patients.clearFilters')}</p>

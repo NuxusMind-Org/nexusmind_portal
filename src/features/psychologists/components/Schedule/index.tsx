@@ -230,7 +230,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   }, [])
 
   const currentDateStr = currentDate.format('YYYY-MM-DD')
-  const todayDayOfWeek = currentDate.format('dddd').toUpperCase() as DayOfWeek
+  const todayDayOfWeek = WEEK_DAY_KEYS[currentDate.isoWeekday() - 1]
   const todayHours = workingHours[todayDayOfWeek] ?? []
   const dayAppointments = useMemo(
     () => getAppointmentsForDate(appointments, currentDateStr),

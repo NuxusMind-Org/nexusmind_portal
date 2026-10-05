@@ -1,25 +1,60 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, FileText, CheckCircle2 } from 'lucide-react';
+import { useUserStore } from '../../../../store/userStore';
 
 export default function Notebook() {
   const { t } = useTranslation();
+  const { profile } = useUserStore();
+  const storageKey = `nexusmind_psy_quicknotes_${profile?.doctorId || profile?.id || 'default'}`;
+
   const [note, setNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
-  // Mock auto-save
+  // Load persisted note on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) {
+        setNote(saved);
+        setLastSaved(new Date());
+      }
+    } catch {
+      // ignore
+    }
+  }, [storageKey]);
+
+  // Auto-save debounced to localStorage
   useEffect(() => {
     if (!note) return;
     
     setIsSaving(true);
     const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem(storageKey, note);
+      } catch {
+        // ignore
+      }
       setIsSaving(false);
       setLastSaved(new Date());
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [note]);
+  }, [note, storageKey]);
+
+  const handleManualSave = () => {
+    setIsSaving(true);
+    try {
+      localStorage.setItem(storageKey, note);
+    } catch {
+      // ignore
+    }
+    setTimeout(() => {
+      setIsSaving(false);
+      setLastSaved(new Date());
+    }, 300);
+  };
 
   return (
     <div className="bg-gradient-to-b from-[#11121d] to-[#141521] border border-[#202235] hover:border-violet-500/30 transition-colors rounded-xl flex flex-col flex-1 min-h-[300px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] overflow-hidden relative">
@@ -74,11 +109,8 @@ export default function Notebook() {
       {/* Footer/Actions */}
       <div className="p-4 border-t border-[#202235] bg-[#141521] flex justify-end shrink-0">
         <button 
-          className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_4px_12px_rgba(124,58,237,0.25)]"
-          onClick={() => {
-            setIsSaving(true);
-            setTimeout(() => { setIsSaving(false); setLastSaved(new Date()); }, 500);
-          }}
+          className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-[0_4px_12px_rgba(124,58,237,0.25)] cursor-pointer"
+          onClick={handleManualSave}
         >
           <Save className="w-4 h-4" />
           {t('psychologistDashboard.saveNoteBtn', { defaultValue: 'Save Note' })}
