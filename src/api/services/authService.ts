@@ -65,5 +65,27 @@ export const authService = {
     const response = await api.post<string>(API_ENDPOINTS.OTP.VERIFY, data)
     return response.data
   },
+
+  // Logout (POST /auth/logout)
+  logout: async (): Promise<string> => {
+    const response = await api.post<string>(API_ENDPOINTS.AUTH.LOGOUT)
+    return response.data
+  },
+
+  // Validate JWT Token (GET /auth/validate)
+  validateToken: async (): Promise<boolean> => {
+    const response = await api.get<boolean>(API_ENDPOINTS.AUTH.VALIDATE)
+    return Boolean(response.data)
+  },
+
+  // Upload Registration Image (POST /auth/upload)
+  uploadRegistrationImage: async (file: File): Promise<string> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post<string>(API_ENDPOINTS.AUTH.UPLOAD_REGISTRATION_IMAGE, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
 }
 

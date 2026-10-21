@@ -125,4 +125,20 @@ export const appointmentService = {
     })
     return Boolean(response.data)
   },
+
+  // Upload Doctor Profile Image (POST /appointments/doctors/me/profile-image)
+  uploadProfileImage: async (file: File): Promise<Record<string, string>> => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await api.post<Record<string, string>>(
+      API_ENDPOINTS.APPOINTMENTS.PROFILE_IMAGE,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    return response.data
+  },
 }

@@ -184,7 +184,7 @@ export default function BlogPreview() {
 
             {item.shortDescription && (
               <p className="text-base sm:text-lg font-medium text-purple-200/90 leading-relaxed italic border-l-4 border-purple-500 pl-4 py-1">
-                {item.shortDescription}
+                {getLocalizedTitle(item.shortDescription)}
               </p>
             )}
           </div>
@@ -192,7 +192,7 @@ export default function BlogPreview() {
           {/* Intro Paragraph */}
           {item.introText && (
             <div className="mx-6 sm:mx-12 p-5 bg-[#1b1c2b] border border-[#2e3146] rounded-2xl text-sm sm:text-base text-slate-200 leading-relaxed font-normal">
-              {item.introText}
+              {getLocalizedTitle(item.introText)}
             </div>
           )}
 
@@ -209,7 +209,7 @@ export default function BlogPreview() {
                       <span>{getLocalizedTitle(section.title)}</span>
                     </h2>
                     <div className="text-slate-300 leading-relaxed text-sm sm:text-base whitespace-pre-line pt-1">
-                      {section.text}
+                      {getLocalizedTitle(section.text)}
                     </div>
                   </div>
                 ))}
@@ -240,7 +240,7 @@ export default function BlogPreview() {
                 {item.metaTitle || localizedTitle}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                {getLocalizedTitle(item.metaDescription) || item.shortDescription || item.introText || 'No meta description provided.'}
+                {getLocalizedTitle(item.metaDescription) || getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || 'No meta description provided.'}
               </p>
             </div>
           </div>

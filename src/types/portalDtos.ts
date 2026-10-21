@@ -148,12 +148,12 @@ export interface MeqaleHighlightCardResponseDto {
 
 export interface BlogSectionRequest {
   title: TitleDto | string
-  text: string
+  text: TitleDto | string
 }
 
 export interface BlogSectionResponse {
   title?: TitleDto | string
-  text?: string
+  text?: TitleDto | string
   order?: number
 }
 
@@ -247,8 +247,8 @@ export interface MeqaleResponseDto {
 
 export interface BlogRequest {
   title: TitleDto | string
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto | string
+  introText?: TitleDto | string
   sections?: ContentSection[] | BlogSectionRequest[]
   imageUrl?: string
   coverImage?: string
@@ -269,8 +269,8 @@ export interface BlogRequest {
 export interface BlogResponse {
   id: number
   title: TitleDto | string
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto | string
+  introText?: TitleDto | string
   sections?: BlogSectionResponse[] | ContentSection[]
   imageUrl?: string
   coverImage?: string
@@ -317,8 +317,15 @@ export interface GalleryItemResponse {
 // Training DTOs
 export interface TrainingRequest {
   title: string
-  description: string
-  type?: string
+  tags?: string[]
+  type?: 'ONLINE' | 'IN_PERSON' | string
+  trainingDate?: string // YYYY-MM-DD
+  trainingTime?: LocalTime
+  location?: string
+  priceAzn?: number
+  imageUrl?: string
+  live?: boolean
+  description?: string
   date?: string
   durationMinutes?: number
   maxParticipants?: number
@@ -327,12 +334,26 @@ export interface TrainingRequest {
 export interface TrainingResponse {
   id: number
   title: string
-  description: string
+  tags?: string[]
   type?: string
+  typeLabel?: string
+  trainingDate?: string
+  trainingTime?: LocalTime
+  location?: string
+  priceAzn?: number
+  imageUrl?: string
+  live?: boolean
+  description?: string
   date?: string
   durationMinutes?: number
   maxParticipants?: number
   registeredCount?: number
+}
+
+export interface TrainingTypeCountResponse {
+  value?: string
+  label?: string
+  count?: number
 }
 
 // Doctor Working Hours DTOs
@@ -351,6 +372,12 @@ export interface SaveScheduleRequest {
 
 export interface SaveWeeklyTemplateRequest {
   days?: DayTemplate[]
+}
+
+export interface AvailableSlotDto {
+  date?: string
+  time?: LocalTime
+  booked?: boolean
 }
 
 // GET response from /doctors/me/working-hours/template mirrors the POST body
@@ -502,16 +529,23 @@ export interface OnboardingResponse {
 }
 
 export interface JournalEntryRequest {
-  content: string
-  mood?: string
+  mood: 'VERY_LOW' | 'LOW' | 'NEUTRAL' | 'GOOD' | 'VERY_GOOD' | string
+  thoughts?: TitleDto | string
+  content?: string
   tags?: string[]
   [key: string]: unknown
 }
 
 export interface JournalEntryResponse {
   id: number
-  content: string
+  entryDate?: string
+  mood?: string
+  moodLabel?: string
+  moodScore?: number
+  thoughts?: TitleDto | string
+  content?: string
   createdAt?: string
+  updatedAt?: string
   [key: string]: unknown
 }
 
@@ -637,6 +671,8 @@ export interface ChatMessageResponseDto {
   createdAt?: string
   [key: string]: unknown
 }
+
+export type FileUploadRawResponse = string
 
 export interface FileUploadResponse {
   imageUrl: string

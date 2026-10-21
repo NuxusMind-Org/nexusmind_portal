@@ -9,6 +9,10 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
     ADD_PATIENT: '/auth/add',
+    ALL_USERS: '/auth',
+    VALIDATE: '/auth/validate',
+    LOGOUT: '/auth/logout',
+    UPLOAD_REGISTRATION_IMAGE: '/auth/upload',
     PATIENT_BY_ID: (id: number | string) => `/auth/${id}`,
     PATIENT_MOOD: (patientId: number | string) => `/auth/${patientId}/mood`,
     REFRESH: '/auth/refresh',
@@ -16,14 +20,22 @@ export const API_ENDPOINTS = {
   XEBER: {
     BASE: '/xeber',
     BY_ID: (id: number | string) => `/xeber/${id}`,
+    SEARCH: '/xeber/search',
+    CATEGORY: (category: string) => `/xeber/category/${category}`,
+    ADMIN_ALL: '/xeber/admin/all',
   },
   MEQALE: {
     BASE: '/meqale',
     BY_ID: (id: number | string) => `/meqale/${id}`,
+    SEARCH: '/meqale/search',
+    CATEGORY: (category: string) => `/meqale/category/${category}`,
+    ADMIN_ALL: '/meqale/admin/all',
   },
   BLOG: {
     BASE: '/blog',
     BY_ID: (id: number | string) => `/blog/${id}`,
+    SEARCH: '/blog/search',
+    CATEGORY: (category: string) => `/blog/category/${category}`,
   },
   GALLERY: {
     BASE: '/gallery',
@@ -33,6 +45,9 @@ export const API_ENDPOINTS = {
     BASE: '/trainings',
     BY_ID: (id: number | string) => `/trainings/${id}`,
     REGISTER: (id: number | string) => `/trainings/${id}/register`,
+    TYPE_COUNTS: '/trainings/type-counts',
+    POPULAR_TAGS: '/trainings/popular-tags',
+    CALENDAR: '/trainings/calendar',
   },
   NEXUSMIND_ADMIN: {
     PATIENTS: '/nexusmind/patients',
@@ -45,6 +60,8 @@ export const API_ENDPOINTS = {
     DOCTORS: '/bpm/doctors',
   },
   DOCTORS: {
+    BASE: '/doctors',
+    BY_ID: (id: number | string) => `/doctors/${id}`,
     REGISTER: '/doctors/register',
     ME_PATIENTS: '/doctors/me/patients',
     ALL_DOCTORS: '/doctors/doctors',
@@ -53,7 +70,7 @@ export const API_ENDPOINTS = {
   },
   PROFILE: {
     STATUS: '/profile/status',
-    PASSWORD: '/profile/password',
+    PASSWORD: '/auth/change-password', // Aliased to Swagger standard route
     NAME: '/profile/name',
     LANGUAGE: '/profile/language',
     EMAIL: '/profile/email',
@@ -71,9 +88,15 @@ export const API_ENDPOINTS = {
   },
   ONBOARDING: {
     SUBMIT: '/onboarding/submit',
+    STATUS: '/onboarding/status',
+    ME: '/onboarding/me',
   },
   JOURNAL: {
+    BASE: '/journal',
     SAVE_TODAY: '/journal',
+    TODAY: '/journal/today',
+    HISTORY: '/journal/history',
+    BY_ID: (id: number | string) => `/journal/${id}`,
   },
   SEO: {
     SCRIPTS: '/site-settings/scripts',
@@ -98,6 +121,7 @@ export const API_ENDPOINTS = {
   },
   UPLOAD: {
     BASE: '/upload',
+    BY_FILENAME: (filename: string) => `/upload/${filename}`,
   },
 } as const
 

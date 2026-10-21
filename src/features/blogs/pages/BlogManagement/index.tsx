@@ -104,14 +104,14 @@ export default function BlogManagement() {
   const handleOpenEditModal = (item: BlogResponse) => {
     setEditingItem(item)
     setTitles(normalizeTitleDto(item.title))
-    const firstSectionText = item.sections && item.sections.length > 0 ? (item.sections[0].text || '') : (item.body || '')
+    const firstSectionText = item.sections && item.sections.length > 0 ? (getLocalizedTitle(item.sections[0].text) || '') : (item.body || '')
     setContents({
       az: firstSectionText,
       en: '',
       ru: '',
     })
-    setShortDescription(item.shortDescription || '')
-    setIntroText(item.introText || '')
+    setShortDescription(getLocalizedTitle(item.shortDescription) || '')
+    setIntroText(getLocalizedTitle(item.introText) || '')
     setCategory(item.category || 'General')
     setAuthorName(item.authorName || 'NexusMind Editorial')
     setImageUrl(item.imageUrl || item.coverImage || '')
@@ -129,7 +129,7 @@ export default function BlogManagement() {
       setSections(
         item.sections.slice(1).map((s) => ({
           title: getLocalizedTitle(s.title) || '',
-          text: s.text || '',
+          text: getLocalizedTitle(s.text) || '',
         }))
       )
     } else {
@@ -268,9 +268,10 @@ export default function BlogManagement() {
 
   const filteredItems = items.filter((item) => {
     const titleStr = getLocalizedTitle(item.title).toLowerCase()
+    const shortDescStr = getLocalizedTitle(item.shortDescription).toLowerCase()
     return (
       titleStr.includes(searchQuery.toLowerCase()) ||
-      (item.shortDescription && item.shortDescription.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      shortDescStr.includes(searchQuery.toLowerCase()) ||
       (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.authorName && item.authorName.toLowerCase().includes(searchQuery.toLowerCase()))
     )
@@ -416,7 +417,7 @@ export default function BlogManagement() {
                       {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                      {item.shortDescription || item.introText || item.body || 'No summary available.'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.body || 'No summary available.'}
                     </p>
 
                     {sectionCount > 0 && (
@@ -497,7 +498,7 @@ export default function BlogManagement() {
                       {item.slug ? `/${item.slug}` : '—'}
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate">
-                      {item.shortDescription || item.introText || item.body || 'N/A'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.body || 'N/A'}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -599,7 +600,7 @@ export default function BlogManagement() {
                 </h1>
                 {viewingItem.shortDescription && (
                   <p className="text-sm sm:text-base text-slate-400 italic">
-                    {viewingItem.shortDescription}
+                    {getLocalizedTitle(viewingItem.shortDescription)}
                   </p>
                 )}
               </div>
@@ -607,7 +608,7 @@ export default function BlogManagement() {
               {/* Intro Text */}
               {viewingItem.introText && (
                 <div className="p-4 sm:p-5 rounded-xl bg-[#1a1b2b] border border-[#282a40] text-sm sm:text-base text-slate-200 leading-relaxed font-normal">
-                  {viewingItem.introText}
+                  {getLocalizedTitle(viewingItem.introText)}
                 </div>
               )}
 
@@ -627,7 +628,7 @@ export default function BlogManagement() {
                           </h4>
                         )}
                         <p className="text-xs sm:text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
-                          {sec.text}
+                          {getLocalizedTitle(sec.text)}
                         </p>
                       </div>
                     ))}

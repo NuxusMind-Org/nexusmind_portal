@@ -926,7 +926,7 @@ export default function DashboardOverview() {
                             </td>
                             <td className="py-3 px-4 text-slate-400">{item.category || 'General'}</td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {item.shortDescription || item.introText || item.body || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription, i18n.language) || getLocalizedTitle(item.introText, i18n.language) || item.body || 'N/A'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">

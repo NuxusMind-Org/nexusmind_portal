@@ -10,6 +10,7 @@ import type {
   GalleryItemRequest,
   GalleryItemResponse,
   PageableParams,
+  Page,
 } from '../../types/portalDtos'
 
 /**
@@ -47,6 +48,24 @@ export const contentService = {
   deleteXeber: async (id: number | string): Promise<void> => {
     await api.delete(API_ENDPOINTS.XEBER.BY_ID(id))
   },
+  searchXeber: async (keyword: string, params?: PageableParams): Promise<Page<XeberResponseDto>> => {
+    const response = await api.get<Page<XeberResponseDto>>(API_ENDPOINTS.XEBER.SEARCH, {
+      params: { keyword, ...params },
+    })
+    return response.data
+  },
+  getXeberByCategory: async (category: string, params?: PageableParams): Promise<Page<XeberResponseDto>> => {
+    const response = await api.get<Page<XeberResponseDto>>(API_ENDPOINTS.XEBER.CATEGORY(category), {
+      params,
+    })
+    return response.data
+  },
+  getAllXeberForAdmin: async (params?: PageableParams): Promise<Page<XeberResponseDto>> => {
+    const response = await api.get<Page<XeberResponseDto>>(API_ENDPOINTS.XEBER.ADMIN_ALL, {
+      params,
+    })
+    return response.data
+  },
 
   // --- MEQALE (ARTICLES) ---
   getAllMeqale: async (params?: PageableParams): Promise<MeqaleResponseDto[]> => {
@@ -68,6 +87,24 @@ export const contentService = {
   deleteMeqale: async (id: number | string): Promise<void> => {
     await api.delete(API_ENDPOINTS.MEQALE.BY_ID(id))
   },
+  searchMeqale: async (keyword: string, params?: PageableParams): Promise<Page<MeqaleResponseDto>> => {
+    const response = await api.get<Page<MeqaleResponseDto>>(API_ENDPOINTS.MEQALE.SEARCH, {
+      params: { keyword, ...params },
+    })
+    return response.data
+  },
+  getMeqaleByCategory: async (category: string, params?: PageableParams): Promise<Page<MeqaleResponseDto>> => {
+    const response = await api.get<Page<MeqaleResponseDto>>(API_ENDPOINTS.MEQALE.CATEGORY(category), {
+      params,
+    })
+    return response.data
+  },
+  getAllMeqaleForAdmin: async (params?: PageableParams): Promise<Page<MeqaleResponseDto>> => {
+    const response = await api.get<Page<MeqaleResponseDto>>(API_ENDPOINTS.MEQALE.ADMIN_ALL, {
+      params,
+    })
+    return response.data
+  },
 
   // --- BLOG ---
   getAllBlogs: async (params?: PageableParams): Promise<BlogResponse[]> => {
@@ -88,6 +125,18 @@ export const contentService = {
   },
   deleteBlog: async (id: number | string): Promise<void> => {
     await api.delete(API_ENDPOINTS.BLOG.BY_ID(id))
+  },
+  searchBlogs: async (keyword: string, params?: PageableParams): Promise<Page<BlogResponse>> => {
+    const response = await api.get<Page<BlogResponse>>(API_ENDPOINTS.BLOG.SEARCH, {
+      params: { keyword, ...params },
+    })
+    return response.data
+  },
+  getBlogsByCategory: async (category: string, params?: PageableParams): Promise<Page<BlogResponse>> => {
+    const response = await api.get<Page<BlogResponse>>(API_ENDPOINTS.BLOG.CATEGORY(category), {
+      params,
+    })
+    return response.data
   },
 
   // --- GALLERY ---

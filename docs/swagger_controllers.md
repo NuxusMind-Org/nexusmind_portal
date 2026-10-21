@@ -1,12 +1,12 @@
 # NexusMind API - Swagger Controllers Documentation
 
-This document provides a comprehensive and up-to-date technical reference of all backend REST API controllers, endpoints, data transfer objects (DTOs), and schemas defined in the NexusMind OpenAPI specification (`https://nexusmind-889936615032.europe-west3.run.app`). It covers role permissions across the **NexusMind Portal** (`nexusmind_portal`) and **NexusMind Web** (`nexusmind_web`).
+This document provides a comprehensive and up-to-date technical reference of all backend REST API controllers, endpoints, data transfer objects (DTOs), and schemas defined in the NexusMind OpenAPI specification (`https://api.nexusmind.az`). It covers role permissions across the **NexusMind Portal** (`nexusmind_portal`) and **NexusMind Web** (`nexusmind_web`).
 
 ---
 
 ## Base Configuration
 
-- **Server URL**: `https://nexusmind-889936615032.europe-west3.run.app`
+- **Server URL**: `https://api.nexusmind.az`
 - **Security Standard**: `Bearer <JWT_TOKEN>` in `Authorization` header
 - **OpenAPI Version**: `3.1.0` (API Title: `NexusMind API`, Version: `v1.0`)
 
@@ -268,7 +268,7 @@ Used by NexusMind super administrators to manage all platform doctors and patien
 | `GET` | `/journal/today` | `getToday` | - | - | `JournalEntryResponse` | Web |
 | `GET` | `/journal/history` | `getHistory` | Query: `page` (int32, default: `0`)<br>Query: `size` (int32, default: `10`) | - | `PageJournalEntryResponse` | Web |
 | `GET` | `/journal/{id}` | `getById_3` | Path: `id` (int64) | - | `JournalEntryResponse` | Web |
-| `DELETE` | `/journal/{id}` | `delete_5` | Path: `id` (int64) | - | `200 OK` | Web |
+| `DELETE` | `/journal/{id}` | `delete_6` | Path: `id` (int64) | - | `200 OK` | Web |
 
 #### Chat Controller (`chat-rest-controller`)
 | Method | Endpoint | Operation ID | Headers / Parameters | Response Schema | Scope |
@@ -284,17 +284,20 @@ Used by NexusMind super administrators to manage all platform doctors and patien
 
 ### 2.14. File Upload Controller (`file-upload-controller`)
 
-Handles multipart binary file uploads and asset storage across content domains (News, Articles, Blogs, Gallery, etc.).
+Handles multipart binary file uploads, downloads, and asset storage across content domains (News, Articles, Blogs, Gallery, etc.).
 
 | Method | Endpoint | Operation ID | Parameters / Headers | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
-| `POST` | `/upload` | `uploadImage` | Query: `folder` (string, optional - e.g. `news`, `blogs`, `articles`, `gallery`)<br>Header: `Authorization` (string) | `multipart/form-data`:<br>`file` (binary, required) | `FileUploadResponseDto` | Both (Portal & Web) |
+| `POST` | `/upload` | `uploadImage` | Header: `Authorization` (string, optional) | `multipart/form-data`:<br>`file` (binary, required) | `string` (image URL / path) | Both (Portal & Web) |
+| `GET` | `/upload/{filename}` | `download` | Path: `filename` (string) | - | `string` (binary file) | Both (Portal & Web) |
+| `DELETE` | `/upload/{filename}` | `delete_5` | Path: `filename` (string) | - | `200 OK` | Portal |
 
 ---
 
-### 2.15. Notification Controller (`notification-controller`)
+### 2.15. Notification Controller (`notification-controller`) *(External Service / Planned)*
 
-Handles transactional and operational email notifications dispatched via predefined system templates.
+> [!NOTE]
+> Not exposed directly in the primary `https://api.nexusmind.az` OpenAPI specification. Handled via standalone worker or internal service.
 
 | Method | Endpoint | Operation ID | Parameters / Headers | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
@@ -303,9 +306,10 @@ Handles transactional and operational email notifications dispatched via predefi
 
 ---
 
-### 2.16. Search Controller (`search-controller`)
+### 2.16. Search Controller (`search-controller`) *(External / Domain-Specific)*
 
-Provides unified backend search endpoints across patient journal logs, verified specialists/doctors, and all published platform content (articles, blogs, news).
+> [!NOTE]
+> Unified `/search/*` endpoints are optional/planned. In the primary OpenAPI specification, search is available per domain (`/xeber/search`, `/meqale/search`, `/blog/search`, and `/trainings`).
 
 | Method | Endpoint | Operation ID | Parameters | Response Schema | Scope |
 |---|---|---|---|---|---|
@@ -511,7 +515,7 @@ export interface MeqaleSectionRequestDto {
 
 export interface MeqaleSectionResponseDto {
   title?: TitleDto
-  text?: string
+  text?: TitleDto
   sectionOrder?: number
 }
 
@@ -579,19 +583,19 @@ export interface PageMeqaleResponseDto extends Page<MeqaleResponseDto> {}
 ```typescript
 export interface BlogSectionRequest {
   title: TitleDto // required
-  text: string // required
+  text: TitleDto  // required
 }
 
 export interface BlogSectionResponse {
   title?: TitleDto
-  text?: string
+  text?: TitleDto
   order?: number
 }
 
 export interface BlogRequest {
   title: TitleDto // required
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto
+  introText?: TitleDto
   sections?: BlogSectionRequest[]
   imageUrl?: string
   category?: string
@@ -599,15 +603,15 @@ export interface BlogRequest {
   schemaMarkup?: string
   metaKeywords?: string[]
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
 }
 
 export interface BlogResponse {
   id: number
   title?: TitleDto
-  shortDescription?: string
-  introText?: string
+  shortDescription?: TitleDto
+  introText?: TitleDto
   sections?: BlogSectionResponse[]
   imageUrl?: string
   category?: string
@@ -617,7 +621,7 @@ export interface BlogResponse {
   schemaMarkup?: string
   metaKeywords?: string[]
   metaTitle?: string
-  metaDescription?: string
+  metaDescription?: TitleDto
   slug?: string
 }
 
@@ -924,6 +928,10 @@ export interface SiteSettingsResponseDto {
   llmsTxt?: string
   updatedAt?: string
 }
+
+// Raw backend upload endpoint POST /upload returns string directly (image URL or key).
+// Frontend services normalize this to FileUploadResponseDto for structured consumption:
+export type FileUploadRawResponse = string
 
 export interface FileUploadResponseDto {
   imageUrl?: string

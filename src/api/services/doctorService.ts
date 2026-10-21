@@ -2,6 +2,8 @@ import api from '../axios'
 import { API_ENDPOINTS } from '../endpoints'
 import type {
   DoctorRegisterDto,
+  DoctorDto,
+  AvailableSlotDto,
   SaveScheduleRequest,
   SaveWeeklyTemplateRequest,
   WorkingHoursResponse,
@@ -90,5 +92,30 @@ export const doctorService = {
       }
     )
     return response.data
+  },
+
+  // Get all doctor profiles (GET /doctors)
+  getAllDoctorProfiles: async (): Promise<DoctorDto[]> => {
+    const response = await api.get<DoctorDto[]>(API_ENDPOINTS.DOCTORS.BASE)
+    return Array.isArray(response.data) ? response.data : []
+  },
+
+  // Get specific doctor profile by ID (GET /doctors/{id})
+  getDoctorProfileById: async (id: number | string): Promise<DoctorDto> => {
+    const response = await api.get<DoctorDto>(API_ENDPOINTS.DOCTORS.BY_ID(id))
+    return response.data
+  },
+
+  // Get available consultation slots for a doctor (GET /doctors/{doctorId}/working-hours/available)
+  getAvailableSlots: async (
+    doctorId: number | string,
+    from: string,
+    to: string
+  ): Promise<AvailableSlotDto[]> => {
+    const response = await api.get<AvailableSlotDto[]>(
+      API_ENDPOINTS.DOCTORS.WORKING_HOURS_AVAILABLE(doctorId),
+      { params: { from, to } }
+    )
+    return Array.isArray(response.data) ? response.data : []
   },
 }

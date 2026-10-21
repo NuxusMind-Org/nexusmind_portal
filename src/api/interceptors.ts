@@ -40,7 +40,7 @@ export async function refreshAccessToken(baseURL?: string): Promise<string> {
   const apiBaseUrl =
     baseURL ||
     import.meta.env.VITE_API_BASE_URL ||
-    'https://nexusmind-889936615032.europe-west3.run.app'
+    'https://api.nexusmind.az'
 
   try {
     const response = await axios.post<{

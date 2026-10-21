@@ -31,7 +31,7 @@ const DEFAULT_LIVEKIT_URL =
   import.meta.env.VITE_LIVEKIT_URL ||
   (import.meta.env.VITE_API_BASE_URL
     ? import.meta.env.VITE_API_BASE_URL.replace(/^http/, 'ws')
-    : 'wss://nexusmind-889936615032.europe-west3.run.app')
+    : 'wss://api.nexusmind.az')
 
 export default function VideoCallRoom() {
   const { sessionId } = useParams<{ sessionId: string }>()
