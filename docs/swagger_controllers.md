@@ -25,7 +25,11 @@ This document provides a comprehensive and up-to-date technical reference of all
 | **Gallery (`/gallery/*`)** | Full CRUD | Full CRUD | Read-Only | Read-Only | Read-Only |
 | **Trainings (`/trainings/*`)** | Full Access | Full Access | Full Access (Create/Edit) | Search, Calendar, Register | Search, Calendar |
 | **Appointments (`/appointments/*`)** | Read Stats | Read Stats | View, Status, Notes, LiveKit Token, Image | Create, Cancel, Join LiveKit | No Access |
-| **Doctor Profiles & Hours (`/doctors/*`)** | Read All, Delete Doctor | Read Doctors | Manage Schedule (`/me`), View Patients | View Profiles, View Slots | View Profiles, Register Doctor |
+| **Call Invites (`/api/calls/*`)** | Full Access | Full Access | Invite, Extend, Join | Join by Invite Token | Join by Invite Token |
+| **Doctor Profiles & Hours (`/doctors/*`)** | Read All, Delete Doctor | Read Doctors | Manage Date Ranges (`/me/working-hours`), View Patients | View Profiles, View Slots | View Profiles, Register Doctor |
+| **Doctor Prices (`/doctors/{doctorId}/prices/*`)** | Full CRUD | Full CRUD | Full CRUD (Own Tariffs) | Read Prices (`?age`) | Read Prices (`?age`) |
+| **Payments (`/api/payments/*`)** | View / Start | No Access | No Access | Start Payment | Gateway Callback |
+| **Password Reset (`/api/auth/*`)** | Full Access | Full Access | Full Access | Forgot / Reset Token | Forgot / Reset Token |
 | **BPM Admin Ops (`/bpm/*`)** | Full Access | View Patients & Doctors | No Access | No Access | No Access |
 | **Super Admin Ops (`/nexusmind/*`)** | View Patients, Manage Doctors | No Access | No Access | No Access | No Access |
 | **Onboarding (`/onboarding/*`)** | Read-Only | Read-Only | Read-Only | Submit, Check Status, Get Mine | No Access |
@@ -186,7 +190,7 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
 | `GET` | `/appointments` | `getMyAppointments` | Query: `range` (string, optional) | - | `AppointmentDto[]` | Both |
-| `POST` | `/appointments` | `create_5` | - | `CreateAppointmentRequest` | `AppointmentDto` | Web |
+| `POST` | `/appointments` | `create_6` | - | `CreateAppointmentRequest` | `AppointmentDto` | Web |
 | `GET` | `/appointments/{doctorId}` | `getById_4` | Path: `doctorId` (int64) | - | `AppointmentDto[]` | Both |
 | `PATCH` | `/appointments/{id}/status` | `updateStatus_1` | Path: `id` (int64) | `UpdateUserStatusRequest` | `AppointmentDto` | Portal |
 | `PATCH` | `/appointments/{id}/cancel` | `cancel` | Path: `id` (int64) | - | `AppointmentDto` | Both |
@@ -200,7 +204,7 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 
 ---
 
-### 2.10. Doctor, Profile, and Working Hour Controllers
+### 2.10. Doctor, Profile, Pricing, and Working Hour Controllers
 
 #### Doctor Controller (`doctor-controller`)
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
@@ -215,11 +219,20 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 | `GET` | `/doctors` | `getAllDoctors_1` | - | `DoctorDto[]` | Both |
 | `GET` | `/doctors/{id}` | `getDoctorProfile` | Path: `id` (int64) | `DoctorDto` | Both |
 
+#### Doctor Price Controller (`doctor-price-controller`)
+| Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
+|---|---|---|---|---|---|---|
+| `GET` | `/doctors/{doctorId}/prices` | `getPrices` | Path: `doctorId` (int64)<br>Query: `age` (int32, optional) | - | `DoctorPriceResponse[]` | Both |
+| `POST` | `/doctors/{doctorId}/prices` | `create_4` | Path: `doctorId` (int64) | `DoctorPriceRequest` | `DoctorPriceResponse` (`201 Created`) | Portal |
+| `PUT` | `/doctors/{doctorId}/prices/{priceId}` | `update_4` | Path: `doctorId` (int64)<br>Path: `priceId` (int64) | `DoctorPriceRequest` | `DoctorPriceResponse` | Portal |
+| `DELETE` | `/doctors/{doctorId}/prices/{priceId}` | `delete_4` | Path: `doctorId` (int64)<br>Path: `priceId` (int64) | - | `204 No Content` | Portal |
+
 #### Working Hour Controller (`working-hour-controller`)
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
-| `GET` | `/doctors/me/working-hours/template` | `getMyTemplate` | - | - | `DayTemplate[]` | Portal |
-| `POST` | `/doctors/me/working-hours/template` | `saveMyTemplate` | - | `SaveWeeklyTemplateRequest` | `200 OK` | Portal |
+| `GET` | `/doctors/me/working-hours` | `getMyRanges` | Query: `from` (date, required)<br>Query: `to` (date, required) | - | `WorkingRangeDto[]` | Portal |
+| `POST` | `/doctors/me/working-hours` | `addMyRange` | - | `WorkingHourRangeRequest` | `200 OK` | Portal |
+| `DELETE` | `/doctors/me/working-hours/{rangeId}` | `deleteMyRange` | Path: `rangeId` (int64) | - | `200 OK` | Portal |
 | `GET` | `/doctors/{doctorId}/working-hours/available` | `getAvailableSlots` | Path: `doctorId` (int64)<br>Query: `from` (date, required)<br>Query: `to` (date, required) | - | `AvailableSlotDto[]` | Both |
 
 ---
@@ -268,12 +281,31 @@ Used by NexusMind super administrators to manage all platform doctors and patien
 | `GET` | `/journal/today` | `getToday` | - | - | `JournalEntryResponse` | Web |
 | `GET` | `/journal/history` | `getHistory` | Query: `page` (int32, default: `0`)<br>Query: `size` (int32, default: `10`) | - | `PageJournalEntryResponse` | Web |
 | `GET` | `/journal/{id}` | `getById_3` | Path: `id` (int64) | - | `JournalEntryResponse` | Web |
-| `DELETE` | `/journal/{id}` | `delete_6` | Path: `id` (int64) | - | `200 OK` | Web |
+| `DELETE` | `/journal/{id}` | `delete_7` | Path: `id` (int64) | - | `200 OK` | Web |
 
 #### Chat Controller (`chat-rest-controller`)
 | Method | Endpoint | Operation ID | Headers / Parameters | Response Schema | Scope |
 |---|---|---|---|---|---|
 | `GET` | `/chat/{appointmentId}/messages` | `getMessages` | Path: `appointmentId` (int64)<br>Header: `Authorization` (string) | `ChatMessageResponseDto[]` | Both |
+
+#### Call Invite Controller (`call-invite-controller`)
+| Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
+|---|---|---|---|---|---|---|
+| `POST` | `/api/calls/{appointmentId}/invite` | `invite` | Path: `appointmentId` (int64) | - | `Record<string, string>` | Portal |
+| `POST` | `/api/calls/{appointmentId}/extend` | `extend` | Path: `appointmentId` (int64) | - | `200 OK` | Portal |
+| `POST` | `/api/calls/join/{inviteToken}` | `join` | Path: `inviteToken` (string) | `Record<string, string>` | `Record<string, string>` | Both |
+
+#### Payment Controller (`payment-controller`)
+| Method | Endpoint | Operation ID | Request Body | Response Schema | Scope |
+|---|---|---|---|---|---|
+| `POST` | `/api/payments/start` | `start` | `StartPaymentRequest` | `Record<string, string>` | Web |
+| `POST` | `/api/payments/callback` | `callback` | `application/x-www-form-urlencoded`: `{ data: string, signature: string }` | `200 OK` | Webhook / Gateway |
+
+#### Password Reset Controller (`password-reset-controller`)
+| Method | Endpoint | Operation ID | Request Body | Response Schema | Scope |
+|---|---|---|---|---|---|
+| `POST` | `/api/auth/forgot-password` | `forgotPassword_1` | `ForgotPasswordRequest` | `Record<string, string>` | Both |
+| `POST` | `/api/auth/reset-password` | `resetPassword_1` | `ResetPasswordRequest` | `Record<string, string>` | Both |
 
 #### Webhook Controller (`webhook-controller`)
 | Method | Endpoint | Operation ID | Headers | Request Body | Response Schema | Scope |
@@ -290,14 +322,11 @@ Handles multipart binary file uploads, downloads, and asset storage across conte
 |---|---|---|---|---|---|---|
 | `POST` | `/upload` | `uploadImage` | Header: `Authorization` (string, optional) | `multipart/form-data`:<br>`file` (binary, required) | `string` (image URL / path) | Both (Portal & Web) |
 | `GET` | `/upload/{filename}` | `download` | Path: `filename` (string) | - | `string` (binary file) | Both (Portal & Web) |
-| `DELETE` | `/upload/{filename}` | `delete_5` | Path: `filename` (string) | - | `200 OK` | Portal |
+| `DELETE` | `/upload/{filename}` | `delete_6` | Path: `filename` (string) | - | `200 OK` | Portal |
 
 ---
 
-### 2.15. Notification Controller (`notification-controller`) *(External Service / Planned)*
-
-> [!NOTE]
-> Not exposed directly in the primary `https://api.nexusmind.az` OpenAPI specification. Handled via standalone worker or internal service.
+### 2.15. Notification Controller (`notification-controller`)
 
 | Method | Endpoint | Operation ID | Parameters / Headers | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
@@ -306,10 +335,7 @@ Handles multipart binary file uploads, downloads, and asset storage across conte
 
 ---
 
-### 2.16. Search Controller (`search-controller`) *(External / Domain-Specific)*
-
-> [!NOTE]
-> Unified `/search/*` endpoints are optional/planned. In the primary OpenAPI specification, search is available per domain (`/xeber/search`, `/meqale/search`, `/blog/search`, and `/trainings`).
+### 2.16. Search Controller (`search-controller`)
 
 | Method | Endpoint | Operation ID | Parameters | Response Schema | Scope |
 |---|---|---|---|---|---|
@@ -773,13 +799,17 @@ export interface DoctorEntity {
   specializations?: string[]
 }
 
-export interface DayTemplate {
-  dayOfWeek?: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
-  hours?: number[]
+export interface WorkingHourRangeRequest {
+  date?: string // YYYY-MM-DD
+  startTime?: LocalTime
+  endTime?: LocalTime
 }
 
-export interface SaveWeeklyTemplateRequest {
-  days?: DayTemplate[]
+export interface WorkingRangeDto {
+  id: number
+  date?: string // YYYY-MM-DD
+  startTime?: LocalTime
+  endTime?: LocalTime
 }
 
 export interface AvailableSlotDto {
@@ -787,11 +817,35 @@ export interface AvailableSlotDto {
   time?: LocalTime
   booked?: boolean
 }
+
+export interface DoctorPriceRequest {
+  label: string
+  minAge?: number
+  maxAge?: number
+  sessionType?: string
+  durationMin?: number
+  durationMax?: number
+  amount: number
+  currency?: string
+}
+
+export interface DoctorPriceResponse {
+  id: number
+  doctorId?: number
+  label?: string
+  minAge?: number
+  maxAge?: number
+  sessionType?: string
+  durationMin?: number
+  durationMax?: number
+  amount?: number
+  currency?: string
+}
 ```
 
 ---
 
-### 3.8. Appointment & Session Notes DTOs
+### 3.8. Appointment, Call, Payment & Session Notes DTOs
 
 ```typescript
 export interface CreateAppointmentRequest {
@@ -799,6 +853,18 @@ export interface CreateAppointmentRequest {
   appointmentDate: string // YYYY-MM-DD
   appointmentTime: LocalTime
   mode: 'VR' | 'VIDEO_CALL' | 'APP'
+  durationMinutes?: number
+  sessionsType?: 'INDIVIDUAL' | 'COUPLE'
+}
+
+export interface StartPaymentRequest {
+  amount?: number
+  description?: string
+}
+
+export interface ResetPasswordRequest {
+  token?: string
+  newPassword?: string
 }
 
 export interface UpdateUserStatusRequest {
@@ -896,7 +962,7 @@ export interface OnboardingResponse {
 
 export interface JournalEntryRequest {
   mood: 'VERY_LOW' | 'LOW' | 'NEUTRAL' | 'GOOD' | 'VERY_GOOD'
-  thoughts?: TitleDto
+  thoughts?: string
 }
 
 export interface JournalEntryResponse {
@@ -905,7 +971,7 @@ export interface JournalEntryResponse {
   mood?: string
   moodLabel?: string
   moodScore?: number
-  thoughts?: TitleDto
+  thoughts?: string
   createdAt?: string
   updatedAt?: string
 }

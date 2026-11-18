@@ -32,10 +32,6 @@ export const orgAdminService = {
     await api.delete(API_ENDPOINTS.NEXUSMIND_ADMIN.DELETE_DOCTOR(id))
   },
 
-  deleteBpmOrganizationByNexusmindAdmin: async (id: number | string): Promise<void> => {
-    await api.delete(API_ENDPOINTS.NEXUSMIND_ADMIN.DELETE_BPM(id))
-  },
-
   // --- BPM ORGANIZATION ADMIN ENDPOINTS ---
   getBpmPatients: async (params?: PageableParams): Promise<PatientDto[]> => {
     const response = await api.get<any>(API_ENDPOINTS.BPM_ADMIN.PATIENTS, { params })

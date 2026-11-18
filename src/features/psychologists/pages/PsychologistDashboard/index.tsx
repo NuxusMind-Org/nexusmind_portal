@@ -1,10 +1,14 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Calendar, DollarSign } from 'lucide-react';
 import Schedule from '../../components/Schedule';
 import Notebook from '../../components/Notebook';
 import ClockWidget from '../../components/ClockWidget';
+import { DoctorPricesPanel } from '../../components/DoctorPricesPanel';
 
 export function PsychologistDashboard() {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<'schedule' | 'pricing'>('schedule');
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[1600px] mx-auto h-full flex flex-col relative overflow-x-hidden">
@@ -25,23 +29,55 @@ export function PsychologistDashboard() {
             {t('psychologistDashboard.panelSubtitle', { defaultValue: 'Manage your schedule and take quick notes for your sessions.' })}
           </p>
         </div>
+
+        {/* Workspace Tab Switcher */}
+        <div className="flex items-center gap-1.5 bg-[#141521] border border-[#2e3146] p-1 rounded-xl shrink-0">
+          <button
+            type="button"
+            onClick={() => setActiveTab('schedule')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeTab === 'schedule'
+                ? 'bg-violet-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#1b1c2b]'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{t('psychologistDashboard.tabSchedule', { defaultValue: 'Cədvəl' })}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('pricing')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              activeTab === 'pricing'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#1b1c2b]'
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            <span>{t('pricing.tabLabel', { defaultValue: 'Seans Tarifləri' })}</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Layout */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 relative z-10">
-        
-        {/* Left Column: Schedule (Takes 8 cols out of 12) */}
-        <div className="lg:col-span-8 min-h-0 lg:h-full">
-          <Schedule />
-        </div>
+      {activeTab === 'schedule' ? (
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 relative z-10">
+          {/* Left Column: Schedule (Takes 8 cols out of 12) */}
+          <div className="lg:col-span-8 min-h-0 lg:h-full">
+            <Schedule />
+          </div>
 
-        {/* Right Column: Clock Widget & Notebook (Takes 4 cols out of 12) */}
-        <div className="lg:col-span-4 flex flex-col gap-6 min-h-[480px] lg:h-full lg:min-h-0">
-          <ClockWidget />
-          <Notebook />
+          {/* Right Column: Clock Widget & Notebook (Takes 4 cols out of 12) */}
+          <div className="lg:col-span-4 flex flex-col gap-6 min-h-[480px] lg:h-full lg:min-h-0">
+            <ClockWidget />
+            <Notebook />
+          </div>
         </div>
-        
-      </div>
+      ) : (
+        <div className="flex-1 relative z-10">
+          <DoctorPricesPanel />
+        </div>
+      )}
     </div>
   );
 }

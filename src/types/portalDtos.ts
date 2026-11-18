@@ -356,32 +356,75 @@ export interface TrainingTypeCountResponse {
   count?: number
 }
 
-// Doctor Working Hours DTOs
+// Doctor Working Hours DTOs (date-based ranges)
 export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY'
 
-export interface DaySchedule {
-  dayOfWeek: DayOfWeek
-  hours: number[]
+/** Wire format for LocalTime: backend accepts/returns "HH:mm:ss" strings (or legacy objects). */
+export type LocalTimeValue = LocalTime | string | number[]
+
+/** POST /doctors/me/working-hours */
+export interface WorkingHourRangeRequest {
+  date: string // YYYY-MM-DD
+  startTime: LocalTimeValue
+  endTime: LocalTimeValue
 }
 
-export type DayTemplate = DaySchedule
-
-export interface SaveScheduleRequest {
-  days: DaySchedule[]
-}
-
-export interface SaveWeeklyTemplateRequest {
-  days?: DayTemplate[]
+/** GET /doctors/me/working-hours?from&to */
+export interface WorkingRangeDto {
+  id: number
+  date?: string // YYYY-MM-DD
+  startTime?: LocalTimeValue
+  endTime?: LocalTimeValue
 }
 
 export interface AvailableSlotDto {
   date?: string
-  time?: LocalTime
+  time?: LocalTimeValue
   booked?: boolean
 }
 
-// GET response from /doctors/me/working-hours/template mirrors the POST body
-export type WorkingHoursResponse = SaveScheduleRequest
+// Doctor Price DTOs (doctor-price-controller)
+export interface DoctorPriceRequest {
+  label: string
+  minAge?: number
+  maxAge?: number
+  sessionType?: string
+  durationMin?: number
+  durationMax?: number
+  amount: number
+  currency?: string
+}
+
+export interface DoctorPriceResponse {
+  id: number
+  doctorId?: number
+  label?: string
+  minAge?: number
+  maxAge?: number
+  sessionType?: string
+  durationMin?: number
+  durationMax?: number
+  amount?: number
+  currency?: string
+}
+
+/** Embedded (id-less) price item on DoctorResponseDto */
+export type DoctorPriceDto = Omit<DoctorPriceResponse, 'id' | 'doctorId'>
+
+// Call invite DTOs (call-invite-controller) — responses are free-form string maps
+export type CallInviteResponse = Record<string, string>
+
+// Payment DTOs (payment-controller) — used by the patient web app; typed for completeness
+export interface StartPaymentRequest {
+  amount?: number
+  description?: string
+}
+
+// Token-based password reset (password-reset-controller, /api/auth/*)
+export interface ResetPasswordTokenRequest {
+  token?: string
+  newPassword?: string
+}
 
 // Patient & Doctor DTOs
 export type PatientMood = 'SAD' | 'HAPPY' | 'TIRED' | 'CALM' | 'NORMAL'
@@ -472,6 +515,8 @@ export interface DoctorDto {
   education?: string[]
   certificates?: string[]
   trainings?: string[]
+  /** Present on DoctorResponseDto (/bpm/doctors, /doctors/doctors) and DoctorEntity (/nexusmind/doctors) */
+  prices?: Array<DoctorPriceDto & { id?: number }>
   [key: string]: unknown
 }
 
@@ -530,7 +575,7 @@ export interface OnboardingResponse {
 
 export interface JournalEntryRequest {
   mood: 'VERY_LOW' | 'LOW' | 'NEUTRAL' | 'GOOD' | 'VERY_GOOD' | string
-  thoughts?: TitleDto | string
+  thoughts?: string
   content?: string
   tags?: string[]
   [key: string]: unknown
@@ -542,7 +587,7 @@ export interface JournalEntryResponse {
   mood?: string
   moodLabel?: string
   moodScore?: number
-  thoughts?: TitleDto | string
+  thoughts?: string
   content?: string
   createdAt?: string
   updatedAt?: string
@@ -616,6 +661,8 @@ export interface CreateAppointmentRequest {
   appointmentDate: string
   appointmentTime: LocalTime | string
   mode: AppointmentMode
+  durationMinutes?: number
+  sessionsType?: 'INDIVIDUAL' | 'COUPLE'
 }
 
 export interface UpdateUserStatusRequest {

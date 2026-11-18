@@ -9,6 +9,7 @@ import type {
   VerifyOtpRequest,
   ForgotPasswordRequest,
   ResetPasswordWithOtpRequest,
+  ResetPasswordTokenRequest,
 } from '../../types/portalDtos'
 
 export const authService = {
@@ -57,6 +58,18 @@ export const authService = {
   // Reset Password using OTP
   resetPassword: async (data: ResetPasswordWithOtpRequest): Promise<string> => {
     const response = await api.post<string>(API_ENDPOINTS.AUTH.RESET_PASSWORD, data)
+    return response.data
+  },
+
+  // Token-based password reset flow (password-reset-controller, /api/auth/*).
+  // Not wired into the UI — the portal uses the OTP flow above.
+  forgotPasswordToken: async (data: ForgotPasswordRequest): Promise<Record<string, string>> => {
+    const response = await api.post<Record<string, string>>(API_ENDPOINTS.PASSWORD_RESET.FORGOT, data)
+    return response.data
+  },
+
+  resetPasswordWithToken: async (data: ResetPasswordTokenRequest): Promise<Record<string, string>> => {
+    const response = await api.post<Record<string, string>>(API_ENDPOINTS.PASSWORD_RESET.RESET, data)
     return response.data
   },
 

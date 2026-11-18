@@ -53,7 +53,6 @@ export const API_ENDPOINTS = {
     PATIENTS: '/nexusmind/patients',
     DOCTORS: '/nexusmind/doctors',
     DELETE_DOCTOR: (id: number | string) => `/nexusmind/doctors/${id}`,
-    DELETE_BPM: (id: number | string) => `/nexusmind/bpm/${id}`,
   },
   BPM_ADMIN: {
     PATIENTS: '/bpm/patients',
@@ -65,8 +64,26 @@ export const API_ENDPOINTS = {
     REGISTER: '/doctors/register',
     ME_PATIENTS: '/doctors/me/patients',
     ALL_DOCTORS: '/doctors/doctors',
-    WORKING_HOURS_ME: '/doctors/me/working-hours/template',
+    // Date-based working ranges (GET ?from&to, POST WorkingHourRangeRequest)
+    WORKING_HOURS_ME: '/doctors/me/working-hours',
+    WORKING_HOURS_RANGE: (rangeId: number | string) => `/doctors/me/working-hours/${rangeId}`,
     WORKING_HOURS_AVAILABLE: (doctorId: number | string) => `/doctors/${doctorId}/working-hours/available`,
+    PRICES: (doctorId: number | string) => `/doctors/${doctorId}/prices`,
+    PRICE_BY_ID: (doctorId: number | string, priceId: number | string) =>
+      `/doctors/${doctorId}/prices/${priceId}`,
+  },
+  CALLS: {
+    INVITE: (appointmentId: number | string) => `/api/calls/${appointmentId}/invite`,
+    EXTEND: (appointmentId: number | string) => `/api/calls/${appointmentId}/extend`,
+    JOIN: (inviteToken: string) => `/api/calls/join/${encodeURIComponent(inviteToken)}`,
+  },
+  PAYMENTS: {
+    START: '/api/payments/start',
+    CALLBACK: '/api/payments/callback',
+  },
+  PASSWORD_RESET: {
+    FORGOT: '/api/auth/forgot-password',
+    RESET: '/api/auth/reset-password',
   },
   PROFILE: {
     STATUS: '/profile/status',

@@ -20,7 +20,7 @@ import dayjs from 'dayjs'
 import isoWeek from 'dayjs/plugin/isoWeek'
 import { doctorService, appointmentService } from '../../../../api'
 import { useUserStore } from '../../../../store/userStore'
-import type { AppointmentDto, DayOfWeek } from '../../../../types/portalDtos'
+import type { AppointmentDto } from '../../../../types/portalDtos'
 import {
   extractHourMinute,
   formatAppointmentTime,
@@ -30,6 +30,7 @@ import {
   normalizeDate,
   getAppointmentsForDate,
 } from '../../utils/appointmentUtils'
+import { rangesToHourMap } from '../../utils/workingHoursUtils'
 
 dayjs.extend(isoWeek)
 
@@ -40,15 +41,6 @@ export interface ScheduleProps {
 }
 
 const DISPLAY_HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-const WEEK_DAY_KEYS: DayOfWeek[] = [
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY',
-  'SUNDAY',
-]
 
 const resolveNumericId = (val: unknown): number | null => {
   if (typeof val === 'number' && !isNaN(val)) return val
@@ -92,15 +84,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   const [currentDate, setCurrentDate] = useState(dayjs())
   const [now, setNow] = useState(dayjs())
   const [appointments, setAppointments] = useState<AppointmentDto[]>([])
-  const [workingHours, setWorkingHours] = useState<Record<DayOfWeek, number[]>>({
-    MONDAY: [],
-    TUESDAY: [],
-    WEDNESDAY: [],
-    THURSDAY: [],
-    FRIDAY: [],
-    SATURDAY: [],
-    SUNDAY: [],
-  })
+  const [workingHoursByDate, setWorkingHoursByDate] = useState<Record<string, number[]>>({})
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -110,30 +94,20 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   const [detailedAppointment, setDetailedAppointment] = useState<AppointmentDto | null>(null)
   const [isDetailsLoading, setIsDetailsLoading] = useState(false)
 
-  // Fetch Working Hours
+  // Fetch Working Hours for current week
   useEffect(() => {
     const fetchWorkingHours = async () => {
       try {
-        const response = await doctorService.getMyWorkingHours()
-        const map: Record<DayOfWeek, number[]> = {
-          MONDAY: [],
-          TUESDAY: [],
-          WEDNESDAY: [],
-          THURSDAY: [],
-          FRIDAY: [],
-          SATURDAY: [],
-          SUNDAY: [],
-        }
-        ;(response.days ?? []).forEach(({ dayOfWeek, hours }) => {
-          map[dayOfWeek] = hours ?? []
-        })
-        setWorkingHours(map)
+        const weekStart = currentDate.startOf('isoWeek').format('YYYY-MM-DD')
+        const weekEnd = currentDate.startOf('isoWeek').add(6, 'day').format('YYYY-MM-DD')
+        const ranges = await doctorService.getMyWorkingRanges(weekStart, weekEnd)
+        setWorkingHoursByDate(rangesToHourMap(ranges))
       } catch {
         // Silently fail — working hours are supplementary display info
       }
     }
     fetchWorkingHours()
-  }, [])
+  }, [currentDate])
 
   // Fetch Appointments from GET /appointments/{id} using Psychologist ID
   const loadAppointments = useCallback(async () => {
@@ -230,8 +204,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
   }, [])
 
   const currentDateStr = currentDate.format('YYYY-MM-DD')
-  const todayDayOfWeek = WEEK_DAY_KEYS[currentDate.isoWeekday() - 1]
-  const todayHours = workingHours[todayDayOfWeek] ?? []
+  const todayHours = workingHoursByDate[currentDateStr] ?? []
   const dayAppointments = useMemo(
     () => getAppointmentsForDate(appointments, currentDateStr),
     [appointments, currentDateStr]
@@ -609,10 +582,9 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
                         </div>
 
                         {/* 7 Day Columns */}
-                        {weekDays.map((day, dayIdx) => {
-                          const dayKey = WEEK_DAY_KEYS[dayIdx]
-                          const isWorkingHour = workingHours[dayKey]?.includes(hour)
+                        {weekDays.map((day) => {
                           const dayDateStr = day.format('YYYY-MM-DD')
+                          const isWorkingHour = workingHoursByDate[dayDateStr]?.includes(hour)
                           const isToday = day.isSame(dayjs(), 'day')
 
                           // Appointments on this date and hour

@@ -16,8 +16,12 @@ import {
   Shield,
   Volume2,
   X,
+  UserPlus,
+  TimerReset,
+  Copy,
+  CheckCircle2,
 } from 'lucide-react'
-import { appointmentService, chatService } from '../../../../api'
+import { appointmentService, chatService, callService, resolveInviteLink } from '../../../../api'
 import { useUserStore } from '../../../../store/userStore'
 import type { AppointmentDto, ChatMessageResponseDto } from '../../../../types/portalDtos'
 import {
@@ -62,6 +66,14 @@ export default function VideoCallRoom() {
   // End Session Confirmation Modal
   const [isEndModalOpen, setIsEndModalOpen] = useState(false)
   const [isEndingSession, setIsEndingSession] = useState(false)
+
+  // Call Invite & Extend State (call-invite-controller)
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false)
+  const [isInviting, setIsInviting] = useState(false)
+  const [inviteInfo, setInviteInfo] = useState<{ link?: string; token?: string; raw?: Record<string, string> } | null>(null)
+  const [copiedField, setCopiedField] = useState<'link' | 'token' | null>(null)
+  const [isExtending, setIsExtending] = useState(false)
+  const [callToast, setCallToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   // ------------------------------------------------------------------
   // LiveKit call state — driven by LiveKitCallStage callbacks
@@ -243,6 +255,58 @@ export default function VideoCallRoom() {
       navigate('/psy/sessions')
     } finally {
       setIsEndingSession(false)
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // 5. Invite Participant & Extend Session (POST /api/calls/{id}/invite & /extend)
+  // ------------------------------------------------------------------
+  const handleCreateInvite = async () => {
+    if (!sessionId) return
+    setIsInviteModalOpen(true)
+    setIsInviting(true)
+    setCallToast(null)
+    try {
+      const res = await callService.invite(sessionId)
+      const { link, token } = resolveInviteLink(res)
+      const fallbackLink =
+        link || (token ? `${window.location.origin}/call/join/${encodeURIComponent(token)}` : undefined)
+      setInviteInfo({ link: fallbackLink, token, raw: res })
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Dəvət linki yaratmaq mümkün olmadı.'
+      setCallToast({ type: 'error', message: msg })
+    } finally {
+      setIsInviting(false)
+    }
+  }
+
+  const handleExtendSession = async () => {
+    if (!sessionId || isExtending) return
+    setIsExtending(true)
+    setCallToast(null)
+    try {
+      await callService.extend(sessionId)
+      setCallToast({ type: 'success', message: 'Sessiya müddəti uğurla uzadıldı.' })
+      setTimeout(() => setCallToast(null), 4000)
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+        'Sessiya müddətini uzatmaq mümkün olmadı.'
+      setCallToast({ type: 'error', message: msg })
+    } finally {
+      setIsExtending(false)
+    }
+  }
+
+  const copyToClipboard = async (value: string, field: 'link' | 'token') => {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch {
+      // ignore clipboard errors
     }
   }
 
@@ -455,6 +519,29 @@ export default function VideoCallRoom() {
         </div>
       )}
 
+      {/* Call Action Toast (Invite / Extend feedback) */}
+      {callToast && (
+        <div
+          className={`px-5 py-2.5 border-b flex items-center justify-between text-xs font-semibold z-30 shrink-0 ${
+            callToast.type === 'success'
+              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+              : 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {callToast.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <span>{callToast.message}</span>
+          </div>
+          <button onClick={() => setCallToast(null)} className="text-slate-400 hover:text-white cursor-pointer px-2">
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* ──────────────────────────────────────────────────────────────────
           Main Workspace Area (Stage + Side Panel)
       ────────────────────────────────────────────────────────────────── */}
@@ -553,6 +640,33 @@ export default function VideoCallRoom() {
                 <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
+              {/* Invite Participant (POST /api/calls/{appointmentId}/invite) */}
+              <button
+                type="button"
+                onClick={handleCreateInvite}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-[#1b1c2b] hover:bg-[#25283e] text-slate-200 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                title="İştirakçı Dəvət Et"
+              >
+                <UserPlus className="w-4 h-4 text-emerald-400" />
+                <span className="hidden sm:inline">Dəvət</span>
+              </button>
+
+              {/* Extend Session (POST /api/calls/{appointmentId}/extend) */}
+              <button
+                type="button"
+                onClick={handleExtendSession}
+                disabled={isExtending}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-[#1b1c2b] hover:bg-[#25283e] disabled:opacity-50 text-slate-200 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+                title="Sessiya Müddətini Uzat"
+              >
+                {isExtending ? (
+                  <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
+                ) : (
+                  <TimerReset className="w-4 h-4 text-amber-400" />
+                )}
+                <span className="hidden sm:inline">Uzat</span>
+              </button>
+
               <div className="w-px h-5 sm:h-6 bg-[#2e3146] mx-0.5 sm:mx-1"></div>
 
               {/* Toggle Chat Panel */}
@@ -619,6 +733,113 @@ export default function VideoCallRoom() {
           {ChatPanel}
         </div>
       </div>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          Invite Participant Modal
+      ────────────────────────────────────────────────────────────────── */}
+      {isInviteModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-[#141521] border border-[#222437] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Sessiyaya Dəvət Linki</h3>
+                  <p className="text-[11px] text-slate-400">POST /api/calls/{sessionId}/invite</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsInviteModalOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-[#1b1c2b] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {isInviting ? (
+              <div className="py-8 flex flex-col items-center justify-center gap-2 text-slate-300">
+                <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
+                <span className="text-xs font-semibold">Dəvət tokeni yaradılır...</span>
+              </div>
+            ) : inviteInfo ? (
+              <div className="space-y-3">
+                {inviteInfo.link && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Paylaşıla bilən Link
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={inviteInfo.link}
+                        className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-200 font-mono outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(inviteInfo.link!, 'link')}
+                        className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+                      >
+                        {copiedField === 'link' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedField === 'link' ? 'Kopyalandı' : 'Kopyala'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {inviteInfo.token && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Dəvət Tokeni
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={inviteInfo.token}
+                        className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-200 font-mono outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(inviteInfo.token!, 'token')}
+                        className="px-3 py-2 bg-[#1b1c2b] hover:bg-[#25283e] border border-[#2e3146] text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
+                      >
+                        {copiedField === 'token' ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedField === 'token' ? 'Kopyalandı' : 'Token'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 text-center py-4">
+                Dəvət məlumatı əldə edilmədi. Yenidən cəhd edin.
+              </p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={handleCreateInvite}
+                disabled={isInviting}
+                className="px-3.5 py-2 bg-[#1b1c2b] hover:bg-[#25283e] border border-[#2e3146] text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer"
+              >
+                Yeni Link Yarat
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsInviteModalOpen(false)}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer"
+              >
+                Bağla
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ──────────────────────────────────────────────────────────────────
           End Session Confirmation Modal

@@ -13,6 +13,7 @@ export { siteSettingsService } from './services/siteSettingsService'
 export { seoService } from './services/seoService'
 export { chatService } from './services/chatService'
 export { uploadService } from './services/uploadService'
+export { callService, resolveInviteLink } from './services/callService'
 
 
 

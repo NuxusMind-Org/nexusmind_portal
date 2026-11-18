@@ -13,11 +13,14 @@ import {
   Loader2,
   RefreshCw,
   Award,
-  Clock
+  Clock,
+  DollarSign,
+  X
 } from 'lucide-react'
 import type { Psychologist, PsychologistStatus } from '../../types/psychologist'
 import { orgAdminService } from '../../../../api/services/orgAdminService'
 import type { DoctorDto } from '../../../../types/portalDtos'
+import { DoctorPricesPanel } from '../../components/DoctorPricesPanel'
 
 const STATUS_STYLES: Record<PsychologistStatus, string> = {
   Active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -37,7 +40,13 @@ function SatisfactionBar({ rate }: { rate: number }) {
   )
 }
 
-function PsychologistCard({ psy }: { psy: Psychologist }) {
+function PsychologistCard({
+  psy,
+  onManagePrices,
+}: {
+  psy: Psychologist
+  onManagePrices: (psy: Psychologist) => void
+}) {
   return (
     <div className="bg-[#141521] border border-[#222437] rounded-2xl p-5 flex flex-col justify-between gap-4 hover:border-violet-500/40 hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] transition-all group">
       {/* Header */}
@@ -118,6 +127,16 @@ function PsychologistCard({ psy }: { psy: Psychologist }) {
           )}
         </div>
       </div>
+
+      {/* Footer Action: Manage Doctor Prices */}
+      <button
+        type="button"
+        onClick={() => onManagePrices(psy)}
+        className="w-full py-2 px-3 bg-[#1b1c2b] hover:bg-emerald-500/15 border border-[#2e3146] hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+      >
+        <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+        <span>Seans Tarifləri</span>
+      </button>
     </div>
   )
 }
@@ -129,6 +148,7 @@ export default function PsychologistsList() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<PsychologistStatus | 'All'>('All')
   const [specFilter, setSpecFilter] = useState('All')
+  const [pricingPsychologist, setPricingPsychologist] = useState<Psychologist | null>(null)
 
   const fetchBpmDoctors = async () => {
     setIsLoading(true)
@@ -348,8 +368,40 @@ export default function PsychologistsList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map((psy) => (
-            <PsychologistCard key={psy.id} psy={psy} />
+            <PsychologistCard
+              key={psy.id}
+              psy={psy}
+              onManagePrices={setPricingPsychologist}
+            />
           ))}
+        </div>
+      )}
+
+      {/* Doctor Pricing Modal */}
+      {pricingPsychologist && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-[#12131d] border border-[#222437] rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-5 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#222437] pb-3">
+              <div>
+                <h3 className="text-base font-bold text-white">{pricingPsychologist.name}</h3>
+                <p className="text-xs text-slate-400">
+                  {pricingPsychologist.licenseNumber} • Həkim ID #{pricingPsychologist.id}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPricingPsychologist(null)}
+                className="p-2 bg-[#1b1c2b] hover:bg-[#25283e] text-slate-400 hover:text-white rounded-xl cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <DoctorPricesPanel
+              doctorId={pricingPsychologist.id}
+              doctorName={pricingPsychologist.name}
+              compact
+            />
+          </div>
         </div>
       )}
     </div>

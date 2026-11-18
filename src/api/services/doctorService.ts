@@ -4,9 +4,10 @@ import type {
   DoctorRegisterDto,
   DoctorDto,
   AvailableSlotDto,
-  SaveScheduleRequest,
-  SaveWeeklyTemplateRequest,
-  WorkingHoursResponse,
+  WorkingHourRangeRequest,
+  WorkingRangeDto,
+  DoctorPriceRequest,
+  DoctorPriceResponse,
   PasientRegisterEntity,
 } from '../../types/portalDtos'
 
@@ -41,27 +42,58 @@ export const doctorService = {
     return response.data
   },
 
-  // Get My Working Hours template (repeating weekly schedule).
-  // Normalizes both response shapes: raw array OR { days: [...] } object.
-  getMyWorkingHours: async (): Promise<WorkingHoursResponse> => {
-    const response = await api.get<unknown>(API_ENDPOINTS.DOCTORS.WORKING_HOURS_ME)
+  // Get my working ranges for a date window (GET /doctors/me/working-hours?from&to, dates YYYY-MM-DD)
+  getMyWorkingRanges: async (from: string, to: string): Promise<WorkingRangeDto[]> => {
+    const response = await api.get<unknown>(API_ENDPOINTS.DOCTORS.WORKING_HOURS_ME, {
+      params: { from, to },
+    })
     const data = response.data
-
-    if (Array.isArray(data)) {
-      // Backend returned the array directly
-      return { days: data as WorkingHoursResponse['days'] }
+    if (Array.isArray(data)) return data as WorkingRangeDto[]
+    if (data && typeof data === 'object' && 'content' in data && Array.isArray((data as { content: unknown[] }).content)) {
+      return (data as { content: WorkingRangeDto[] }).content
     }
-    if (data && typeof data === 'object' && 'days' in data && Array.isArray((data as WorkingHoursResponse).days)) {
-      // Backend returned { days: [...] }
-      return data as WorkingHoursResponse
-    }
-    // Fallback: empty schedule
-    return { days: [] }
+    return []
   },
 
-  // Save My Working Hours
-  saveMyWorkingHours: async (data: SaveScheduleRequest | SaveWeeklyTemplateRequest): Promise<void> => {
+  // Add a working range for a specific date (POST /doctors/me/working-hours)
+  addMyWorkingRange: async (data: WorkingHourRangeRequest): Promise<void> => {
     await api.post(API_ENDPOINTS.DOCTORS.WORKING_HOURS_ME, data)
+  },
+
+  // Delete one of my working ranges (DELETE /doctors/me/working-hours/{rangeId})
+  deleteMyWorkingRange: async (rangeId: number | string): Promise<void> => {
+    await api.delete(API_ENDPOINTS.DOCTORS.WORKING_HOURS_RANGE(rangeId))
+  },
+
+  // --- Doctor prices (doctor-price-controller) ---
+
+  // GET /doctors/{doctorId}/prices (optional ?age filter)
+  getPrices: async (doctorId: number | string, age?: number): Promise<DoctorPriceResponse[]> => {
+    const response = await api.get<DoctorPriceResponse[]>(API_ENDPOINTS.DOCTORS.PRICES(doctorId), {
+      params: age !== undefined ? { age } : undefined,
+    })
+    return Array.isArray(response.data) ? response.data : []
+  },
+
+  // POST /doctors/{doctorId}/prices -> 201 Created
+  createPrice: async (doctorId: number | string, data: DoctorPriceRequest): Promise<DoctorPriceResponse> => {
+    const response = await api.post<DoctorPriceResponse>(API_ENDPOINTS.DOCTORS.PRICES(doctorId), data)
+    return response.data
+  },
+
+  // PUT /doctors/{doctorId}/prices/{priceId}
+  updatePrice: async (
+    doctorId: number | string,
+    priceId: number | string,
+    data: DoctorPriceRequest
+  ): Promise<DoctorPriceResponse> => {
+    const response = await api.put<DoctorPriceResponse>(API_ENDPOINTS.DOCTORS.PRICE_BY_ID(doctorId, priceId), data)
+    return response.data
+  },
+
+  // DELETE /doctors/{doctorId}/prices/{priceId} -> 204 No Content
+  deletePrice: async (doctorId: number | string, priceId: number | string): Promise<void> => {
+    await api.delete(API_ENDPOINTS.DOCTORS.PRICE_BY_ID(doctorId, priceId))
   },
 
   // Get Assigned Patients for currently authenticated doctor (GET /doctors/me/patients)
