@@ -447,6 +447,7 @@ export interface PasientRegisterDto {
   email: string
   password: string
   phone?: string // pattern: ^\\+994(50|51|55|70|77|10|99)\\d{7}$
+  registrationImageUrl?: string
 }
 
 export interface PasientRegisterEntity {
@@ -461,6 +462,7 @@ export interface PasientRegisterEntity {
   mood?: 'SAD' | 'HAPPY' | 'TIRED' | 'CALM' | 'NORMAL'
   moodUpdatedDate?: string // YYYY-MM-DD
   profileImageUrl?: string
+  registrationImageUrl?: string
   status?: 'TELEBE' | 'ISCI' | 'DIGER'
   language?: 'AZ' | 'EN' | 'RU'
   twoFactorEnabled?: boolean
@@ -749,13 +751,11 @@ export interface DoctorResponseDto {
   id: number
   name?: string
   surname?: string
-  fatherName?: string
-  age?: number
-  phone?: string
-  cvUrl?: string
-  title?: TitleDto
+  username?: string
+  profileImageUrl?: string
   bio?: TitleDto
   major?: TitleDto
+  prices?: DoctorPriceDto[]
 }
 
 export interface DoctorDto {
@@ -772,6 +772,7 @@ export interface DoctorDto {
   education?: string[]
   certificates?: string[]
   specializations?: string[]
+  trainings?: string[]
 }
 
 export interface DoctorEntity {
@@ -779,37 +780,33 @@ export interface DoctorEntity {
   username?: string
   name?: string
   surname?: string
-  fatherName?: string
   university?: string
-  major?: TitleDto
   imageURl?: string
-  bio?: TitleDto
-  price?: number
-  age?: number
-  experienceYear?: number
   profileImageUrl?: string
   email?: string
   password?: string
-  title?: TitleDto
-  rating?: number
+  major?: TitleDto
+  bio?: TitleDto
+  experienceYear?: number
   role?: 'SUPER_ADMIN' | 'BPM' | 'DOCTOR' | 'PATIENT' | 'SEO'
   languages?: string[]
   education?: string[]
-  certificates?: string[]
   specializations?: string[]
+  trainings?: string[]
+  prices?: DoctorPriceEntity[]
 }
 
 export interface WorkingHourRangeRequest {
-  date?: string // YYYY-MM-DD
-  startTime?: LocalTime
-  endTime?: LocalTime
+  date?: string // YYYY-MM-DD, e.g. "2026-11-20"
+  startTime?: string // HH:mm, e.g. "10:00"
+  endTime?: string // HH:mm, e.g. "11:00"
 }
 
 export interface WorkingRangeDto {
   id: number
-  date?: string // YYYY-MM-DD
-  startTime?: LocalTime
-  endTime?: LocalTime
+  date?: string // DD.MM.YYYY, e.g. "20.11.2026"
+  startTime?: string // HH:mm, e.g. "10:00"
+  endTime?: string // HH:mm, e.g. "11:00"
 }
 
 export interface AvailableSlotDto {
@@ -840,6 +837,13 @@ export interface DoctorPriceResponse {
   durationMax?: number
   amount?: number
   currency?: string
+}
+
+export type DoctorPriceDto = DoctorPriceRequest
+
+export interface DoctorPriceEntity extends DoctorPriceRequest {
+  id: number
+  doctor?: DoctorEntity
 }
 ```
 
@@ -924,6 +928,8 @@ export interface AppointmentEntity {
   appointmentDate?: string
   appointmentTime?: LocalTime
   finishTime?: string
+  durationMinutes?: number
+  sessionsType?: 'INDIVIDUAL' | 'COUPLE'
   status?: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   mode?: 'VR' | 'VIDEO_CALL' | 'APP'
   roomUrl?: string
@@ -1055,7 +1061,6 @@ export interface EmailNotificationResponse {
 export interface DoctorSearchResult {
   id: number
   fullName?: string
-  title?: string
   bio?: string
 }
 

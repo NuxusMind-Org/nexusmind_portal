@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '../endpoints'
 import type {
   DoctorRegisterDto,
   DoctorDto,
+  DoctorResponseDto,
   AvailableSlotDto,
   WorkingHourRangeRequest,
   WorkingRangeDto,
@@ -12,33 +13,19 @@ import type {
 } from '../../types/portalDtos'
 
 export const doctorService = {
-  // Register Doctor / Psychologist
+  // Register Doctor / Psychologist (POST /doctors/register, multipart DoctorRegisterDto)
   registerDoctor: async (data: DoctorRegisterDto): Promise<string> => {
     const formData = new FormData()
-    if (data.fullName) {
-      formData.append('fullName', data.fullName)
-    }
     if (data.name) formData.append('name', data.name)
     if (data.surname) formData.append('surname', data.surname)
     if (data.fatherName) formData.append('fatherName', data.fatherName)
-    if (data.email) formData.append('email', data.email)
-    if (data.password) formData.append('password', data.password)
-    if (data.specialization) formData.append('specialization', data.specialization)
-    if (data.age) formData.append('age', String(data.age))
+    if (data.age !== undefined) formData.append('age', String(data.age))
     if (data.phone) formData.append('phone', data.phone)
     if (data.cv) {
-      if (typeof data.cv === 'string') {
-        formData.append('cv', data.cv)
-      } else {
-        formData.append('file', data.cv)
-      }
+      formData.append('cv', data.cv)
     }
 
-    const response = await api.post<string>(API_ENDPOINTS.DOCTORS.REGISTER, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
+    const response = await api.post<string>(API_ENDPOINTS.DOCTORS.REGISTER, formData)
     return response.data
   },
 
@@ -56,8 +43,20 @@ export const doctorService = {
   },
 
   // Add a working range for a specific date (POST /doctors/me/working-hours)
+  // Expects { date: "YYYY-MM-DD", startTime: "HH:mm", endTime: "HH:mm" }
   addMyWorkingRange: async (data: WorkingHourRangeRequest): Promise<void> => {
-    await api.post(API_ENDPOINTS.DOCTORS.WORKING_HOURS_ME, data)
+    const toHHmm = (val: string): string => {
+      const [hs = '00', ms = '00'] = String(val).split(':')
+      return `${hs.padStart(2, '0')}:${ms.padStart(2, '0')}`
+    }
+
+    const payload: WorkingHourRangeRequest = {
+      date: data.date,
+      startTime: toHHmm(data.startTime),
+      endTime: toHHmm(data.endTime),
+    }
+
+    await api.post(API_ENDPOINTS.DOCTORS.WORKING_HOURS_ME, payload)
   },
 
   // Delete one of my working ranges (DELETE /doctors/me/working-hours/{rangeId})
@@ -124,6 +123,12 @@ export const doctorService = {
       }
     )
     return response.data
+  },
+
+  // Get all doctors directory (GET /doctors/doctors -> DoctorResponseDto[])
+  getAllDoctors: async (): Promise<DoctorResponseDto[]> => {
+    const response = await api.get<DoctorResponseDto[]>(API_ENDPOINTS.DOCTORS.ALL_DOCTORS)
+    return Array.isArray(response.data) ? response.data : []
   },
 
   // Get all doctor profiles (GET /doctors)

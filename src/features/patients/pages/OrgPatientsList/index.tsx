@@ -16,7 +16,8 @@ import {
   ShieldCheck
 } from 'lucide-react'
 import { orgAdminService } from '../../../../api/services/orgAdminService'
-import type { PatientDto, PatientMood } from '../../../../types/portalDtos'
+import { useUserStore } from '../../../../store/userStore'
+import type { PasientRegisterEntity, PatientDto, PatientMood } from '../../../../types/portalDtos'
 
 type Priority = 'High' | 'Medium' | 'Normal'
 type PatientStatus = 'Active' | 'Inactive' | 'Discharged'
@@ -97,6 +98,10 @@ function MoodBadge({ mood }: { mood?: string }) {
 }
 
 export default function OrgPatientsList() {
+  const profile = useUserStore((state) => state.profile)
+  const isPlatformAdmin = profile?.role === 'platform_admin'
+  const endpointLabel = isPlatformAdmin ? 'GET /nexusmind/patients' : 'GET /bpm/patients'
+
   const [patients, setPatients] = useState<OrgPatient[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -105,15 +110,19 @@ export default function OrgPatientsList() {
   const [priorityFilter, setPriorityFilter] = useState<Priority | 'All'>('All')
   const [psychFilter, setPsychFilter] = useState('All')
 
-  const fetchBpmPatients = async () => {
+  const fetchPatients = async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await orgAdminService.getBpmPatients()
-      const patientsList: PatientDto[] = Array.isArray(data) ? data : (data as any)?.content || []
+      const patientsList: Array<PasientRegisterEntity | PatientDto> = isPlatformAdmin
+        ? await orgAdminService.getNexusmindPatients()
+        : await orgAdminService.getBpmPatients()
 
-      const mapped: OrgPatient[] = patientsList.map((p, idx) => {
-        const rawName = p.fullName || p.name || `Patient #${p.id}`
+      const mapped: OrgPatient[] = patientsList.map((raw, idx) => {
+        const entity = raw as PasientRegisterEntity
+        const dto = raw as PatientDto
+        const combinedName = [entity.name, entity.surname].filter(Boolean).join(' ').trim()
+        const rawName = combinedName || dto.fullName || `Patient #${raw.id}`
         const initials = rawName
           .split(' ')
           .map((n) => n[0])
@@ -130,40 +139,62 @@ export default function OrgPatientsList() {
         ]
         const avatarColor = colorPalettes[idx % colorPalettes.length]
 
+        const statusLabel: PatientStatus = entity.deletedAt
+          ? 'Inactive'
+          : entity.verified === false
+            ? 'Inactive'
+            : 'Active'
+
+        const priority: Priority =
+          entity.mood === 'SAD' ? 'High' : entity.mood === 'TIRED' ? 'Medium' : 'Normal'
+
+        const statusTag =
+          entity.status === 'TELEBE'
+            ? 'Tələbə'
+            : entity.status === 'ISCI'
+              ? 'İşçi'
+              : entity.status === 'DIGER'
+                ? 'Digər'
+                : dto.treatmentTag || 'Patient'
+
         return {
-          id: String(p.id),
+          id: String(raw.id),
           name: rawName,
-          email: p.email || 'N/A',
-          phone: p.phone || 'N/A',
+          email: raw.email || 'N/A',
+          phone: raw.phone || 'N/A',
           avatarInitials: initials || 'PT',
           avatarColor,
-          status: ((p.status as any) === 'INACTIVE' ? 'Inactive' : (p.status as any) === 'DISCHARGED' ? 'Discharged' : 'Active') as PatientStatus,
-          priority: (p.priority as Priority) || (idx % 3 === 0 ? 'High' : idx % 2 === 0 ? 'Medium' : 'Normal'),
-          treatmentTag: p.treatmentTag || 'CBT Consultation',
-          assignedPsychologist: p.assignedPsychologist || 'Dr. Assigned BPM Staff',
-          mood: p.mood,
-          gender: p.gender,
-          birthDate: p.birthDate,
-          address: p.address,
-          lastSession: p.lastSession || 'Recent',
-          nextSession: p.nextSession || 'Scheduled',
-          sessionsTotal: p.sessionsTotal ?? Math.max(2, (p.id * 4) % 30),
-          joinedDate: p.registeredAt || p.createdAt || '2026',
+          status: statusLabel,
+          priority: (dto.priority as Priority) || priority,
+          treatmentTag: statusTag,
+          assignedPsychologist:
+            dto.assignedPsychologist ||
+            (entity.age ? `Age ${entity.age} • ${statusTag}` : statusTag),
+          mood: raw.mood,
+          gender: dto.gender,
+          birthDate: dto.birthDate,
+          address: dto.address,
+          lastSession: entity.moodUpdatedDate || dto.lastSession || '—',
+          nextSession: dto.nextSession || '—',
+          sessionsTotal: Array.isArray(entity.appointments)
+            ? entity.appointments.length
+            : (dto.sessionsTotal ?? 0),
+          joinedDate: entity.moodUpdatedDate || dto.registeredAt || dto.createdAt || '—',
         }
       })
 
       setPatients(mapped)
-    } catch (err: any) {
-      console.error('Failed to fetch BPM patients from /bpm/patients', err)
-      setError('Could not load patients from /bpm/patients.')
+    } catch (err) {
+      console.error(`Failed to fetch patients from ${endpointLabel}`, err)
+      setError(`Could not load patients from ${endpointLabel}.`)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchBpmPatients()
-  }, [])
+    fetchPatients()
+  }, [isPlatformAdmin])
 
   const allPsychs = useMemo(() => {
     const set = new Set(patients.map((p) => p.assignedPsychologist))
@@ -207,11 +238,13 @@ export default function OrgPatientsList() {
               <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
                 <span>Patients & Clients Directory</span>
                 <span className="px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-[10px] font-mono">
-                  GET /bpm/patients
+                  {endpointLabel}
                 </span>
               </h1>
               <p className="text-xs text-slate-400 mt-0.5">
-                BPM Organization patient records, registered therapy clients, and assigned treatment plans.
+                {isPlatformAdmin
+                  ? 'Platform-wide registered patient records managed by NexusMind Super Admin.'
+                  : 'BPM Organization patient records, registered therapy clients, and assigned treatment plans.'}
               </p>
             </div>
           </div>
@@ -219,7 +252,7 @@ export default function OrgPatientsList() {
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={fetchBpmPatients}
+            onClick={fetchPatients}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-2 bg-[#141521] hover:bg-[#1b1c2b] border border-[#2e3146] text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer"
             title="Refresh list"
@@ -320,7 +353,7 @@ export default function OrgPatientsList() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-2xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-teal-400" />
-          <span className="text-xs font-semibold">Loading BPM patient directory from /bpm/patients...</span>
+          <span className="text-xs font-semibold">Loading patient directory from {endpointLabel}...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 bg-[#141521] border border-[#222437] rounded-2xl text-center">

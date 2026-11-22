@@ -5,6 +5,8 @@ import type {
   DoctorPanelLoginRequest,
   LoginRequest,
   AuthResponse,
+  RefreshTokenRequest,
+  PasientRegisterDto,
   ChangePasswordRequest,
   VerifyOtpRequest,
   ForgotPasswordRequest,
@@ -89,6 +91,18 @@ export const authService = {
   validateToken: async (): Promise<boolean> => {
     const response = await api.get<boolean>(API_ENDPOINTS.AUTH.VALIDATE)
     return Boolean(response.data)
+  },
+
+  // Get All Users (GET /auth)
+  getAllUsers: async (): Promise<PasientRegisterDto[]> => {
+    const response = await api.get<PasientRegisterDto[]>(API_ENDPOINTS.AUTH.ALL_USERS)
+    return Array.isArray(response.data) ? response.data : []
+  },
+
+  // Refresh JWT Token (POST /auth/refresh)
+  refreshToken: async (data: RefreshTokenRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>(API_ENDPOINTS.AUTH.REFRESH, data)
+    return response.data
   },
 
   // Upload Registration Image (POST /auth/upload)

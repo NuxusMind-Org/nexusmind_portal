@@ -73,8 +73,16 @@ export default function MeqaleManagement() {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await contentService.getAllMeqale()
-      setItems(Array.isArray(data) ? data : (data as any)?.content || [])
+      // Use admin endpoint (GET /meqale/admin/all) so DRAFT and ARCHIVED articles are visible
+      const pageData = await contentService
+        .getAllMeqaleForAdmin({ page: 0, size: 100 })
+        .catch(() => null)
+      if (pageData && Array.isArray(pageData.content)) {
+        setItems(pageData.content)
+      } else {
+        const data = await contentService.getAllMeqale()
+        setItems(Array.isArray(data) ? data : (data as any)?.content || [])
+      }
     } catch (err) {
       console.error('Failed to fetch articles', err)
       setError('Could not load articles.')

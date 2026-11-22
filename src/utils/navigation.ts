@@ -7,6 +7,8 @@ export function getInitialRouteForRole(role?: RoleType | string | null): string 
   switch (role) {
     case ROLES.PSYCHOLOGIST:
       return '/psy'
+    case ROLES.SEO:
+      return '/org/seo'
     case ROLES.ORG_ADMIN:
     case ROLES.PLATFORM_ADMIN:
       return '/dashboard'

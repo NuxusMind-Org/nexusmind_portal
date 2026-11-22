@@ -16,6 +16,12 @@ export interface Page<T> {
   empty: boolean
 }
 
+// Backend Role enum
+export type BackendRole = 'SUPER_ADMIN' | 'BPM' | 'DOCTOR' | 'PATIENT' | 'SEO'
+export type ContentStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+export type ProfileStatus = 'TELEBE' | 'ISCI' | 'DIGER'
+export type ProfileLanguage = 'AZ' | 'EN' | 'RU'
+
 // Authentication DTOs
 export interface LoginRequest {
   email?: string
@@ -35,6 +41,7 @@ export interface AdminLoginRequest {
 }
 
 export interface AuthResponse {
+  id?: number
   token?: string
   accessToken?: string
   refreshToken?: string
@@ -42,10 +49,14 @@ export interface AuthResponse {
   role?: string
 }
 
+export interface RefreshTokenRequest {
+  refreshToken: string
+}
+
 export interface ChangePasswordRequest {
-  oldPassword?: string
-  currentPassword?: string
+  oldPassword: string
   newPassword: string
+  confirmPassword: string
 }
 
 export interface VerifyOtpRequest {
@@ -58,10 +69,10 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordWithOtpRequest {
-  email?: string
-  phone?: string
+  email: string
   otp: string
   newPassword: string
+  confirmPassword: string
 }
 
 // Site Settings DTOs
@@ -147,8 +158,8 @@ export interface MeqaleHighlightCardResponseDto {
 }
 
 export interface BlogSectionRequest {
-  title: TitleDto | string
-  text: TitleDto | string
+  title: TitleDto
+  text: TitleDto
 }
 
 export interface BlogSectionResponse {
@@ -291,13 +302,12 @@ export interface BlogResponse {
 }
 
 export interface GalleryItemRequest {
-  title?: TitleDto
+  title: TitleDto
+  thumbnailUrl: string
+  mediaUrl?: string
+  mediaType: 'IMAGE' | 'VIDEO'
+  category: 'TERAPIYALAR' | 'OTAQLAR' | 'TELIMLER'
   altText?: TitleDto
-  thumbnailUrl?: string
-  mediaUrl: string
-  imageUrl?: string
-  mediaType?: 'IMAGE' | 'VIDEO' | string
-  category?: 'TERAPIYALAR' | 'OTAQLAR' | 'TELIMLER' | string
 }
 
 export interface GalleryItemResponse {
@@ -364,17 +374,17 @@ export type LocalTimeValue = LocalTime | string | number[]
 
 /** POST /doctors/me/working-hours */
 export interface WorkingHourRangeRequest {
-  date: string // YYYY-MM-DD
-  startTime: LocalTimeValue
-  endTime: LocalTimeValue
+  date: string // YYYY-MM-DD, e.g. "2026-11-20"
+  startTime: string // HH:mm, e.g. "10:00"
+  endTime: string // HH:mm, e.g. "11:00"
 }
 
 /** GET /doctors/me/working-hours?from&to */
 export interface WorkingRangeDto {
   id: number
-  date?: string // YYYY-MM-DD
-  startTime?: LocalTimeValue
-  endTime?: LocalTimeValue
+  date?: string // "DD.MM.YYYY" (e.g. "20.11.2026") or "YYYY-MM-DD"
+  startTime?: string | LocalTimeValue // HH:mm, e.g. "10:00"
+  endTime?: string | LocalTimeValue // HH:mm, e.g. "11:00"
 }
 
 export interface AvailableSlotDto {
@@ -409,7 +419,44 @@ export interface DoctorPriceResponse {
 }
 
 /** Embedded (id-less) price item on DoctorResponseDto */
-export type DoctorPriceDto = Omit<DoctorPriceResponse, 'id' | 'doctorId'>
+export type DoctorPriceDto = DoctorPriceRequest
+
+export interface DoctorPriceEntity extends DoctorPriceRequest {
+  id: number
+  doctor?: DoctorEntity
+}
+
+export interface DoctorResponseDto {
+  id: number
+  name?: string
+  surname?: string
+  username?: string
+  profileImageUrl?: string
+  bio?: TitleDto
+  major?: TitleDto
+  prices?: DoctorPriceDto[]
+}
+
+export interface DoctorEntity {
+  id: number
+  username?: string
+  name?: string
+  surname?: string
+  university?: string
+  imageURl?: string
+  profileImageUrl?: string
+  email?: string
+  password?: string
+  major?: TitleDto
+  bio?: TitleDto
+  experienceYear?: number
+  role?: BackendRole
+  languages?: string[]
+  education?: string[]
+  specializations?: string[]
+  trainings?: string[]
+  prices?: DoctorPriceEntity[]
+}
 
 // Call invite DTOs (call-invite-controller) — responses are free-form string maps
 export type CallInviteResponse = Record<string, string>
@@ -480,10 +527,11 @@ export interface PasientRegisterEntity {
   mood?: PatientMood
   moodUpdatedDate?: string
   profileImageUrl?: string
-  status?: 'TELEBE' | 'ISCI' | 'DIGER' | string
-  language?: 'AZ' | 'EN' | 'RU' | string
+  registrationImageUrl?: string
+  status?: ProfileStatus | string
+  language?: ProfileLanguage | string
   twoFactorEnabled?: boolean
-  appointments?: AppointmentDto[]
+  appointments?: AppointmentEntity[]
   verified?: boolean
   [key: string]: unknown
 }
@@ -535,42 +583,74 @@ export interface DoctorRegisterDto {
 
 // Profile DTOs
 export interface UpdateProfileStatusRequest {
-  status: string
+  status: ProfileStatus
 }
 
 export interface UpdateNameRequest {
   name: string
+  surname?: string
 }
 
 export interface UpdateLanguageRequest {
-  language: string
+  language: ProfileLanguage
 }
 
 export interface UpdateEmailRequest {
-  newEmail?: string
-  email?: string
+  newEmail: string
 }
 
 export interface ProfileResponse {
   id: number
-  name: string
-  email: string
-  status?: string
-  language?: string
+  name?: string
+  surname?: string
+  email?: string
+  profileImageUrl?: string
+  status?: ProfileStatus
+  language?: ProfileLanguage
   twoFactorEnabled?: boolean
-  role?: string
+  role?: BackendRole | string
 }
 
 // Onboarding & Journal DTOs
+export type OnboardingAddressType = 'XANIM' | 'BEY'
+export type OnboardingTherapyFormat = 'TEK' | 'CUTLUK' | 'AILE' | 'DOSTLAR'
+export type OnboardingEnvironment =
+  | 'SESSIZ'
+  | 'YARADICI'
+  | 'TEBIET'
+  | 'KITABXANA'
+  | 'MINIMALIST'
+  | 'SEMIMI'
+export type OnboardingConcern =
+  | 'AILE_PROBLEMLERI'
+  | 'SEVGI_PROBLEMLERI'
+  | 'TEKLIK'
+  | 'GELECEK_QAYGISI'
+  | 'AGIR_DEPRESSIYA'
+  | 'XRONIKI_YORGUNLUQ'
+
 export interface OnboardingRequest {
-  answers?: Record<string, unknown>
-  [key: string]: unknown
+  addressType: OnboardingAddressType
+  therapyFormat: OnboardingTherapyFormat
+  parentCount?: number
+  childCount?: number
+  femaleCount?: number
+  maleCount?: number
+  environments: OnboardingEnvironment[]
+  concerns: OnboardingConcern[]
 }
 
 export interface OnboardingResponse {
   id?: number
-  status?: string
-  [key: string]: unknown
+  addressType?: OnboardingAddressType
+  therapyFormat?: OnboardingTherapyFormat
+  parentCount?: number
+  childCount?: number
+  femaleCount?: number
+  maleCount?: number
+  environments?: OnboardingEnvironment[]
+  concerns?: OnboardingConcern[]
+  completed?: boolean
 }
 
 export interface JournalEntryRequest {
@@ -717,6 +797,88 @@ export interface ChatMessageResponseDto {
   sentAt?: string
   createdAt?: string
   [key: string]: unknown
+}
+
+export interface SessionNote {
+  id: number
+  appointment?: AppointmentEntity
+  subjective?: string
+  objective?: string
+  assessment?: string
+  plan?: string
+  createdAt?: string
+}
+
+export interface AppointmentEntity {
+  id: number
+  pasient?: PasientRegisterEntity
+  doctor?: DoctorEntity
+  appointmentDate?: string
+  appointmentTime?: LocalTime | string
+  finishTime?: string
+  durationMinutes?: number
+  sessionsType?: 'INDIVIDUAL' | 'COUPLE'
+  status?: AppointmentStatus
+  mode?: AppointmentMode
+  roomUrl?: string
+  note?: SessionNote
+}
+
+// Notification DTOs (notification-controller)
+export type EmailTemplate =
+  | 'SESSION_REMINDER_24H'
+  | 'SESSION_REMINDER_3H'
+  | 'SESSION_REMINDER_30MIN'
+  | 'OTP_CODE'
+  | 'SESSION_CONFIRMED'
+  | 'RESCHEDULE_CONFIRMED'
+  | 'RESCHEDULE_REQUEST'
+  | 'SPECIALIST_AVAILABILITY'
+  | 'PAYMENT_RECEIPT'
+  | 'SESSION_FEEDBACK'
+  | 'RECOMMENDED_MATERIALS'
+  | 'MILESTONE'
+  | 'HABIT_DAILY'
+  | 'MOOD_CHECK'
+  | 'BREATHING'
+  | 'JOURNAL'
+  | 'PSYCH_FACT'
+  | 'DAILY_RECOMMENDATION'
+  | 'PODCAST_AND_BOOK_OF_DAY'
+  | 'SCHEDULE_UPDATED'
+  | 'FAVORITE_AVAILABLE'
+  | 'WELCOME'
+  | 'GUIDE_NEKSI'
+  | 'FIRST_SESSION'
+  | 'INACTIVE_15_DAYS'
+  | 'INACTIVE_30_DAYS'
+  | 'INACTIVE_60_DAYS'
+  | 'NEW_SPECIALISTS'
+
+export interface EmailNotificationRequest {
+  to: string
+  template: EmailTemplate
+  params?: Record<string, string>
+}
+
+export interface EmailNotificationResponse {
+  success: boolean
+  message: string
+  template: EmailTemplate
+  sentAt: string
+}
+
+// Search DTOs (search-controller)
+export interface DoctorSearchResult {
+  id: number
+  fullName?: string
+  bio?: string
+}
+
+export interface ContentSearchResult {
+  type: string
+  id: number
+  title: string
 }
 
 export type FileUploadRawResponse = string

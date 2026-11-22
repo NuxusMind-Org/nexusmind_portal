@@ -6,6 +6,7 @@ import { psychologistRoutes } from './psychologistRoutes'
 import { AuthGuard } from '../permissions/guards'
 import DashboardLayout from '../layouts/DashboardLayout'
 import DashboardOverview from '../features/dashboard/pages/DashboardOverview'
+import ProfileSettings from '../features/profile/pages/ProfileSettings'
 import { useUserStore } from '../store/userStore'
 import { getInitialRouteForRole } from '../utils/navigation'
 
@@ -18,6 +19,9 @@ function DashboardRouteGuard() {
   const profile = useUserStore((state) => state.profile)
   if (profile?.role === 'psychologist') {
     return <Navigate to="/psy" replace />
+  }
+  if (profile?.role === 'seo') {
+    return <Navigate to="/org/seo" replace />
   }
   return <DashboardOverview />
 }
@@ -39,6 +43,16 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <DashboardRouteGuard />,
+          },
+        ],
+      },
+      {
+        path: 'profile',
+        element: <DashboardLayout />,
+        children: [
+          {
+            index: true,
+            element: <ProfileSettings />,
           },
         ],
       },

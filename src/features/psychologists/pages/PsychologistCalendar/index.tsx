@@ -6,13 +6,11 @@ import {
   Clock,
   Sparkles,
   Trash2,
-  Info,
   CalendarCheck,
   ChevronLeft,
   ChevronRight,
   Copy,
   RotateCcw,
-  Lock,
 } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import dayjs, { type Dayjs } from 'dayjs';
@@ -20,9 +18,10 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import { doctorService } from '../../../../api';
 import type { WorkingRangeDto } from '../../../../types/portalDtos';
 import {
-  formatLocalTime,
+  extractBackendError,
   groupRangesByDate,
   hoursToBlocks,
+  rangeMatchesBlock,
   rangesToHourMap,
   sameHours,
   toEndLocalTimeString,
@@ -33,7 +32,8 @@ dayjs.extend(isoWeek);
 
 const DATE_FMT = 'YYYY-MM-DD';
 const STANDARD_HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17];
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
+// Start hours 00:00..22:00 so every 1-hour slot [h, h+1] ends on a valid whole hour <= 23:00
+const HOURS = Array.from({ length: 23 }, (_, i) => i);
 
 const DAY_LABELS = [
   { azName: 'Bazar ertəsi', shortAz: 'B.E', shortEn: 'MON' },
@@ -46,15 +46,6 @@ const DAY_LABELS = [
 ];
 
 type HourMap = Record<string, number[]>;
-
-const getErrorMessage = (error: unknown, fallback: string): string => {
-  const data = (error as { response?: { data?: unknown } })?.response?.data;
-  if (data && typeof data === 'object' && 'message' in data && typeof (data as { message: unknown }).message === 'string') {
-    return (data as { message: string }).message;
-  }
-  if (typeof data === 'string' && data.trim()) return data;
-  return (error as Error)?.message || fallback;
-};
 
 export function PsychologistCalendar() {
   const [weekStart, setWeekStart] = useState<Dayjs>(() => dayjs().startOf('isoWeek'));
@@ -75,6 +66,20 @@ export function PsychologistCalendar() {
   const rangesByDate = useMemo(() => groupRangesByDate(ranges), [ranges]);
 
   const isPast = useCallback((day: Dayjs) => day.isBefore(today, 'day'), [today]);
+  // Blocks editing already-elapsed hours on today's date so backend does not reject past startTime
+  const isPastSlot = useCallback(
+    (day: Dayjs, hour: number) => {
+      if (day.isBefore(today, 'day')) return true;
+      if (day.isSame(today, 'day')) return hour <= dayjs().hour();
+      return false;
+    },
+    [today]
+  );
+
+  const filterFutureHoursForDay = useCallback(
+    (day: Dayjs, hours: number[]) => hours.filter((h) => !isPastSlot(day, h)),
+    [isPastSlot]
+  );
 
   const dirtyDates = useMemo(
     () =>
@@ -99,7 +104,7 @@ export function PsychologistCalendar() {
       console.error('Failed to fetch working ranges:', error);
       setRanges([]);
       setSelected({});
-      setFeedback({ type: 'error', message: getErrorMessage(error, 'İş saatlarını serverdən yükləmək mümkün olmadı.') });
+      setFeedback({ type: 'error', message: extractBackendError(error, 'İş saatlarını serverdən yükləmək mümkün olmadı.') });
     } finally {
       setIsLoading(false);
     }
@@ -126,41 +131,32 @@ export function PsychologistCalendar() {
   };
 
   const toggleHour = (day: Dayjs, hour: number) => {
-    if (isPast(day)) return;
+    if (isPastSlot(day, hour)) return;
     const date = day.format(DATE_FMT);
     updateDay(date, (hours) => (hours.includes(hour) ? hours.filter((h) => h !== hour) : [...hours, hour]));
   };
 
-  const toggleStandardHoursForDay = (day: Dayjs) => {
-    if (isPast(day)) return;
-    const date = day.format(DATE_FMT);
-    updateDay(date, (hours) => {
-      const allSelected = STANDARD_HOURS.every((h) => hours.includes(h));
-      return allSelected ? hours.filter((h) => !STANDARD_HOURS.includes(h)) : [...hours, ...STANDARD_HOURS];
-    });
-  };
-
-  const clearDay = (day: Dayjs) => {
-    if (isPast(day)) return;
-    updateDay(day.format(DATE_FMT), () => []);
-  };
-
-  const applyToEditableDays = (dayIndexes: number[], updater: (hours: number[]) => number[]) => {
+  const applyToEditableDays = (dayIndexes: number[], updater: (day: Dayjs, hours: number[]) => number[]) => {
     setSelected((prev) => {
       const next = { ...prev };
       dayIndexes.forEach((i) => {
         const day = weekDays[i];
         if (isPast(day)) return;
         const date = day.format(DATE_FMT);
-        next[date] = [...new Set(updater(prev[date] ?? []))].sort((a, b) => a - b);
+        next[date] = [...new Set(updater(day, prev[date] ?? []))].sort((a, b) => a - b);
       });
       return next;
     });
   };
 
-  const handleSelectStandardWeekdays = () => applyToEditableDays([0, 1, 2, 3, 4], (h) => [...h, ...STANDARD_HOURS]);
-  const handleSelectAllDaysStandard = () => applyToEditableDays([0, 1, 2, 3, 4, 5, 6], (h) => [...h, ...STANDARD_HOURS]);
-  const handleClearAll = () => applyToEditableDays([0, 1, 2, 3, 4, 5, 6], () => []);
+  const handleSelectStandardWeekdays = () =>
+    applyToEditableDays([0, 1, 2, 3, 4], (day, h) => [...h, ...filterFutureHoursForDay(day, STANDARD_HOURS)]);
+  const handleSelectAllDaysStandard = () =>
+    applyToEditableDays([0, 1, 2, 3, 4, 5, 6], (day, h) => [...h, ...filterFutureHoursForDay(day, STANDARD_HOURS)]);
+  const handleClearAll = () =>
+    applyToEditableDays([0, 1, 2, 3, 4, 5, 6], (day, h) =>
+      h.filter((hr) => isPastSlot(day, hr) && (originalMap[day.format(DATE_FMT)] ?? []).includes(hr))
+    );
   const handleResetChanges = () => setSelected(originalMap);
 
   // Copies the previous week's ranges onto the editable days of the visible week (local only until saved)
@@ -183,19 +179,22 @@ export function PsychologistCalendar() {
         weekDays.forEach((day) => {
           if (isPast(day)) return;
           const source = day.subtract(7, 'day').format(DATE_FMT);
-          next[day.format(DATE_FMT)] = prevMap[source] ?? [];
+          const date = day.format(DATE_FMT);
+          const preservedPast = (originalMap[date] ?? []).filter((hr) => isPastSlot(day, hr));
+          const copiedFuture = filterFutureHoursForDay(day, prevMap[source] ?? []);
+          next[date] = [...new Set([...preservedPast, ...copiedFuture])].sort((a, b) => a - b);
         });
         return next;
       });
       setFeedback({ type: 'success', message: 'Əvvəlki həftənin qrafiki köçürüldü. Təsdiqləmək üçün "Yadda Saxla" düyməsini basın.' });
     } catch (error: unknown) {
-      setFeedback({ type: 'error', message: getErrorMessage(error, 'Əvvəlki həftəni yükləmək mümkün olmadı.') });
+      setFeedback({ type: 'error', message: extractBackendError(error, 'Əvvəlki həftəni yükləmək mümkün olmadı.') });
     } finally {
       setIsCopying(false);
     }
   };
 
-  // Persists changed days: removes the day's existing ranges, then posts merged contiguous blocks.
+  // Persists changed days using diff-sync: preserves unchanged ranges, deletes removed ones, and posts only new blocks.
   const handleSave = async () => {
     if (!isDirty) return;
     setIsSaving(true);
@@ -203,9 +202,24 @@ export function PsychologistCalendar() {
     const failed: string[] = [];
     for (const date of dirtyDates) {
       try {
+        const dayObj = dayjs(date);
         const existing = rangesByDate[date] ?? [];
-        await Promise.all(existing.map((r) => doctorService.deleteMyWorkingRange(r.id)));
-        for (const block of hoursToBlocks(selected[date] ?? [])) {
+        const desiredHours = (selected[date] ?? []).filter(
+          (hr) => !isPastSlot(dayObj, hr) || (originalMap[date] ?? []).includes(hr)
+        );
+        const desiredBlocks = hoursToBlocks(desiredHours);
+
+        const toDelete = existing.filter(
+          (range) => !desiredBlocks.some((block) => rangeMatchesBlock(range, block))
+        );
+        const toCreate = desiredBlocks.filter(
+          (block) =>
+            !existing.some((range) => rangeMatchesBlock(range, block)) &&
+            !isPastSlot(dayObj, block.startHour)
+        );
+
+        await Promise.all(toDelete.map((r) => doctorService.deleteMyWorkingRange(r.id)));
+        for (const block of toCreate) {
           await doctorService.addMyWorkingRange({
             date,
             startTime: toLocalTimeString(block.startHour),
@@ -214,7 +228,7 @@ export function PsychologistCalendar() {
         }
       } catch (error: unknown) {
         console.error(`Failed to save working ranges for ${date}:`, error);
-        failed.push(`${dayjs(date).format('D MMM')}: ${getErrorMessage(error, 'xəta')}`);
+        failed.push(`${dayjs(date).format('D MMM')}: ${extractBackendError(error, 'xəta')}`);
       }
     }
     await fetchWeek(weekStart);
@@ -343,11 +357,6 @@ export function PsychologistCalendar() {
             </button>
           )}
         </div>
-
-        <div className="items-center gap-1.5 text-[11px] text-slate-400 font-medium hidden md:flex">
-          <Info className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Saatlar yalnız göstərilən həftənin tarixlərinə tətbiq olunur. Keçmiş günlər redaktə edilə bilməz.</span>
-        </div>
       </div>
 
       {/* Feedback banner */}
@@ -392,62 +401,28 @@ export function PsychologistCalendar() {
                 const label = DAY_LABELS[idx];
                 const isToday = day.isSame(today, 'day');
                 const past = isPast(day);
-                const dayCount = selected[date]?.length ?? 0;
-                const changed = dirtyDates.includes(date);
-                const savedRanges = rangesByDate[date] ?? [];
 
                 return (
                   <div
                     key={date}
-                    className={`p-2.5 text-center border-r border-[#202235] last:border-0 flex flex-col items-center justify-between gap-1 transition-colors ${
-                      isToday ? 'bg-emerald-500/[0.04]' : ''
+                    className={`py-3 px-2 text-center border-r border-[#202235] last:border-0 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                      isToday ? 'bg-emerald-500/[0.06]' : ''
                     } ${past ? 'opacity-60' : ''}`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-[11px] font-black uppercase tracking-wider ${isToday ? 'text-emerald-400' : 'text-slate-300'}`}>
-                        {label.shortAz}
-                      </span>
-                      <span className="text-[10px] font-bold text-slate-400">{day.format('D MMM')}</span>
-                      {isToday && (
-                        <span className="bg-emerald-500/20 text-emerald-300 text-[8px] font-extrabold px-1.5 rounded uppercase">Bugün</span>
-                      )}
-                      {past && <Lock className="w-3 h-3 text-slate-500" />}
-                      {changed && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" title="Yadda saxlanılmayıb" />}
-                    </div>
-
-                    <p className="text-[10px] font-semibold text-slate-500 truncate max-w-full" title={savedRanges.map((r) => `${formatLocalTime(r.startTime)}–${formatLocalTime(r.endTime, true)}`).join(', ')}>
-                      {savedRanges.length
-                        ? savedRanges.map((r) => `${formatLocalTime(r.startTime)}–${formatLocalTime(r.endTime, true)}`).join(', ')
-                        : label.azName}
-                    </p>
-
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[10px] font-bold text-slate-400 bg-[#141521] px-2 py-0.5 rounded border border-[#202235]">
-                        {dayCount} saat
-                      </span>
-                      {!past && (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => toggleStandardHoursForDay(day)}
-                            title={`${label.azName} üçün 09:00 - 18:00 seç/ləğv et`}
-                            className="text-[9px] font-bold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30 transition-all cursor-pointer"
-                          >
-                            09-18
-                          </button>
-                          {dayCount > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => clearDay(day)}
-                              title={`${label.azName} saatlarını təmizlə`}
-                              className="text-[9px] font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 px-1 py-0.5 rounded border border-rose-500/30 transition-all cursor-pointer"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
+                    <span
+                      className={`text-xs font-bold tracking-wide truncate max-w-full ${
+                        isToday ? 'text-emerald-400' : 'text-slate-200'
+                      }`}
+                    >
+                      {label.azName}
+                    </span>
+                    <span
+                      className={`text-[11px] font-semibold ${
+                        isToday ? 'text-emerald-300/90' : 'text-slate-400'
+                      }`}
+                    >
+                      {day.format('D MMM')}
+                    </span>
                   </div>
                 );
               })}
@@ -462,14 +437,14 @@ export function PsychologistCalendar() {
                   </div>
                   {weekDays.map((day, idx) => {
                     const date = day.format(DATE_FMT);
-                    const past = isPast(day);
+                    const past = isPastSlot(day, hour);
                     const isSelected = !!selected[date]?.includes(hour);
                     return (
                       <div
                         key={`${date}-${hour}`}
                         onClick={() => toggleHour(day, hour)}
                         className={`border-r border-[#202235]/50 last:border-0 p-1 transition-colors ${
-                          past ? 'cursor-not-allowed' : 'cursor-pointer'
+                          past ? 'cursor-not-allowed bg-[#0d0e17]/40' : 'cursor-pointer'
                         } ${isSelected ? 'bg-emerald-500/10' : past ? '' : 'hover:bg-[#1c1d2e]/50'}`}
                         title={`${DAY_LABELS[idx].azName}, ${day.format('D MMM')} ${hour.toString().padStart(2, '0')}:00`}
                       >

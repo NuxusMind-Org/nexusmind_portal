@@ -12,10 +12,12 @@ import BlogPreview from '../features/blogs/pages/BlogPreview'
 import GalleryManagement from '../features/gallery/pages/GalleryManagement'
 import GalleryPreview from '../features/gallery/pages/GalleryPreview'
 import SeoManagement from '../features/seo/pages/SeoManagement'
+import TrainingsManagement from '../features/trainings/pages/TrainingsManagement'
+import NotificationsManagement from '../features/notifications/pages/NotificationsManagement'
 
 export const organizationRoutes: RouteObject = {
   path: 'org',
-  element: <RoleGuard allowedRoles={['org_admin', 'platform_admin']} />,
+  element: <RoleGuard allowedRoles={['org_admin', 'platform_admin', 'seo']} />,
   children: [
     {
       element: <DashboardLayout />,
@@ -46,24 +48,56 @@ export const organizationRoutes: RouteObject = {
         },
         {
           path: 'gallery',
-          element: <GalleryManagement />,
+          element: (
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin']}>
+              <GalleryManagement />
+            </RoleGuard>
+          ),
         },
         {
           path: 'gallery/:id',
-          element: <GalleryPreview />,
+          element: (
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin']}>
+              <GalleryPreview />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'trainings',
+          element: (
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin']}>
+              <TrainingsManagement />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'notifications',
+          element: (
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin']}>
+              <NotificationsManagement />
+            </RoleGuard>
+          ),
         },
         {
           path: 'psychologists',
-          element: <PsychologistsList />,
+          element: (
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin']}>
+              <PsychologistsList />
+            </RoleGuard>
+          ),
         },
         {
           path: 'patients',
-          element: <OrgPatientsList />,
+          element: (
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin']}>
+              <OrgPatientsList />
+            </RoleGuard>
+          ),
         },
         {
           path: 'seo',
           element: (
-            <RoleGuard allowedRoles={['org_admin']}>
+            <RoleGuard allowedRoles={['org_admin', 'platform_admin', 'seo']}>
               <SeoManagement />
             </RoleGuard>
           ),

@@ -1,48 +1,22 @@
 import api from '../axios'
 import { API_ENDPOINTS } from '../endpoints'
 import type {
-  SeoScriptsDto,
   SitemapDto,
   SitemapUrlEntry,
   SiteSettingsResponseDto,
 } from '../../types/portalDtos'
 
 export const seoService = {
-  // Site Scripts (<head> & <body>) from GET /site-settings/scripts
-  getSiteScripts: async (): Promise<SeoScriptsDto> => {
-    try {
-      const response = await api.get<SiteSettingsResponseDto>(API_ENDPOINTS.SITE_SETTINGS.SCRIPTS)
-      const data = response.data || {}
-      return {
-        customHeadScripts: data.customHeadScripts || '',
-        customBodyScripts: data.customBodyScripts || '',
-        custom_head_scripts: data.customHeadScripts || '',
-        custom_body_scripts: data.customBodyScripts || '',
-      }
-    } catch (err) {
-      console.warn('Could not fetch site scripts from server:', err)
-      const cached = localStorage.getItem('nexusmind_seo_scripts')
-      return cached ? JSON.parse(cached) : { custom_head_scripts: '', custom_body_scripts: '' }
-    }
-  },
-
-  updateSiteScripts: async (data: SeoScriptsDto): Promise<SeoScriptsDto> => {
-    localStorage.setItem('nexusmind_seo_scripts', JSON.stringify(data))
-    // Attempt real backend write endpoint if available on server
-    try {
-      const response = await api.post<SiteSettingsResponseDto>(
-        API_ENDPOINTS.SITE_SETTINGS.SCRIPTS,
-        data
-      )
-      return {
-        customHeadScripts: response.data.customHeadScripts,
-        customBodyScripts: response.data.customBodyScripts,
-        custom_head_scripts: response.data.customHeadScripts,
-        custom_body_scripts: response.data.customBodyScripts,
-      }
-    } catch {
-      // Return local data as fallback
-      return data
+  // Site Scripts (<head> & <body>) from GET /site-settings/scripts (read-only per Swagger v1.0)
+  getSiteScripts: async (): Promise<SiteSettingsResponseDto> => {
+    const response = await api.get<SiteSettingsResponseDto>(API_ENDPOINTS.SITE_SETTINGS.SCRIPTS)
+    const data = response.data || {}
+    return {
+      ...data,
+      customHeadScripts: data.customHeadScripts || '',
+      customBodyScripts: data.customBodyScripts || '',
+      custom_head_scripts: data.customHeadScripts || '',
+      custom_body_scripts: data.customBodyScripts || '',
     }
   },
 

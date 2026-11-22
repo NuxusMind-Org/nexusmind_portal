@@ -7,74 +7,6 @@ import type { Patient } from '../../types/patient'
 import { doctorService } from '../../../../api'
 import type { PasientRegisterEntity } from '../../../../types/portalDtos'
 
-const INITIAL_PATIENTS: Patient[] = [
-  {
-    id: 'pat_1',
-    name: 'Sarah Miller',
-    email: 's.miller@bpm.com',
-    phone: '+1 (555) 019-2834',
-    avatarColor: 'from-teal-500/20 to-emerald-500/20 text-emerald-400',
-    status: 'Active',
-    priority: 'Medium',
-    tag: 'CBT Follow-up',
-    lastSession: '2 days ago',
-    nextSession: 'July 3, 2026',
-    mood: 'Improving'
-  },
-  {
-    id: 'pat_2',
-    name: 'John Larson',
-    email: 'j.larson@bpm.com',
-    phone: '+1 (555) 014-9821',
-    avatarColor: 'from-slate-700/50 to-slate-800/50 text-slate-400',
-    status: 'Active',
-    priority: 'High',
-    tag: 'Anxiety Treatment',
-    lastSession: '5 days ago',
-    nextSession: 'July 2, 2026',
-    mood: 'Anxious'
-  },
-  {
-    id: 'pat_3',
-    name: 'Alice Chen',
-    email: 'a.chen@bpm.com',
-    phone: '+1 (555) 012-7744',
-    avatarColor: 'from-violet-600/20 to-indigo-600/20 text-violet-400',
-    status: 'Active',
-    priority: 'Normal',
-    tag: 'Grief Integration',
-    lastSession: '1 week ago',
-    nextSession: 'Tomorrow',
-    mood: 'Stable'
-  },
-  {
-    id: 'pat_4',
-    name: 'Emma Thompson',
-    email: 'e.thompson@bpm.com',
-    phone: '+1 (555) 015-8833',
-    avatarColor: 'from-teal-600/20 to-cyan-600/20 text-teal-400',
-    status: 'Active',
-    priority: 'Normal',
-    tag: 'Depression Therapy',
-    lastSession: 'Today (09:00 AM)',
-    nextSession: 'July 7, 2026',
-    mood: 'Improving'
-  },
-  {
-    id: 'pat_5',
-    name: 'Michael Davis',
-    email: 'm.davis@bpm.com',
-    phone: '+1 (555) 018-4422',
-    avatarColor: 'from-purple-600/20 to-pink-600/20 text-purple-400',
-    status: 'Active',
-    priority: 'High',
-    tag: 'Intake Assessment',
-    lastSession: 'Pending (11:00 AM)',
-    nextSession: 'Today (11:00 AM)',
-    mood: 'Stressed'
-  }
-]
-
 const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patient => {
   const name = [entity.name, entity.surname].filter(Boolean).join(' ') || `Patient #${entity.id}`
   const avatarColors = [
@@ -110,8 +42,9 @@ const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patie
 
 export default function PatientsList() {
   const { t } = useTranslation()
-  const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPriority, setSelectedPriority] = useState<string>('All')
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
@@ -119,18 +52,23 @@ export default function PatientsList() {
 
   const loadPatients = useCallback(async () => {
     setIsLoading(true)
+    setLoadError(null)
     try {
       const data = await doctorService.getMyPatients()
-      if (Array.isArray(data) && data.length > 0) {
-        setPatients(data.map(mapEntityToPatient))
-      }
+      setPatients(Array.isArray(data) ? data.map(mapEntityToPatient) : [])
     } catch (err) {
       console.warn('Could not load live patients list from /doctors/me/patients:', err)
-      // Fallback to initial patients
+      setLoadError('Could not load assigned patients from /doctors/me/patients.')
     } finally {
       setIsLoading(false)
     }
   }, [])
+
+  useEffect(() => {
+    if (loadError) {
+      setFeedbackMsg(loadError)
+    }
+  }, [loadError])
 
   useEffect(() => {
     loadPatients()

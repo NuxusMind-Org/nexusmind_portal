@@ -198,10 +198,10 @@ export default function DashboardOverview() {
       const normalizedTitle = normalizeTitleDto(item.title)
       setFormTitle(getLocalizedTitle(item.title, i18n.language))
       setMultilingualTitle(normalizedTitle)
-      const primaryText = item.content || (item.sections && item.sections[0]?.text) || ''
+      const primaryText = item.content || (item.sections && getLocalizedTitle(item.sections[0]?.text, i18n.language)) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
-      setFormShortDesc(item.shortDescription || '')
-      setFormIntroText(item.introText || '')
+      setFormShortDesc(getLocalizedTitle(item.shortDescription, i18n.language) || '')
+      setFormIntroText(getLocalizedTitle(item.introText, i18n.language) || '')
       setFormContent(primaryText)
       setFormCategory(item.category || 'General')
       setFormQuote(item.quote || '')
@@ -209,7 +209,7 @@ export default function DashboardOverview() {
       setFormStatus(item.status || 'PUBLISHED')
       setFormReadTime(item.readTimeMinutes || 5)
       setFormMetaTitle(item.metaTitle || '')
-      setFormMetaDesc(item.metaDescription || '')
+      setFormMetaDesc(getLocalizedTitle(item.metaDescription, i18n.language) || '')
       setFormSlug(item.slug || '')
       setFormSchemaMarkup(item.schemaMarkup || '')
       const kw = item.metaKeywords
@@ -219,10 +219,10 @@ export default function DashboardOverview() {
       const normalizedTitle = normalizeTitleDto(titleObj)
       setFormTitle(getLocalizedTitle(titleObj, i18n.language))
       setMultilingualTitle(normalizedTitle)
-      const primaryText = item.content || (item.sections && item.sections[0]?.text) || ''
+      const primaryText = item.content || (item.sections && getLocalizedTitle(item.sections[0]?.text, i18n.language)) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
-      setFormShortDesc(item.shortDescription || '')
-      setFormIntroText(item.introText || '')
+      setFormShortDesc(getLocalizedTitle(item.shortDescription, i18n.language) || '')
+      setFormIntroText(getLocalizedTitle(item.introText, i18n.language) || '')
       setFormContent(primaryText)
       setFormAuthor(item.author || 'Super Admin')
       setFormCategory(item.category || 'Psychology')
@@ -237,16 +237,16 @@ export default function DashboardOverview() {
       const normalizedTitle = normalizeTitleDto(item.title)
       setFormTitle(getLocalizedTitle(item.title, i18n.language))
       setMultilingualTitle(normalizedTitle)
-      const primaryText = item.body || (item.sections && item.sections[0]?.text) || ''
+      const primaryText = item.body || (item.sections && getLocalizedTitle(item.sections[0]?.text, i18n.language)) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
-      setFormShortDesc(item.shortDescription || '')
-      setFormIntroText(item.introText || '')
+      setFormShortDesc(getLocalizedTitle(item.shortDescription, i18n.language) || '')
+      setFormIntroText(getLocalizedTitle(item.introText, i18n.language) || '')
       setFormContent(primaryText)
       setFormAuthor(item.authorName || 'NexusMind Editorial')
       setFormCategory(item.category || 'General')
       setFormImageUrl(item.imageUrl || item.coverImage || '')
       setFormMetaTitle(item.metaTitle || '')
-      setFormMetaDesc(item.metaDescription || '')
+      setFormMetaDesc(getLocalizedTitle(item.metaDescription, i18n.language) || '')
       setFormSlug(item.slug || '')
       setFormSchemaMarkup(item.schemaMarkup || item.schema_markup || '')
       const kw = item.metaKeywords || item.meta_keywords
@@ -450,6 +450,17 @@ export default function DashboardOverview() {
     }
 
     const mainText = (multilingualContent.az || multilingualContent.en || multilingualContent.ru || formContent || formIntroText || formTitle).trim()
+    const contentDto: TitleDto = {
+      az: multilingualContent.az?.trim() || mainText,
+      en: multilingualContent.en?.trim() || mainText,
+      ru: multilingualContent.ru?.trim() || mainText,
+    }
+    const shortDescDto: TitleDto | undefined = formShortDesc.trim()
+      ? { az: formShortDesc.trim(), en: formShortDesc.trim(), ru: formShortDesc.trim() }
+      : undefined
+    const introTextDto: TitleDto | undefined = formIntroText.trim()
+      ? { az: formIntroText.trim(), en: formIntroText.trim(), ru: formIntroText.trim() }
+      : undefined
     const parsedKeywords = formMetaKeywords
       .split(',')
       .map((k) => k.trim())
@@ -457,14 +468,12 @@ export default function DashboardOverview() {
 
     const payload: BlogRequest = {
       title: completeTitle,
-      shortDescription: formShortDesc.trim() || undefined,
-      introText: formIntroText.trim() || undefined,
-      sections: mainText ? [{ title: completeTitle, text: mainText }] : undefined,
+      shortDescription: shortDescDto,
+      introText: introTextDto,
+      sections: mainText ? [{ title: completeTitle, text: contentDto }] : undefined,
       category: formCategory.trim() || 'General',
       authorName: formAuthor.trim() || 'NexusMind Editorial',
       imageUrl: formImageUrl.trim() || undefined,
-      coverImage: formImageUrl.trim() || undefined,
-      body: mainText,
       metaTitle: formMetaTitle.trim() || undefined,
       metaDescription: formMetaDesc.trim() ? {
         az: formMetaDesc.trim(),
@@ -473,9 +482,7 @@ export default function DashboardOverview() {
       } : undefined,
       slug: formSlug.trim() || undefined,
       schemaMarkup: formSchemaMarkup.trim() || undefined,
-      schema_markup: formSchemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
-      meta_keywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
     try {
       if (editingItem) {
@@ -497,16 +504,22 @@ export default function DashboardOverview() {
     e.preventDefault()
     if (!formImageUrl.trim()) return
     setIsSavingContent(true)
+    const fallbackTitle = formTitle.trim() || 'Gallery Item'
+    const validCategory = (
+      ['TERAPIYALAR', 'OTAQLAR', 'TELIMLER'].includes(formCategory.trim())
+        ? formCategory.trim()
+        : 'TERAPIYALAR'
+    ) as GalleryItemRequest['category']
     const payload: GalleryItemRequest = {
-      title: formTitle.trim() ? {
-        az: formTitle.trim(),
-        en: formTitle.trim(),
-        ru: formTitle.trim(),
-      } : undefined,
+      title: {
+        az: fallbackTitle,
+        en: fallbackTitle,
+        ru: fallbackTitle,
+      },
+      thumbnailUrl: formImageUrl.trim(),
       mediaUrl: formImageUrl.trim(),
-      imageUrl: formImageUrl.trim(),
       mediaType: formMediaType,
-      category: formCategory.trim() || 'TERAPIYALAR',
+      category: validCategory,
     }
     try {
       if (editingItem) {

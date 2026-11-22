@@ -3,6 +3,7 @@ export const ROLES = {
   ORG_ADMIN: 'org_admin',
   PSYCHOLOGIST: 'psychologist',
   PATIENT: 'patient',
+  SEO: 'seo',
 } as const
 
 export type RoleType = typeof ROLES[keyof typeof ROLES]
@@ -20,6 +21,9 @@ export function normalizeRole(rawRole?: string): RoleType {
   }
   if (normalized === 'DOCTOR' || normalized === 'PSYCHOLOGIST') {
     return ROLES.PSYCHOLOGIST
+  }
+  if (normalized === 'SEO' || normalized === 'SEO_ADMIN') {
+    return ROLES.SEO
   }
   if (normalized === 'PATIENT' || normalized === 'PASIENT') {
     return ROLES.PATIENT

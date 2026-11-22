@@ -183,14 +183,15 @@ export default function BlogManagement() {
 
     const primaryContent = contents.az || contents.en || contents.ru || ''
 
-    // Clean additional sections
+    // Clean additional sections (BlogSectionRequest requires TitleDto for both title and text)
     const cleanedAdditionalSections: BlogSectionRequest[] = sections
       .filter((s) => s.text && s.text.trim().length > 0)
       .map((s) => {
         const sTitle = (typeof s.title === 'string' ? s.title : getLocalizedTitle(s.title) || 'Section').trim()
+        const sText = s.text.trim()
         return {
           title: { az: sTitle, en: sTitle, ru: sTitle },
-          text: s.text.trim(),
+          text: { az: sText, en: sText, ru: sText },
         }
       })
 
@@ -198,42 +199,48 @@ export default function BlogManagement() {
     if (primaryContent.trim()) {
       allSections.push({
         title: completeTitle,
-        text: primaryContent.trim(),
+        text: {
+          az: contents.az.trim() || primaryContent.trim(),
+          en: contents.en.trim() || primaryContent.trim(),
+          ru: contents.ru.trim() || primaryContent.trim(),
+        },
       })
     }
     allSections.push(...cleanedAdditionalSections)
 
     if (allSections.length === 0) {
+      const fallbackText = introText.trim() || shortDescription.trim() || completeTitle.az
       allSections.push({
         title: completeTitle,
-        text: introText.trim() || shortDescription.trim() || completeTitle.az,
+        text: { az: fallbackText, en: fallbackText, ru: fallbackText },
       })
     }
-
-    const mainBodyFallback = allSections.map((s) => s.text).join('\n\n')
 
     const parsedKeywords = metaKeywordsInput
       .split(',')
       .map((k) => k.trim())
       .filter((k) => k.length > 0)
 
+    const shortDescDto: TitleDto | undefined = shortDescription.trim()
+      ? { az: shortDescription.trim(), en: shortDescription.trim(), ru: shortDescription.trim() }
+      : undefined
+    const introTextDto: TitleDto | undefined = introText.trim()
+      ? { az: introText.trim(), en: introText.trim(), ru: introText.trim() }
+      : undefined
+
     const payload: BlogRequest = {
       title: completeTitle,
-      shortDescription: shortDescription.trim() || undefined,
-      introText: introText.trim() || undefined,
+      shortDescription: shortDescDto,
+      introText: introTextDto,
       sections: allSections,
       imageUrl: imageUrl.trim() || undefined,
-      coverImage: imageUrl.trim() || undefined,
       category: category.trim() || 'General',
       authorName: authorName.trim() || 'NexusMind Editorial',
-      body: mainBodyFallback,
       metaTitle: metaTitle.trim() || undefined,
       metaDescription: isTitleValid(metaDescription) ? metaDescription : undefined,
       slug: slug.trim() || undefined,
       schemaMarkup: schemaMarkup.trim() || undefined,
-      schema_markup: schemaMarkup.trim() || undefined,
       metaKeywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
-      meta_keywords: parsedKeywords.length > 0 ? parsedKeywords : undefined,
     }
 
     try {

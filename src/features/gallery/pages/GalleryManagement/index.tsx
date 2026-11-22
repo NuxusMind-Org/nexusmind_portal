@@ -91,17 +91,30 @@ export default function GalleryManagement() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!mediaUrl.trim()) return
+    const resolvedThumbnail = thumbnailUrl.trim() || mediaUrl.trim()
+    if (!resolvedThumbnail) return
 
     setIsSaving(true)
+    const fallbackTitle = title.az.trim() || title.en.trim() || title.ru.trim() || 'Gallery Item'
+    const completeTitle: TitleDto = {
+      az: title.az.trim() || fallbackTitle,
+      en: title.en.trim() || fallbackTitle,
+      ru: title.ru.trim() || fallbackTitle,
+    }
+
+    const validCategory = (
+      ['TERAPIYALAR', 'OTAQLAR', 'TELIMLER'].includes(category.trim())
+        ? category.trim()
+        : 'TERAPIYALAR'
+    ) as GalleryItemRequest['category']
+
     const payload: GalleryItemRequest = {
-      title: isTitleValid(title) ? title : undefined,
+      title: completeTitle,
       altText: isTitleValid(altText) ? altText : undefined,
-      thumbnailUrl: thumbnailUrl.trim() || undefined,
-      mediaUrl: mediaUrl.trim(),
-      imageUrl: mediaUrl.trim(),
-      mediaType: mediaType,
-      category: category.trim() || 'TERAPIYALAR',
+      thumbnailUrl: resolvedThumbnail,
+      mediaUrl: mediaUrl.trim() || undefined,
+      mediaType,
+      category: validCategory,
     }
 
     try {

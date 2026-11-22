@@ -9,9 +9,9 @@ export const patientService = {
     return response.data
   },
 
-  // Register New Patient
-  addPatient: async (data: PasientRegisterDto): Promise<PasientRegisterDto> => {
-    const response = await api.post<PasientRegisterDto>(API_ENDPOINTS.AUTH.ADD_PATIENT, data)
+  // Register New Patient (POST /auth/add -> string)
+  addPatient: async (data: PasientRegisterDto): Promise<string> => {
+    const response = await api.post<string>(API_ENDPOINTS.AUTH.ADD_PATIENT, data)
     return response.data
   },
 

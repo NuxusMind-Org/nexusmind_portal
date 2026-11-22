@@ -136,6 +136,18 @@ export const API_ENDPOINTS = {
   CHAT: {
     MESSAGES: (appointmentId: number | string) => `/chat/${appointmentId}/messages`,
   },
+  NOTIFICATIONS: {
+    EMAIL: '/api/notifications/email',
+    TEMPLATES: '/api/notifications/templates',
+  },
+  SEARCH: {
+    JOURNAL: '/search/journal',
+    DOCTORS: '/search/doctors',
+    CONTENT: '/search/content',
+  },
+  WEBHOOKS: {
+    LIVEKIT: '/api/webhooks/livekit',
+  },
   UPLOAD: {
     BASE: '/upload',
     BY_FILENAME: (filename: string) => `/upload/${filename}`,

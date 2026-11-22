@@ -67,8 +67,16 @@ export default function XeberManagement() {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await contentService.getAllXeber()
-      setItems(Array.isArray(data) ? data : (data as any)?.content || [])
+      // Use admin endpoint (GET /xeber/admin/all) so DRAFT and ARCHIVED items are visible
+      const pageData = await contentService
+        .getAllXeberForAdmin({ page: 0, size: 100 })
+        .catch(() => null)
+      if (pageData && Array.isArray(pageData.content)) {
+        setItems(pageData.content)
+      } else {
+        const data = await contentService.getAllXeber()
+        setItems(Array.isArray(data) ? data : (data as any)?.content || [])
+      }
     } catch (err) {
       console.error('Failed to fetch news', err)
       setError('Could not load news articles.')

@@ -1,6 +1,8 @@
 import { Navigate, type RouteObject } from 'react-router-dom'
 import AuthLayout from '../layouts/AuthLayout'
 import Login from '../features/authentication/pages/Login'
+import ForgotPassword from '../features/authentication/pages/ForgotPassword'
+import ResetPassword from '../features/authentication/pages/ResetPassword'
 import { GuestGuard } from '../permissions/guards'
 
 export const authRoutes: RouteObject = {
@@ -20,11 +22,11 @@ export const authRoutes: RouteObject = {
         },
         {
           path: 'forgot-password',
-          element: <div>Forgot Password Placeholder</div>,
+          element: <ForgotPassword />,
         },
         {
           path: 'reset-password',
-          element: <div>Reset Password Placeholder</div>,
+          element: <ResetPassword />,
         },
       ],
     },

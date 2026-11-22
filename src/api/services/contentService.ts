@@ -140,8 +140,12 @@ export const contentService = {
   },
 
   // --- GALLERY ---
+  getGalleryPage: async (params?: { category?: string; sort?: string; page?: number; size?: number }): Promise<Page<GalleryItemResponse>> => {
+    const response = await api.get<Page<GalleryItemResponse>>(API_ENDPOINTS.GALLERY.BASE, { params })
+    return response.data
+  },
   getGalleryItems: async (params?: { category?: string; sort?: string; page?: number; size?: number }): Promise<GalleryItemResponse[]> => {
-    const response = await api.get<any>(API_ENDPOINTS.GALLERY.BASE, { params })
+    const response = await api.get<unknown>(API_ENDPOINTS.GALLERY.BASE, { params })
     return normalizeListResponse<GalleryItemResponse>(response.data)
   },
   createGalleryItem: async (data: GalleryItemRequest): Promise<GalleryItemResponse> => {

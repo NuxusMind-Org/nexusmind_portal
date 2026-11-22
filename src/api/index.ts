@@ -14,6 +14,9 @@ export { seoService } from './services/seoService'
 export { chatService } from './services/chatService'
 export { uploadService } from './services/uploadService'
 export { callService, resolveInviteLink } from './services/callService'
+export { notificationService } from './services/notificationService'
+export { searchService } from './services/searchService'
+export { paymentService } from './services/paymentService'
 
 
 

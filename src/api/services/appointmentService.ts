@@ -37,19 +37,18 @@ export const appointmentService = {
     return []
   },
 
-  // Get specific appointment details by appointment ID
-  // Normalizes both single object and array responses from GET /appointments/{id}
-  getAppointmentById: async (id: number | string): Promise<AppointmentDto> => {
-    const numericId = typeof id === 'number' ? id : parseInt(String(id), 10)
-    const response = await api.get<AppointmentDto | AppointmentDto[]>(
-      API_ENDPOINTS.APPOINTMENTS.BY_ID(id)
-    )
-    const data = response.data
-    if (Array.isArray(data)) {
-      const match = data.find((item) => item.id === numericId)
-      return match || data[0] || ({} as AppointmentDto)
-    }
-    return data
+  // Resolve a single appointment by its ID without calling GET /appointments/{appointmentId}
+  // (since GET /appointments/{doctorId} expects a doctorId, not an appointmentId).
+  getAppointmentById: async (
+    appointmentId: number | string,
+    doctorId?: number | string | null
+  ): Promise<AppointmentDto | null> => {
+    const numericId = typeof appointmentId === 'number' ? appointmentId : parseInt(String(appointmentId), 10)
+    const list = doctorId
+      ? await appointmentService.getAppointmentsByPsychologistId(doctorId)
+      : await appointmentService.getMyAppointments()
+    const match = list.find((item) => item.id === numericId)
+    return match ?? null
   },
 
   // Create a new appointment

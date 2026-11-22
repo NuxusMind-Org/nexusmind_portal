@@ -143,9 +143,12 @@ export default function VideoCallRoom() {
 
     const initCall = async () => {
       try {
-        // Fetch appointment details
-        const appDetails = await appointmentService.getAppointmentById(sessionId)
-        if (isMounted) {
+        // Resolve appointment details from doctor's appointment list (GET /appointments/{doctorId})
+        const activeDoctorId = profile?.doctorId ?? profile?.id
+        const appDetails = await appointmentService
+          .getAppointmentById(sessionId, activeDoctorId)
+          .catch(() => null)
+        if (isMounted && appDetails) {
           setAppointment(appDetails)
         }
 

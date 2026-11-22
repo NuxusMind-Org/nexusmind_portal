@@ -153,15 +153,17 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
     }
   }, [activePsychologistId])
 
-  // Open modal and fetch full details via GET /appointments/{id}
+  // Open modal and resolve full details from doctor's appointments
   const handleOpenSession = async (app: AppointmentDto) => {
     setSelectedAppointment(app)
     setDetailedAppointment(app)
     setIsDetailsLoading(true)
 
     try {
-      const fullDetails = await appointmentService.getAppointmentById(app.id)
-      setDetailedAppointment(fullDetails)
+      const fullDetails = await appointmentService.getAppointmentById(app.id, activePsychologistId)
+      if (fullDetails) {
+        setDetailedAppointment(fullDetails)
+      }
     } catch (err) {
       console.error(`Failed to fetch appointment details for ID ${app.id}:`, err)
       // Retain already present appointment data as fallback

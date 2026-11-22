@@ -15,11 +15,14 @@ import {
   Award,
   Clock,
   DollarSign,
+  Trash2,
   X
 } from 'lucide-react'
 import type { Psychologist, PsychologistStatus } from '../../types/psychologist'
 import { orgAdminService } from '../../../../api/services/orgAdminService'
-import type { DoctorDto } from '../../../../types/portalDtos'
+import { useUserStore } from '../../../../store/userStore'
+import type { DoctorEntity, DoctorResponseDto } from '../../../../types/portalDtos'
+import { getLocalizedTitle } from '../../../../utils/multilingual'
 import { DoctorPricesPanel } from '../../components/DoctorPricesPanel'
 
 const STATUS_STYLES: Record<PsychologistStatus, string> = {
@@ -42,10 +45,14 @@ function SatisfactionBar({ rate }: { rate: number }) {
 
 function PsychologistCard({
   psy,
+  canDelete,
   onManagePrices,
+  onDelete,
 }: {
   psy: Psychologist
+  canDelete: boolean
   onManagePrices: (psy: Psychologist) => void
+  onDelete: (psy: Psychologist) => void
 }) {
   return (
     <div className="bg-[#141521] border border-[#222437] rounded-2xl p-5 flex flex-col justify-between gap-4 hover:border-violet-500/40 hover:shadow-[0_8px_30px_rgba(139,92,246,0.12)] transition-all group">
@@ -128,20 +135,36 @@ function PsychologistCard({
         </div>
       </div>
 
-      {/* Footer Action: Manage Doctor Prices */}
-      <button
-        type="button"
-        onClick={() => onManagePrices(psy)}
-        className="w-full py-2 px-3 bg-[#1b1c2b] hover:bg-emerald-500/15 border border-[#2e3146] hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-      >
-        <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
-        <span>Seans Tarifləri</span>
-      </button>
+      {/* Footer Actions */}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onManagePrices(psy)}
+          className="flex-1 py-2 px-3 bg-[#1b1c2b] hover:bg-emerald-500/15 border border-[#2e3146] hover:border-emerald-500/40 text-slate-300 hover:text-emerald-300 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+        >
+          <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Seans Tarifləri</span>
+        </button>
+        {canDelete && (
+          <button
+            type="button"
+            onClick={() => onDelete(psy)}
+            title="Delete doctor (DELETE /nexusmind/doctors/{id})"
+            className="p-2 bg-[#1b1c2b] hover:bg-rose-500/15 border border-[#2e3146] hover:border-rose-500/40 text-slate-400 hover:text-rose-400 rounded-xl transition-all cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
 
 export default function PsychologistsList() {
+  const profile = useUserStore((state) => state.profile)
+  const isPlatformAdmin = profile?.role === 'platform_admin'
+  const endpointLabel = isPlatformAdmin ? 'GET /nexusmind/doctors' : 'GET /bpm/doctors'
+
   const [psychologists, setPsychologists] = useState<Psychologist[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -150,15 +173,18 @@ export default function PsychologistsList() {
   const [specFilter, setSpecFilter] = useState('All')
   const [pricingPsychologist, setPricingPsychologist] = useState<Psychologist | null>(null)
 
-  const fetchBpmDoctors = async () => {
+  const fetchDoctors = async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const data = await orgAdminService.getBpmDoctors()
-      const doctorsList: DoctorDto[] = Array.isArray(data) ? data : (data as any)?.content || []
+      const doctorsList: Array<DoctorEntity | DoctorResponseDto> = isPlatformAdmin
+        ? await orgAdminService.getNexusmindDoctors()
+        : await orgAdminService.getBpmDoctors()
 
       const mapped: Psychologist[] = doctorsList.map((doc, idx) => {
-        const rawName = doc.fullName || doc.name || `Dr. Specialist #${doc.id}`
+        const entity = doc as DoctorEntity
+        const fullName = [doc.name, doc.surname].filter(Boolean).join(' ').trim()
+        const rawName = fullName || doc.username || `Dr. Specialist #${doc.id}`
         const initials = rawName
           .split(' ')
           .map((n) => n[0])
@@ -175,42 +201,61 @@ export default function PsychologistsList() {
         ]
         const avatarColor = colorPalettes[idx % colorPalettes.length]
 
-        const rawSpecs = doc.specializations || (doc.specialization ? [doc.specialization] : [])
+        const majorLabel = doc.major ? getLocalizedTitle(doc.major) : ''
+        const rawSpecs = Array.isArray(entity.specializations) && entity.specializations.length > 0
+          ? entity.specializations
+          : majorLabel
+            ? [majorLabel]
+            : []
         const specs =
-          Array.isArray(rawSpecs) && rawSpecs.length > 0
-            ? rawSpecs.flatMap((s) => (typeof s === 'string' ? s.split(',') : [])).map((s) => s.trim())
-            : ['Clinical Psychology', 'Mental Health']
+          rawSpecs.length > 0
+            ? rawSpecs.flatMap((s) => (typeof s === 'string' ? s.split(',') : [])).map((s) => s.trim()).filter(Boolean)
+            : ['Clinical Psychology']
 
         return {
           id: String(doc.id),
           name: rawName,
-          email: doc.email || 'N/A',
-          phone: doc.phone || 'N/A',
+          email: entity.email || (doc.username ? `@${doc.username}` : 'N/A'),
+          phone: entity.university || (doc.prices?.length ? `${doc.prices.length} tariff(s)` : 'N/A'),
           avatarInitials: initials || 'DR',
           avatarColor,
-          status: ((doc.status as any) === 'INACTIVE' ? 'Inactive' : (doc.status as any) === 'ON_LEAVE' ? 'On Leave' : 'Active') as PsychologistStatus,
+          status: 'Active' as PsychologistStatus,
           specializations: specs,
-          patientCount: doc.patientCount ?? Math.max(5, (doc.id * 3) % 25),
-          sessionCount: doc.sessionCount ?? Math.max(12, (doc.id * 14) % 180),
-          satisfactionRate: doc.satisfactionRate ?? 95,
-          nextAvailability: doc.nextAvailability || 'Available this week',
-          joinedDate: doc.joinedDate || '2026',
-          licenseNumber: doc.licenseNumber || `PSY-AZ-${String(doc.id).padStart(4, '0')}`,
+          patientCount: doc.prices?.length ?? 0,
+          sessionCount: entity.experienceYear ?? 0,
+          satisfactionRate: 95,
+          nextAvailability: entity.languages?.length
+            ? `Languages: ${entity.languages.join(', ')}`
+            : 'Available',
+          joinedDate: '2026',
+          licenseNumber: doc.username ? `@${doc.username}` : `PSY-AZ-${String(doc.id).padStart(4, '0')}`,
         }
       })
 
       setPsychologists(mapped)
-    } catch (err: any) {
-      console.error('Failed to fetch BPM doctors from /bpm/doctors', err)
-      setError('Could not load psychologists from /bpm/doctors.')
+    } catch (err) {
+      console.error(`Failed to fetch doctors from ${endpointLabel}`, err)
+      setError(`Could not load psychologists from ${endpointLabel}.`)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleDeleteDoctor = async (psy: Psychologist) => {
+    if (!isPlatformAdmin) return
+    if (!window.confirm(`Are you sure you want to permanently delete ${psy.name} (ID #${psy.id})?`)) return
+    try {
+      await orgAdminService.deleteDoctorByNexusmindAdmin(psy.id)
+      setPsychologists((prev) => prev.filter((item) => item.id !== psy.id))
+    } catch (err) {
+      console.error('Failed to delete doctor:', err)
+      setError('Failed to delete doctor from /nexusmind/doctors/{id}.')
+    }
+  }
+
   useEffect(() => {
-    fetchBpmDoctors()
-  }, [])
+    fetchDoctors()
+  }, [isPlatformAdmin])
 
   const allSpecs = useMemo(() => {
     const set = new Set<string>()
@@ -252,11 +297,13 @@ export default function PsychologistsList() {
               <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
                 <span>Psychologists & Clinical Staff</span>
                 <span className="px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[10px] font-mono">
-                  GET /bpm/doctors
+                  {endpointLabel}
                 </span>
               </h1>
               <p className="text-xs text-slate-400 mt-0.5">
-                BPM Organization medical team, clinical psychologists, and therapists directory.
+                {isPlatformAdmin
+                  ? 'Platform-wide clinical psychologists directory with Super Admin management.'
+                  : 'BPM Organization medical team, clinical psychologists, and therapists directory.'}
               </p>
             </div>
           </div>
@@ -264,7 +311,7 @@ export default function PsychologistsList() {
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={fetchBpmDoctors}
+            onClick={fetchDoctors}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-2 bg-[#141521] hover:bg-[#1b1c2b] border border-[#2e3146] text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer"
             title="Refresh list"
@@ -357,7 +404,7 @@ export default function PsychologistsList() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-2xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
-          <span className="text-xs font-semibold">Loading BPM clinical staff from /bpm/doctors...</span>
+          <span className="text-xs font-semibold">Loading clinical staff from {endpointLabel}...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 bg-[#141521] border border-[#222437] rounded-2xl text-center">
@@ -371,7 +418,9 @@ export default function PsychologistsList() {
             <PsychologistCard
               key={psy.id}
               psy={psy}
+              canDelete={isPlatformAdmin}
               onManagePrices={setPricingPsychologist}
+              onDelete={handleDeleteDoctor}
             />
           ))}
         </div>
