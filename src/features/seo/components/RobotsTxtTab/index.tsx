@@ -47,7 +47,7 @@ export default function RobotsTxtTab({ robots, isSaving, onSave, onDirty }: Robo
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-200">robots.txt</h3>
-            <p className="text-xs text-slate-500">Controls which pages search engine crawlers can access on your website.</p>
+            <p className="text-xs text-slate-500">Axtarış sistemi botlarının veb-saytınızda hansı səhifələrə daxil ola biləcəyini tənzimləyir.</p>
           </div>
         </div>
         <button
@@ -55,17 +55,17 @@ export default function RobotsTxtTab({ robots, isSaving, onSave, onDirty }: Robo
           className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-[#1b1c2b] hover:bg-[#222437] border border-[#2e3146] rounded-lg transition-all cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
-          Restore Default
+          Standartı Bərpa Et
         </button>
       </div>
 
       {/* Cheatsheet */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'User-agent: *', desc: 'Apply to all crawlers' },
-          { label: 'Disallow: /admin', desc: 'Block a path' },
-          { label: 'Allow: /public', desc: 'Explicitly allow a path' },
-          { label: 'Sitemap: …', desc: 'Point to sitemap URL' },
+          { label: 'User-agent: *', desc: 'Bütün botlara tətbiq olunur' },
+          { label: 'Disallow: /admin', desc: 'Yolu bloklayın' },
+          { label: 'Allow: /public', desc: 'Yola açıq icazə verin' },
+          { label: 'Sitemap: …', desc: 'Sayt xəritəsi URL-ini göstərin' },
         ].map(({ label, desc }) => (
           <div key={label} className="p-3 bg-[#1b1c2b] border border-[#2e3146] rounded-lg">
             <code className="text-[10px] text-violet-300 block font-mono">{label}</code>
@@ -84,7 +84,7 @@ export default function RobotsTxtTab({ robots, isSaving, onSave, onDirty }: Robo
       />
 
       {robots.lastUpdated && (
-        <p className="text-[10px] text-slate-600">Last saved: {new Date(robots.lastUpdated).toLocaleString()}</p>
+        <p className="text-[10px] text-slate-600">Son yadda saxlanılma: {new Date(robots.lastUpdated).toLocaleString('az-AZ')}</p>
       )}
 
       {/* Actions */}
@@ -94,14 +94,14 @@ export default function RobotsTxtTab({ robots, isSaving, onSave, onDirty }: Robo
           disabled={isSaving || !isDirty}
           className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          {isSaving ? 'Saving…' : 'Save robots.txt'}
+          {isSaving ? 'Saxlanılır…' : 'robots.txt Yadda Saxla'}
         </button>
         <button
           onClick={handleReset}
           disabled={!isDirty}
           className="px-5 py-2 bg-[#1b1c2b] hover:bg-[#222437] disabled:opacity-40 disabled:cursor-not-allowed border border-[#2e3146] text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          Cancel
+          Ləğv et
         </button>
       </div>
     </div>

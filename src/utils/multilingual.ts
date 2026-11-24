@@ -11,8 +11,8 @@ export type SupportedLanguage = 'az' | 'en' | 'ru'
 
 export const SUPPORTED_LANGUAGES: { code: SupportedLanguage; label: string; flag: string }[] = [
   { code: 'az', label: 'Azərbaycan', flag: '🇦🇿' },
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'ru', label: 'Русский', flag: '🇷🇺' }
+  { code: 'en', label: 'İngilis', flag: '🇬🇧' },
+  { code: 'ru', label: 'Rus', flag: '🇷🇺' }
 ]
 
 /**

@@ -104,7 +104,7 @@ export function calculateEndTime(startHour: number, startMinute: number, duratio
 }
 
 /**
- * Format session time interval e.g. "09:00 AM - 10:00 AM"
+ * Format session time interval e.g. "09:00 - 10:00"
  */
 export function formatSessionInterval(
   time: LocalTime | string | number[] | undefined | null,
@@ -117,13 +117,13 @@ export function formatSessionInterval(
   const { hour: startHour, minute: startMinute } = extractHourMinute(time)
   const { hour: endHour, minute: endMinute } = calculateEndTime(startHour, startMinute, durationMinutes)
 
-  const start12 = formatTime12Hour(startHour, startMinute)
-  const end12 = formatTime12Hour(endHour, endMinute)
+  const start24 = formatTime24Hour(startHour, startMinute)
+  const end24 = formatTime24Hour(endHour, endMinute)
 
   return {
-    interval: `${start12} - ${end12}`,
-    startTimeStr: formatTime24Hour(startHour, startMinute),
-    endTimeStr: formatTime24Hour(endHour, endMinute),
+    interval: `${start24} - ${end24}`,
+    startTimeStr: start24,
+    endTimeStr: end24,
   }
 }
 
@@ -139,29 +139,29 @@ export function normalizeDate(dateStr?: string): string {
 }
 
 /**
- * Generates human friendly date label (e.g. "Today", "Tomorrow", "Thursday", "July 10, 2026")
+ * Generates human friendly date label (e.g. "Bu gün", "Sabah", "Cümə axşamı", "10 İyul 2026")
  */
 export function getDateLabel(dateStr: string): string {
-  const target = dayjs(normalizeDate(dateStr))
+  const target = dayjs(normalizeDate(dateStr)).locale('az')
   const today = dayjs().startOf('day')
 
   if (target.isSame(today, 'day')) {
-    return 'Today'
+    return 'Bu gün'
   }
   if (target.isSame(today.add(1, 'day'), 'day')) {
-    return 'Tomorrow'
+    return 'Sabah'
   }
   if (target.isSame(today.subtract(1, 'day'), 'day')) {
-    return 'Yesterday'
+    return 'Dünən'
   }
 
-  // If in the same calendar week, return the day of week (e.g. "Thursday")
+  // If in the same calendar week, return the day of week
   if (target.isSame(today, 'isoWeek')) {
     return target.format('dddd')
   }
 
-  // Otherwise return full formatted date (e.g. "July 10, 2026")
-  return target.format('MMMM D, YYYY')
+  // Otherwise return full formatted date
+  return target.format('D MMMM YYYY')
 }
 
 /**
@@ -172,7 +172,7 @@ export function mapAppointmentToSession(app: AppointmentDto, defaultDuration = 6
   const dateLabel = getDateLabel(date)
   const { interval, startTimeStr, endTimeStr } = formatSessionInterval(app.appointmentTime, defaultDuration)
 
-  const patientName = app.patientName?.trim() || 'Patient'
+  const patientName = app.patientName?.trim() || 'Pasiyent'
   const patientAvatarColor = getAvatarColor(app.id || patientName)
 
   // Status mapping
@@ -194,7 +194,7 @@ export function mapAppointmentToSession(app: AppointmentDto, defaultDuration = 6
   // Determine clinical therapy type
   const type =
     (app.therapyType as string) ||
-    (isVR ? 'VR Exposure Therapy' : (app.mode?.toUpperCase() === 'APP' ? 'App Intake' : 'CBT Follow-up'))
+    (isVR ? 'VR Ekspozisiya Terapiyası' : (app.mode?.toUpperCase() === 'APP' ? 'Tətbiq Qəbulu' : 'KBT İzləmə Sessiyası'))
 
   return {
     id: String(app.id),

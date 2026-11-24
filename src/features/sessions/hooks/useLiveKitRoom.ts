@@ -27,7 +27,7 @@ interface UseLiveKitRoomProps {
 export function useLiveKitRoom({
   token,
   livekitUrl,
-  doctorName = 'Psychologist',
+  doctorName = 'Psixoloq',
   onDisconnected,
 }: UseLiveKitRoomProps) {
   const [connectionState, setConnectionState] = useState<ConnectionState>(
@@ -135,14 +135,14 @@ export function useLiveKitRoom({
           const text = decoder.decode(payload)
           const data = JSON.parse(text)
           if (data && data.message) {
-            const senderName = participant?.name || participant?.identity || 'Patient'
+            const senderName = participant?.name || participant?.identity || 'Pasiyent'
             setChatMessages((prev) => [
               ...prev,
               {
                 id: `msg_${Date.now()}_${Math.random()}`,
                 sender: senderName,
                 text: data.message,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                time: new Date().toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
                 isSelf: false,
               },
             ])
@@ -175,7 +175,7 @@ export function useLiveKitRoom({
       } catch (err: unknown) {
         console.error('Failed to connect to LiveKit room:', err)
         if (isMounted) {
-          setError('Could not connect to LiveKit video server. Please check your network.')
+          setError('Video serverə qoşulmaq mümkün olmadı. Zəhmət olmasa şəbəkə bağlantınızı yoxlayın.')
         }
       }
     }
@@ -272,7 +272,7 @@ export function useLiveKitRoom({
             id: `self_${Date.now()}`,
             sender: doctorName,
             text: text.trim(),
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            time: new Date().toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
             isSelf: true,
           },
         ])

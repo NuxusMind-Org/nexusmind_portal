@@ -64,7 +64,7 @@ export function useSessions() {
       console.error('Failed to load appointments for psychologist:', err)
       const errorMsg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
-        'Failed to load therapy sessions from server.'
+        'Terapiya sessiyaları serverdən yüklənə bilmədi.'
       setError(errorMsg)
     } finally {
       setIsLoading(false)
@@ -94,7 +94,7 @@ export function useSessions() {
         console.error('Failed to load appointments for psychologist:', appointmentsResult.reason)
         const errorMsg =
           (appointmentsResult.reason as { response?: { data?: { message?: string } } })?.response
-            ?.data?.message || 'Failed to load therapy sessions from server.'
+            ?.data?.message || 'Terapiya sessiyaları serverdən yüklənə bilmədi.'
         setError(errorMsg)
       }
 
@@ -173,14 +173,14 @@ export function useSessions() {
         setSessions((prev) =>
           prev.map((s) => (s.id === id ? { ...s, status: 'Cancelled' as const } : s))
         )
-        triggerFeedback(`Cancelled therapy session for ${session.patientName}.`)
+        triggerFeedback(`${session.patientName} üçün terapiya sessiyası ləğv edildi.`)
       } catch (err: unknown) {
         console.error('Failed to cancel appointment on server:', err)
         // Optimistically mark as cancelled
         setSessions((prev) =>
           prev.map((s) => (s.id === id ? { ...s, status: 'Cancelled' as const } : s))
         )
-        triggerFeedback(`Cancelled therapy session for ${session.patientName}.`)
+        triggerFeedback(`${session.patientName} üçün terapiya sessiyası ləğv edildi.`)
       }
     },
     [sessions, triggerFeedback]
@@ -199,7 +199,8 @@ export function useSessions() {
         setSessions((prev) =>
           prev.map((s) => (s.id === id ? { ...s, status: 'Waiting' as const } : s))
         )
-        triggerFeedback(`Successfully initiated ${session.deliveryMethod} for ${session.patientName}.`)
+        const methodLabel = session.deliveryMethod === 'VR Session' ? 'VR sessiyası' : 'onlayn görüş'
+        triggerFeedback(`${session.patientName} üçün ${methodLabel} uğurla başladıldı.`)
       } catch (err) {
         console.error('Error starting session:', err)
       }

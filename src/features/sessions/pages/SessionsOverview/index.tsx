@@ -53,7 +53,7 @@ export default function SessionsOverview() {
             onClick={() => refreshSessions()}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#141521] hover:bg-[#1b1c2b] border border-[#222437] hover:border-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
-            title="Refresh Sessions"
+            title="Sessiyaları yenilə"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-violet-400' : ''}`} />
             <span>Yenilə</span>

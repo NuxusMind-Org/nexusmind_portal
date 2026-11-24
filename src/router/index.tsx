@@ -63,6 +63,6 @@ export const router = createBrowserRouter([
   },
   {
     path: '*',
-    element: <div className="p-8 text-center text-xl font-bold">404 - Page Not Found</div>,
+    element: <div className="p-8 text-center text-xl font-bold">404 - Səhifə tapılmadı</div>,
   },
 ])

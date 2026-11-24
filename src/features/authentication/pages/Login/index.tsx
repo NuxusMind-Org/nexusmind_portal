@@ -91,7 +91,7 @@ export default function Login() {
       }
 
       if (!authResult) {
-        throw new Error('Authentication failed. Invalid username or password.')
+        throw new Error('Giriş uğursuz oldu. İstifadəçi adı və ya şifrə yanlışdır.')
       }
 
       const { res, roleUsed } = authResult
@@ -99,7 +99,7 @@ export default function Login() {
       const refreshToken = (typeof res === 'object' && res ? (res.refreshToken || null) : null)
 
       if (!token) {
-        throw new Error('Invalid token received from server.')
+        throw new Error('Serverdən etibarlı giriş tokeni alınmadı.')
       }
 
       // Parse claims from JWT token
@@ -142,7 +142,7 @@ export default function Login() {
       const errorMessage =
         (error as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ||
         (error as Error)?.message ||
-        'Invalid username or password. Please verify your credentials.'
+        'İstifadəçi adı və ya şifrə yanlışdır. Zəhmət olmasa məlumatlarınızı yoxlayın.'
       setApiError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -155,13 +155,13 @@ export default function Login() {
       <div className="p-8 sm:p-12 md:p-14 lg:p-16 flex flex-col justify-center min-h-[500px] md:min-h-[580px]">
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <img src={nexusMindLogo} alt="NexusMind Logo" className="h-10 w-auto object-contain" />
+          <img src={nexusMindLogo} alt="NexusMind Loqosu" className="h-10 w-auto object-contain" />
         </div>
 
         {/* Title */}
         <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">{t('auth.signIn')}</h1>
         <p className="text-xs text-slate-400 font-medium mb-8">
-          Access your NexusMind Portal account with your role credentials.
+          {t('auth.subtitle')}
         </p>
 
         {/* API Error Message */}
@@ -176,12 +176,12 @@ export default function Login() {
           {/* Username Input */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider block" htmlFor="username">
-              Username
+              {t('auth.usernameLabel')}
             </label>
             <input
               id="username"
               type="text"
-              placeholder="Enter your username"
+              placeholder={t('auth.usernamePlaceholder')}
               disabled={isLoading}
               className={`w-full px-4 py-3 rounded-xl bg-[#2a2c4e] border text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-cyan-400 focus:border-cyan-400 transition-all duration-200 ${
                 errors.username ? 'border-rose-500/70 focus:ring-rose-500/30 focus:border-rose-500' : 'border-white/10 hover:border-white/20'
@@ -258,7 +258,7 @@ export default function Login() {
       <div className="hidden md:block w-full h-full relative overflow-hidden">
         <img
           src="/loginImg.jpg"
-          alt="Portal Login Illustration"
+          alt="Portal giriş təsviri"
           className="w-full h-full object-cover scale-[1.04] origin-center"
         />
       </div>

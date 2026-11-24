@@ -37,13 +37,13 @@ interface RecentActivity {
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 const MONTHLY_DATA: MonthlyBar[] = [
-  { month: 'Jan', sessions: 82,  completed: 76 },
-  { month: 'Feb', sessions: 94,  completed: 88 },
+  { month: 'Yan', sessions: 82,  completed: 76 },
+  { month: 'Fev', sessions: 94,  completed: 88 },
   { month: 'Mar', sessions: 110, completed: 103 },
   { month: 'Apr', sessions: 98,  completed: 91 },
   { month: 'May', sessions: 125, completed: 118 },
-  { month: 'Jun', sessions: 142, completed: 135 },
-  { month: 'Jul', sessions: 67,  completed: 63 },
+  { month: 'İyn', sessions: 142, completed: 135 },
+  { month: 'İyl', sessions: 67,  completed: 63 },
 ]
 
 const TOP_PSYCHOLOGISTS: TopPsychologist[] = [
@@ -55,12 +55,12 @@ const TOP_PSYCHOLOGISTS: TopPsychologist[] = [
 ]
 
 const RECENT_ACTIVITY: RecentActivity[] = [
-  { id: 'a1', type: 'session_complete',  description: 'Session completed with John Larson',       time: '12 min ago', psychologist: 'Dr. Sevinc İsmayılova' },
-  { id: 'a2', type: 'new_patient',       description: 'New patient Lily Park registered',          time: '1 hr ago' },
-  { id: 'a3', type: 'session_complete',  description: 'Session completed with Aysel Rəhimova',    time: '2 hr ago', psychologist: 'Dr. Rauf Məmmədzadə' },
-  { id: 'a4', type: 'session_scheduled', description: 'Session scheduled for Emma Thompson',       time: '3 hr ago', psychologist: 'Dr. Nicat Hüseynov' },
-  { id: 'a5', type: 'new_patient',       description: 'New patient Farid Əliyev registered',      time: '5 hr ago' },
-  { id: 'a6', type: 'session_complete',  description: 'Session completed with Sarah Miller',       time: '6 hr ago', psychologist: 'Dr. Leyla Əliyeva' },
+  { id: 'a1', type: 'session_complete',  description: 'Kamran Məmmədov ilə sessiya tamamlandı',   time: '12 dəq əvvəl', psychologist: 'Dr. Sevinc İsmayılova' },
+  { id: 'a2', type: 'new_patient',       description: 'Yeni pasiyent Nərmin Həsənli qeydiyyatdan keçdi', time: '1 saat əvvəl' },
+  { id: 'a3', type: 'session_complete',  description: 'Aysel Rəhimova ilə sessiya tamamlandı',    time: '2 saat əvvəl', psychologist: 'Dr. Rauf Məmmədzadə' },
+  { id: 'a4', type: 'session_scheduled', description: 'Elvin Quliyev üçün sessiya planlaşdırıldı', time: '3 saat əvvəl', psychologist: 'Dr. Nicat Hüseynov' },
+  { id: 'a5', type: 'new_patient',       description: 'Yeni pasiyent Fərid Əliyev qeydiyyatdan keçdi', time: '5 saat əvvəl' },
+  { id: 'a6', type: 'session_complete',  description: 'Günel Kərimova ilə sessiya tamamlandı',    time: '6 saat əvvəl', psychologist: 'Dr. Leyla Əliyeva' },
 ]
 
 // ─── SVG Bar Chart ────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ function SessionBarChart() {
           const x = gap + i * (barW + gap)
           const totalH = (d.sessions / maxVal) * chartH
           const completedH = (d.completed / maxVal) * chartH
-          const isCurrentMonth = d.month === 'Jul'
+          const isCurrentMonth = d.month === 'İyl'
 
           return (
             <g key={d.month}>
@@ -133,11 +133,11 @@ function SessionBarChart() {
       <div className="flex items-center gap-4 mt-2">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-violet-500/50" />
-          <span className="text-[10px] text-slate-500">Total Sessions</span>
+          <span className="text-[10px] text-slate-500">Cəmi Sessiyalar</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-violet-500" />
-          <span className="text-[10px] text-slate-500">Completed</span>
+          <span className="text-[10px] text-slate-500">Tamamlanmış</span>
         </div>
       </div>
     </div>
@@ -147,9 +147,9 @@ function SessionBarChart() {
 // ─── Patient Status Donut ────────────────────────────────────────────────────
 function PatientStatusDonut() {
   const segments = [
-    { label: 'Active',     value: 72, color: '#10b981', trackColor: 'bg-emerald-500' },
-    { label: 'Inactive',   value: 18, color: '#6b7280', trackColor: 'bg-slate-500' },
-    { label: 'High Risk',  value: 10, color: '#f43f5e', trackColor: 'bg-rose-500' },
+    { label: 'Aktiv',       value: 72, color: '#10b981', trackColor: 'bg-emerald-500' },
+    { label: 'Deaktiv',     value: 18, color: '#6b7280', trackColor: 'bg-slate-500' },
+    { label: 'Yüksək Risk', value: 10, color: '#f43f5e', trackColor: 'bg-rose-500' },
   ]
 
   const size = 120
@@ -183,7 +183,7 @@ function PatientStatusDonut() {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xl font-bold text-white">100</span>
-          <span className="text-[9px] text-slate-500 font-bold uppercase">Patients</span>
+          <span className="text-[9px] text-slate-500 font-bold uppercase">Pasiyent</span>
         </div>
       </div>
       <div className="space-y-3">
@@ -211,10 +211,10 @@ function ActivityIcon({ type }: { type: RecentActivity['type'] }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function OrgAnalytics() {
   const kpiCards = [
-    { label: 'Sessions This Month', value: '142', delta: '+14%', icon: Calendar,    color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20', positive: true },
-    { label: 'Satisfaction Rate',   value: '95%', delta: '+2%',  icon: Star,        color: 'text-amber-400',  bg: 'bg-amber-500/10 border-amber-500/20',   positive: true },
-    { label: 'Active Patients',     value: '72',  delta: '+5',   icon: Users,       color: 'text-teal-400',   bg: 'bg-teal-500/10 border-teal-500/20',     positive: true },
-    { label: 'Avg Session Duration',value: '51m', delta: '-3m',  icon: Clock,       color: 'text-sky-400',    bg: 'bg-sky-500/10 border-sky-500/20',       positive: false },
+    { label: 'Bu Aykı Sessiyalar',    value: '142',    delta: '+14%',   icon: Calendar, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20', positive: true },
+    { label: 'Məmnuniyyət Dərəcəsi',  value: '95%',    delta: '+2%',    icon: Star,     color: 'text-amber-400',  bg: 'bg-amber-500/10 border-amber-500/20',   positive: true },
+    { label: 'Aktiv Pasiyentlər',     value: '72',     delta: '+5',     icon: Users,    color: 'text-teal-400',   bg: 'bg-teal-500/10 border-teal-500/20',     positive: true },
+    { label: 'Orta Sessiya Müddəti',  value: '51 dəq', delta: '-3 dəq', icon: Clock,    color: 'text-sky-400',    bg: 'bg-sky-500/10 border-sky-500/20',       positive: false },
   ]
 
   return (
@@ -225,8 +225,8 @@ export default function OrgAnalytics() {
           <BarChart3 className="w-5 h-5 text-violet-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-white">Analytics</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Organization performance overview — BPM · July 2026</p>
+          <h1 className="text-xl font-bold text-white">Analitika</h1>
+          <p className="text-xs text-slate-500 mt-0.5">Təşkilatın fəaliyyət icmalı — BPM · İyul 2026</p>
         </div>
       </div>
 
@@ -260,12 +260,12 @@ export default function OrgAnalytics() {
         <div className="xl:col-span-2 bg-[#141521] border border-[#222437] rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-200">Session Volume</h3>
-              <p className="text-[10px] text-slate-500 mt-0.5">Total vs completed sessions per month</p>
+              <h3 className="text-sm font-bold text-slate-200">Sessiya Həcmi</h3>
+              <p className="text-[10px] text-slate-500 mt-0.5">Aylar üzrə cəmi və tamamlanmış sessiyalar</p>
             </div>
             <div className="flex items-center gap-1 px-2 py-1 bg-[#1b1c2b] border border-[#2e3146] rounded-lg">
               <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <span className="text-[10px] font-bold text-emerald-400">+23% YoY</span>
+              <span className="text-[10px] font-bold text-emerald-400">+23% illik</span>
             </div>
           </div>
           <SessionBarChart />
@@ -274,14 +274,14 @@ export default function OrgAnalytics() {
         {/* Patient Status Donut */}
         <div className="bg-[#141521] border border-[#222437] rounded-2xl p-5 space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-slate-200">Patient Status</h3>
-            <p className="text-[10px] text-slate-500 mt-0.5">Breakdown across all enrolled patients</p>
+            <h3 className="text-sm font-bold text-slate-200">Pasiyent Statusu</h3>
+            <p className="text-[10px] text-slate-500 mt-0.5">Bütün qeydiyyatlı pasiyentlər üzrə bölgü</p>
           </div>
           <PatientStatusDonut />
 
           {/* Quick metric */}
           <div className="pt-3 border-t border-[#222437] flex items-center justify-between">
-            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Retention Rate</span>
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Saxlanma Faizi</span>
             <span className="text-sm font-bold text-emerald-400">88%</span>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function OrgAnalytics() {
         <div className="bg-[#141521] border border-[#222437] rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[#222437] flex items-center gap-2">
             <UserSquare2 className="w-4 h-4 text-violet-400" />
-            <h3 className="text-sm font-bold text-slate-200">Top Psychologists</h3>
+            <h3 className="text-sm font-bold text-slate-200">Ən Aktiv Psixoloqlar</h3>
           </div>
           <div className="divide-y divide-[#1e1f30]">
             {TOP_PSYCHOLOGISTS.map((psy, i) => (
@@ -304,7 +304,7 @@ export default function OrgAnalytics() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-200 truncate">{psy.name}</p>
-                  <p className="text-[9px] text-slate-500">{psy.patients} patients · {psy.sessions} sessions</p>
+                  <p className="text-[9px] text-slate-500">{psy.patients} pasiyent · {psy.sessions} sessiya</p>
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
                   <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
@@ -319,7 +319,7 @@ export default function OrgAnalytics() {
         <div className="bg-[#141521] border border-[#222437] rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[#222437] flex items-center gap-2">
             <Activity className="w-4 h-4 text-teal-400" />
-            <h3 className="text-sm font-bold text-slate-200">Recent Activity</h3>
+            <h3 className="text-sm font-bold text-slate-200">Son Fəaliyyətlər</h3>
           </div>
           <div className="divide-y divide-[#1e1f30]">
             {RECENT_ACTIVITY.map((item) => (

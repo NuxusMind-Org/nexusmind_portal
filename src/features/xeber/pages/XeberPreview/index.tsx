@@ -1,21 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  Newspaper, 
-  Clock, 
-  CheckCircle2, 
-  Globe, 
-  Tag, 
-  Quote as QuoteIcon, 
-  Loader2, 
-  AlertCircle, 
-  Share2, 
-  Check
+import {
+  ArrowLeft,
+  Newspaper,
+  Clock,
+  CheckCircle2,
+  Globe,
+  Tag,
+  Quote as QuoteIcon,
+  Loader2,
+  AlertCircle,
+  Share2,
+  Check,
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { XeberResponseDto } from '../../../../types/portalDtos'
 import { getLocalizedTitle } from '../../../../utils/multilingual'
+
+const getStatusLabel = (status?: string) => {
+  switch (status) {
+    case 'PUBLISHED':
+      return 'Dərc edilib'
+    case 'DRAFT':
+      return 'Qaralama'
+    case 'ARCHIVED':
+      return 'Arxivlənib'
+    default:
+      return 'Dərc edilib'
+  }
+}
 
 export default function XeberPreview() {
   const { id } = useParams<{ id: string }>()
@@ -28,7 +41,7 @@ export default function XeberPreview() {
 
   useEffect(() => {
     if (!id) {
-      setError('No news ID provided.')
+      setError('Xəbər ID-si göstərilməyib.')
       setIsLoading(false)
       return
     }
@@ -41,11 +54,11 @@ export default function XeberPreview() {
         if (data) {
           setItem(data)
         } else {
-          setError('News article not found.')
+          setError('Xəbər tapılmadı.')
         }
       } catch (err: any) {
         console.error('Failed to fetch news article details', err)
-        setError(err?.response?.data?.message || 'Failed to load news article.')
+        setError(err?.response?.data?.message || 'Xəbəri yükləmək mümkün olmadı.')
       } finally {
         setIsLoading(false)
       }
@@ -64,7 +77,7 @@ export default function XeberPreview() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-slate-400">
         <Loader2 className="w-9 h-9 animate-spin text-violet-400" />
-        <span className="text-sm font-semibold">Loading news article preview...</span>
+        <span className="text-sm font-semibold">Xəbər önizləməsi yüklənir...</span>
       </div>
     )
   }
@@ -75,14 +88,14 @@ export default function XeberPreview() {
         <div className="p-4 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
           <AlertCircle className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-white">Article Not Found</h2>
-        <p className="text-xs text-slate-400 max-w-md">{error || 'The requested news article could not be retrieved.'}</p>
+        <h2 className="text-xl font-bold text-white">Xəbər Tapılmadı</h2>
+        <p className="text-xs text-slate-400 max-w-md">{error || 'İstənilən xəbər əldə edilə bilmədi.'}</p>
         <button
           onClick={() => navigate('/org/xeber')}
           className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to News Management</span>
+          <span>Xəbərlərə Qayıt</span>
         </button>
       </div>
     )
@@ -100,7 +113,7 @@ export default function XeberPreview() {
             className="p-2 rounded-xl bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-semibold">Back to News</span>
+            <span className="font-semibold">Xəbərlərə Qayıt</span>
           </button>
           <span className="text-slate-600">/</span>
           <span className="text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
@@ -119,7 +132,7 @@ export default function XeberPreview() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Article Reader
+              Xəbər Görünüşü
             </button>
             <button
               onClick={() => setActiveTab('seo')}
@@ -129,17 +142,17 @@ export default function XeberPreview() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              SEO & Metadata
+              SEO və Metaməlumatlar
             </button>
           </div>
 
           <button
             onClick={handleCopyLink}
             className="p-2 rounded-xl bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-medium"
-            title="Copy URL"
+            title="Linki kopyala"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-            <span className="hidden sm:inline">{copied ? 'Copied' : 'Share'}</span>
+            <span className="hidden sm:inline">{copied ? 'Kopyalandı' : 'Paylaş'}</span>
           </button>
         </div>
       </div>
@@ -167,7 +180,7 @@ export default function XeberPreview() {
           <div className="px-6 sm:px-12 space-y-5">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="px-3.5 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 font-bold text-xs uppercase tracking-wider">
-                {item.category || 'General'}
+                {item.category || 'Ümumi'}
               </span>
               <span className={`px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
                 item.status === 'PUBLISHED'
@@ -177,11 +190,11 @@ export default function XeberPreview() {
                   : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
               }`}>
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{item.status || 'PUBLISHED'}</span>
+                <span>{getStatusLabel(item.status)}</span>
               </span>
               <span className="px-3.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-violet-400" />
-                <span>{item.readTimeMinutes || 5} min read</span>
+                <span>{item.readTimeMinutes || 5} dəq oxunma</span>
               </span>
             </div>
 
@@ -209,7 +222,7 @@ export default function XeberPreview() {
               <div className="space-y-8">
                 {item.sections.map((section, idx) => (
                   <div key={idx} className="space-y-3">
-                    {section.title && getLocalizedTitle(section.title) !== 'Main Section' && (
+                    {section.title && getLocalizedTitle(section.title) !== 'Main Section' && getLocalizedTitle(section.title) !== 'Əsas Bölmə' && (
                       <h2 className="text-xl font-bold text-white flex items-center gap-2 pb-2 border-b border-[#222437]">
                         <span className="w-6 h-6 rounded-full bg-violet-600/30 text-violet-400 text-xs font-mono flex items-center justify-center shrink-0">
                           {idx + 1}
@@ -224,7 +237,7 @@ export default function XeberPreview() {
                 ))}
               </div>
             ) : (
-              <div>{item.content || 'No detailed content written for this article.'}</div>
+              <div>{item.content || 'Bu xəbər üçün ətraflı mətn əlavə edilməyib.'}</div>
             )}
           </div>
 
@@ -249,14 +262,14 @@ export default function XeberPreview() {
           <div className="flex items-center gap-3 pb-4 border-b border-[#222437]">
             <Globe className="w-6 h-6 text-violet-400" />
             <div>
-              <h2 className="text-lg font-bold text-white">Search Engine Optimization & Metadata</h2>
-              <p className="text-xs text-slate-400">Preview search engine index cards, URL slugs, and schema graphs.</p>
+              <h2 className="text-lg font-bold text-white">Axtarış Mühərriki Optimallaşdırılması (SEO) və Metaməlumatlar</h2>
+              <p className="text-xs text-slate-400">Axtarış nəticəsi önizləməsi, URL slug və strukturlaşdırılmış sxem qeydləri.</p>
             </div>
           </div>
 
           {/* Google Search Card Preview */}
           <div className="p-5 bg-[#0e0f19] border border-[#222437] rounded-2xl space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Google SERP Snippet Preview</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Google Axtarış Nəticəsi Önizləməsi</span>
             <div className="space-y-1">
               <p className="text-xs text-emerald-400 font-mono">
                 https://nexusmind.az/xeber/{item.slug || id}
@@ -265,26 +278,26 @@ export default function XeberPreview() {
                 {item.metaTitle || localizedTitle}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                {getLocalizedTitle(item.metaDescription) || getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || 'No meta description provided.'}
+                {getLocalizedTitle(item.metaDescription) || getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || 'Meta təsvir əlavə edilməyib.'}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div className="p-4 bg-[#1b1c2b] rounded-xl border border-[#2e3146] space-y-1">
-              <span className="text-slate-400 font-semibold">Custom Slug:</span>
-              <p className="text-white font-mono">{item.slug ? `/${item.slug}` : 'Default (by ID)'}</p>
+              <span className="text-slate-400 font-semibold">Xüsusi Slug:</span>
+              <p className="text-white font-mono">{item.slug ? `/${item.slug}` : 'Standart (ID üzrə)'}</p>
             </div>
             <div className="p-4 bg-[#1b1c2b] rounded-xl border border-[#2e3146] space-y-1">
-              <span className="text-slate-400 font-semibold">Estimated Read Time:</span>
-              <p className="text-white font-semibold">{item.readTimeMinutes || 5} minutes</p>
+              <span className="text-slate-400 font-semibold">Təxmini Oxunma Müddəti:</span>
+              <p className="text-white font-semibold">{item.readTimeMinutes || 5} dəqiqə</p>
             </div>
           </div>
 
           {/* Keywords */}
           {item.metaKeywords && item.metaKeywords.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">Indexed Search Keywords:</span>
+              <span className="text-xs font-semibold text-slate-300">İndekslənmiş Açar Sözlər:</span>
               <div className="flex flex-wrap gap-2">
                 {item.metaKeywords.map((kw, i) => (
                   <span
@@ -302,7 +315,7 @@ export default function XeberPreview() {
           {/* JSON-LD Schema */}
           {item.schemaMarkup && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300 block">Structured Data Graph (JSON-LD):</span>
+              <span className="text-xs font-semibold text-slate-300 block">Strukturlaşdırılmış Məlumat (JSON-LD):</span>
               <pre className="p-4 bg-[#0a0b12] rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto border border-[#222437]">
                 {item.schemaMarkup}
               </pre>

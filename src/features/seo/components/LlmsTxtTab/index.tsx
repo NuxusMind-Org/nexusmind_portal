@@ -47,7 +47,7 @@ export default function LlmsTxtTab({ llms, isSaving, onSave, onDirty }: LlmsTxtT
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-200">llms.txt</h3>
-            <p className="text-xs text-slate-500">Provides guidance for large language models (LLMs) about your website content and policies.</p>
+            <p className="text-xs text-slate-500">Böyük dil modellərinə (LLM) veb-saytınızın məzmunu və qaydaları barədə bələdçilik təqdim edir.</p>
           </div>
         </div>
         <button
@@ -55,7 +55,7 @@ export default function LlmsTxtTab({ llms, isSaving, onSave, onDirty }: LlmsTxtT
           className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-[#1b1c2b] hover:bg-[#222437] border border-[#2e3146] rounded-lg transition-all cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
-          Restore Default
+          Standartı Bərpa Et
         </button>
       </div>
 
@@ -63,9 +63,9 @@ export default function LlmsTxtTab({ llms, isSaving, onSave, onDirty }: LlmsTxtT
       <div className="flex items-start gap-3 p-4 bg-violet-500/5 border border-violet-500/15 rounded-xl">
         <Info className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
         <div className="space-y-1">
-          <p className="text-xs font-bold text-violet-300">About llms.txt</p>
+          <p className="text-xs font-bold text-violet-300">llms.txt haqqında</p>
           <p className="text-xs text-slate-400">
-            The <code className="bg-violet-900/30 px-1 rounded text-violet-300">llms.txt</code> file is a proposed standard (similar to <code className="bg-violet-900/30 px-1 rounded text-violet-300">robots.txt</code>) that lets you communicate your content licensing preferences and guidance to AI systems that crawl and learn from websites. Use it to specify which pages AI may reference, summarize, or cite.
+            <code className="bg-violet-900/30 px-1 rounded text-violet-300">llms.txt</code> faylı (<code className="bg-violet-900/30 px-1 rounded text-violet-300">robots.txt</code> faylına bənzər) veb-saytları oxuyan süni intellekt sistemlərinə məzmun qaydalarınızı bildirmək üçün istifadə olunur. Bu fayl vasitəsilə süni intellektin hansı səhifələrə istinad edə və xülasə çıxara biləcəyini təyin edə bilərsiniz.
           </p>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function LlmsTxtTab({ llms, isSaving, onSave, onDirty }: LlmsTxtT
       />
 
       {llms.lastUpdated && (
-        <p className="text-[10px] text-slate-600">Last saved: {new Date(llms.lastUpdated).toLocaleString()}</p>
+        <p className="text-[10px] text-slate-600">Son yadda saxlanılma: {new Date(llms.lastUpdated).toLocaleString('az-AZ')}</p>
       )}
 
       {/* Actions */}
@@ -90,14 +90,14 @@ export default function LlmsTxtTab({ llms, isSaving, onSave, onDirty }: LlmsTxtT
           disabled={isSaving || !isDirty}
           className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          {isSaving ? 'Saving…' : 'Save llms.txt'}
+          {isSaving ? 'Saxlanılır…' : 'llms.txt Yadda Saxla'}
         </button>
         <button
           onClick={handleReset}
           disabled={!isDirty}
           className="px-5 py-2 bg-[#1b1c2b] hover:bg-[#222437] disabled:opacity-40 disabled:cursor-not-allowed border border-[#2e3146] text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          Cancel
+          Ləğv et
         </button>
       </div>
     </div>

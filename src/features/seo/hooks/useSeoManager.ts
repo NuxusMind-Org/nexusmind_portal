@@ -107,10 +107,10 @@ export function useSeoManager() {
       })
       clearDirty('general')
       setSave('general', 'success')
-      showToast('success', 'General SEO settings saved successfully.')
+      showToast('success', 'Ümumi SEO tənzimləmələri uğurla yadda saxlanıldı.')
     } catch {
       setSave('general', 'error')
-      showToast('error', 'Failed to save General SEO settings.')
+      showToast('error', 'Ümumi SEO tənzimləmələri yadda saxlanılmadı.')
     }
   }, [tenantId, clearDirty, setSave, showToast])
 
@@ -127,10 +127,10 @@ export function useSeoManager() {
       })
       clearDirty('schema')
       setSave('schema', 'success')
-      showToast('success', 'Schema saved successfully.')
+      showToast('success', 'Sxem uğurla yadda saxlanıldı.')
     } catch {
       setSave('schema', 'error')
-      showToast('error', 'Failed to save schema.')
+      showToast('error', 'Sxem yadda saxlanılmadı.')
     }
   }, [tenantId, clearDirty, setSave, showToast])
 
@@ -146,10 +146,10 @@ export function useSeoManager() {
         }
       })
       setSave('schema', 'success')
-      showToast('success', 'Schema deleted.')
+      showToast('success', 'Sxem silindi.')
     } catch {
       setSave('schema', 'error')
-      showToast('error', 'Failed to delete schema.')
+      showToast('error', 'Sxem silinə bilmədi.')
     }
   }, [tenantId, setSave, showToast])
 
@@ -160,10 +160,10 @@ export function useSeoManager() {
       setData((prev) => prev ? { ...prev, scripts } : prev)
       clearDirty('scripts')
       setSave('scripts', 'success')
-      showToast('success', 'Scripts saved successfully.')
+      showToast('success', 'Skriptlər uğurla yadda saxlanıldı.')
     } catch {
       setSave('scripts', 'error')
-      showToast('error', 'Failed to save scripts.')
+      showToast('error', 'Skriptlər yadda saxlanılmadı.')
     }
   }, [tenantId, clearDirty, setSave, showToast])
 
@@ -174,10 +174,10 @@ export function useSeoManager() {
       setData((prev) => prev ? { ...prev, robots } : prev)
       clearDirty('robots')
       setSave('robots', 'success')
-      showToast('success', 'robots.txt saved successfully.')
+      showToast('success', 'robots.txt uğurla yadda saxlanıldı.')
     } catch {
       setSave('robots', 'error')
-      showToast('error', 'Failed to save robots.txt.')
+      showToast('error', 'robots.txt yadda saxlanılmadı.')
     }
   }, [tenantId, clearDirty, setSave, showToast])
 
@@ -188,10 +188,10 @@ export function useSeoManager() {
       setData((prev) => prev ? { ...prev, sitemap } : prev)
       clearDirty('sitemap')
       setSave('sitemap', 'success')
-      showToast('success', 'sitemap.xml saved successfully.')
+      showToast('success', 'sitemap.xml uğurla yadda saxlanıldı.')
     } catch {
       setSave('sitemap', 'error')
-      showToast('error', 'Failed to save sitemap.xml.')
+      showToast('error', 'sitemap.xml yadda saxlanılmadı.')
     }
   }, [tenantId, clearDirty, setSave, showToast])
 
@@ -202,10 +202,10 @@ export function useSeoManager() {
       setData((prev) => prev ? { ...prev, llms } : prev)
       clearDirty('llms')
       setSave('llms', 'success')
-      showToast('success', 'llms.txt saved successfully.')
+      showToast('success', 'llms.txt uğurla yadda saxlanıldı.')
     } catch {
       setSave('llms', 'error')
-      showToast('error', 'Failed to save llms.txt.')
+      showToast('error', 'llms.txt yadda saxlanılmadı.')
     }
   }, [tenantId, clearDirty, setSave, showToast])
 

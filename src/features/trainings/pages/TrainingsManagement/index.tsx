@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
+import dayjs from 'dayjs'
 import { trainingService } from '../../../../api/services/trainingService'
 import type {
   TrainingRequest,
@@ -25,6 +26,17 @@ import type {
   LocalTime,
 } from '../../../../types/portalDtos'
 import { ImageUploadInput } from '../../../../components/forms'
+
+const getTrainingTypeLabel = (type?: string) => {
+  switch (type) {
+    case 'ONLINE':
+      return 'Onlayn'
+    case 'IN_PERSON':
+      return 'Əyani'
+    default:
+      return type || 'Onlayn'
+  }
+}
 
 function formatLocalTime(time?: LocalTime | string): string {
   if (!time) return '10:00'
@@ -100,13 +112,13 @@ export default function TrainingsManagement() {
         setTrainings(Array.isArray(p?.content) ? p.content : Array.isArray(p) ? (p as unknown as TrainingResponse[]) : [])
         setTotalPages(Math.max(1, p?.totalPages || 1))
       } else {
-        setError('Could not load trainings from GET /trainings.')
+        setError('Təlimləri yükləmək mümkün olmadı.')
       }
 
       if (countsRes.status === 'fulfilled') setTypeCounts(countsRes.value)
       if (tagsRes.status === 'fulfilled') setPopularTags(tagsRes.value)
     } catch {
-      setError('Could not load trainings.')
+      setError('Təlimləri yükləmək mümkün olmadı.')
     } finally {
       setIsLoading(false)
     }
@@ -119,7 +131,7 @@ export default function TrainingsManagement() {
       const items = await trainingService.getMonthCalendar(calYear, calMonth)
       setCalendarItems(items)
     } catch {
-      setError('Could not load monthly calendar from GET /trainings/calendar.')
+      setError('Aylıq təlim təqvimini yükləmək mümkün olmadı.')
     } finally {
       setIsLoading(false)
     }
@@ -147,7 +159,7 @@ export default function TrainingsManagement() {
             setTotalPages(Math.max(1, p?.totalPages || 1))
             setError(null)
           } else {
-            setError('Could not load trainings from GET /trainings.')
+            setError('Təlimləri yükləmək mümkün olmadı.')
           }
           if (countsRes.status === 'fulfilled') setTypeCounts(countsRes.value)
           if (tagsRes.status === 'fulfilled') setPopularTags(tagsRes.value)
@@ -158,7 +170,7 @@ export default function TrainingsManagement() {
           setError(null)
         }
       } catch {
-        if (active) setError('Could not load trainings.')
+        if (active) setError('Təlimləri yükləmək mümkün olmadı.')
       } finally {
         if (active) setIsLoading(false)
       }
@@ -176,7 +188,7 @@ export default function TrainingsManagement() {
     setType('ONLINE')
     setTrainingDate(new Date().toISOString().slice(0, 10))
     setTrainingTime('14:00')
-    setLocation('Zoom / Online')
+    setLocation('Zoom / Onlayn')
     setPriceAzn('0')
     setImageUrl('')
     setLive(false)
@@ -230,21 +242,21 @@ export default function TrainingsManagement() {
       else fetchCalendar()
     } catch (err) {
       console.error('Failed to save training', err)
-      setError('Failed to save training. Please verify all required fields.')
+      setError('Təlimi yadda saxlamaq mümkün olmadı. Zəhmət olmasa bütün vacib sahələri yoxlayın.')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this training?')) return
+    if (!window.confirm('Bu təlimi silmək istədiyinizdən əminsiniz?')) return
     try {
       await trainingService.deleteTraining(id)
       setTrainings((prev) => prev.filter((t) => t.id !== id))
       setCalendarItems((prev) => prev.filter((t) => t.id !== id))
     } catch (err) {
       console.error('Failed to delete training', err)
-      setError('Failed to delete training.')
+      setError('Təlimi silmək mümkün olmadı.')
     }
   }
 
@@ -260,13 +272,10 @@ export default function TrainingsManagement() {
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-              <span>Trainings & Workshops</span>
-              <span className="px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[10px] font-mono">
-                /trainings
-              </span>
+              <span>Təlimlər və Seminarlar</span>
             </h1>
             <p className="text-xs text-slate-400 mt-0.5">
-              Create, schedule, and manage online webinars and in-person psychology trainings.
+              Onlayn vebinarlar və əyani psixologiya təlimlərini yaradın, planlaşdırın və idarə edin.
             </p>
           </div>
         </div>
@@ -281,7 +290,7 @@ export default function TrainingsManagement() {
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>List</span>
+              <span>Siyahı</span>
             </button>
             <button
               type="button"
@@ -291,7 +300,7 @@ export default function TrainingsManagement() {
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Calendar</span>
+              <span>Təqvim</span>
             </button>
           </div>
 
@@ -301,7 +310,7 @@ export default function TrainingsManagement() {
             className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-[0_4px_16px_rgba(139,92,246,0.3)]"
           >
             <Plus className="w-4 h-4" />
-            <span>New Training</span>
+            <span>Yeni Təlim</span>
           </button>
         </div>
       </div>
@@ -313,18 +322,18 @@ export default function TrainingsManagement() {
             <div key={tc.value || tc.label} className="bg-[#141521] border border-[#222437] rounded-2xl p-4 flex items-center justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  {tc.label || tc.value}
+                  {getTrainingTypeLabel(tc.value) || tc.label}
                 </p>
                 <p className="text-2xl font-bold text-white mt-0.5">{tc.count ?? 0}</p>
               </div>
-              <span className="px-2.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-mono">
-                {tc.value}
+              <span className="px-2.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-bold">
+                {getTrainingTypeLabel(tc.value)}
               </span>
             </div>
           ))
         ) : (
           <div className="bg-[#141521] border border-[#222437] rounded-2xl p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Loaded Trainings</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Yüklənmiş Təlimlər</p>
             <p className="text-2xl font-bold text-white mt-0.5">{activeItems.length}</p>
           </div>
         )}
@@ -333,7 +342,7 @@ export default function TrainingsManagement() {
           <div className="bg-[#141521] border border-[#222437] rounded-2xl p-4 md:col-span-1">
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
               <Tag className="w-3 h-3 text-violet-400" />
-              <span>Popular Tags</span>
+              <span>Populyar Teqlər</span>
             </p>
             <div className="flex flex-wrap gap-1.5">
               {popularTags.map((tg) => (
@@ -367,7 +376,7 @@ export default function TrainingsManagement() {
                 setSearch(e.target.value)
                 setPage(0)
               }}
-              placeholder="Search trainings by title or tag..."
+              placeholder="Başlıq və ya teqə görə təlim axtar..."
               className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500"
             />
           </div>
@@ -379,9 +388,9 @@ export default function TrainingsManagement() {
             }}
             className="px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-violet-500"
           >
-            <option value="">All Types</option>
-            <option value="ONLINE">ONLINE</option>
-            <option value="IN_PERSON">IN_PERSON</option>
+            <option value="">Bütün Növlər</option>
+            <option value="ONLINE">Onlayn</option>
+            <option value="IN_PERSON">Əyani</option>
           </select>
           <button
             type="button"
@@ -389,7 +398,7 @@ export default function TrainingsManagement() {
             className="px-3 py-2 bg-[#1b1c2b] hover:bg-[#25283e] border border-[#2e3146] text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <span>Yenilə</span>
           </button>
         </div>
       ) : (
@@ -408,8 +417,8 @@ export default function TrainingsManagement() {
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <div className="text-sm font-bold text-white font-mono">
-            {calYear}-{String(calMonth).padStart(2, '0')} (GET /trainings/calendar)
+          <div className="text-sm font-bold text-white capitalize">
+            {dayjs(`${calYear}-${String(calMonth).padStart(2, '0')}-01`).locale('az').format('MMMM YYYY')}
           </div>
           <button
             type="button"
@@ -438,13 +447,13 @@ export default function TrainingsManagement() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-2xl flex flex-col items-center gap-3 text-slate-400">
           <Loader2 className="w-7 h-7 animate-spin text-violet-400" />
-          <span className="text-xs font-semibold">Loading trainings...</span>
+          <span className="text-xs font-semibold">Təlimlər yüklənir...</span>
         </div>
       ) : activeItems.length === 0 ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-2xl text-center">
           <GraduationCap className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-          <p className="text-sm font-bold text-slate-300">No trainings found</p>
-          <p className="text-xs text-slate-500 mt-1">Create a new training or adjust your filters.</p>
+          <p className="text-sm font-bold text-slate-300">Təlim tapılmadı</p>
+          <p className="text-xs text-slate-500 mt-1">Yeni təlim yaradın və ya filtrləri dəyişdirin.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -460,7 +469,7 @@ export default function TrainingsManagement() {
                     {item.live && (
                       <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center gap-1">
                         <Radio className="w-3 h-3" />
-                        LIVE
+                        CANLI
                       </span>
                     )}
                   </div>
@@ -469,7 +478,7 @@ export default function TrainingsManagement() {
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="text-sm font-bold text-white leading-snug">{item.title}</h3>
                     <span className="px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-bold shrink-0">
-                      {item.typeLabel || item.type || 'ONLINE'}
+                      {getTrainingTypeLabel(item.type)}
                     </span>
                   </div>
 
@@ -500,14 +509,14 @@ export default function TrainingsManagement() {
 
               <div className="px-5 py-3 border-t border-[#222437] bg-[#10111a]/60 flex items-center justify-between">
                 <span className="text-sm font-extrabold text-emerald-400">
-                  {item.priceAzn ? `${item.priceAzn} AZN` : 'Free'}
+                  {item.priceAzn ? `${item.priceAzn} AZN` : 'Pulsuz'}
                 </span>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => openEdit(item)}
                     className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-violet-500/20 text-slate-300 hover:text-violet-300 cursor-pointer"
-                    title="Edit training"
+                    title="Təlimi redaktə et"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
@@ -515,7 +524,7 @@ export default function TrainingsManagement() {
                     type="button"
                     onClick={() => handleDelete(item.id)}
                     className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 cursor-pointer"
-                    title="Delete training"
+                    title="Təlimi sil"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -535,10 +544,10 @@ export default function TrainingsManagement() {
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             className="px-3 py-1.5 rounded-lg bg-[#141521] border border-[#222437] text-xs font-bold text-slate-300 disabled:opacity-40 cursor-pointer"
           >
-            Previous
+            Əvvəlki
           </button>
           <span className="text-xs text-slate-400 font-mono">
-            Page {page + 1} / {totalPages}
+            Səhifə {page + 1} / {totalPages}
           </span>
           <button
             type="button"
@@ -546,7 +555,7 @@ export default function TrainingsManagement() {
             onClick={() => setPage((p) => p + 1)}
             className="px-3 py-1.5 rounded-lg bg-[#141521] border border-[#222437] text-xs font-bold text-slate-300 disabled:opacity-40 cursor-pointer"
           >
-            Next
+            Növbəti
           </button>
         </div>
       )}
@@ -557,7 +566,7 @@ export default function TrainingsManagement() {
           <div className="w-full max-w-2xl bg-[#141521] border border-[#2e3146] rounded-2xl p-6 space-y-5 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#222437] pb-3">
               <h3 className="text-lg font-bold text-white">
-                {editingItem ? 'Edit Training (PUT /trainings/{id})' : 'Create Training (POST /trainings)'}
+                {editingItem ? 'Təlimi Redaktə Et' : 'Yeni Təlim Yarat'}
               </h3>
               <button
                 type="button"
@@ -570,32 +579,32 @@ export default function TrainingsManagement() {
 
             <form onSubmit={handleSave} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300">Title *</label>
+                <label className="text-xs font-bold text-slate-300">Başlıq *</label>
                 <input
                   type="text"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Cognitive Behavioral Therapy Workshop"
+                  placeholder="məs. Koqnitiv Davranış Terapiyası Seminarı"
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-violet-500"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Type *</label>
+                  <label className="text-xs font-bold text-slate-300">Növ *</label>
                   <select
                     value={type}
                     onChange={(e) => setType(e.target.value as 'ONLINE' | 'IN_PERSON')}
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-violet-500"
                   >
-                    <option value="ONLINE">ONLINE</option>
-                    <option value="IN_PERSON">IN_PERSON</option>
+                    <option value="ONLINE">Onlayn</option>
+                    <option value="IN_PERSON">Əyani</option>
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Date *</label>
+                  <label className="text-xs font-bold text-slate-300">Tarix *</label>
                   <input
                     type="date"
                     required
@@ -606,7 +615,7 @@ export default function TrainingsManagement() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Time *</label>
+                  <label className="text-xs font-bold text-slate-300">Saat *</label>
                   <input
                     type="time"
                     required
@@ -619,19 +628,19 @@ export default function TrainingsManagement() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Location *</label>
+                  <label className="text-xs font-bold text-slate-300">Məkan *</label>
                   <input
                     type="text"
                     required
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    placeholder="Baku / Zoom Link"
+                    placeholder="Bakı / Zoom Linki"
                     className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-violet-500"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-300">Price (AZN) *</label>
+                  <label className="text-xs font-bold text-slate-300">Qiymət (AZN) *</label>
                   <input
                     type="number"
                     min="0"
@@ -645,23 +654,23 @@ export default function TrainingsManagement() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300">Tags (comma separated)</label>
+                <label className="text-xs font-bold text-slate-300">Teqlər (vergüllə ayrılmış)</label>
                 <input
                   type="text"
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="cbt, anxiety, mindfulness"
+                  placeholder="kbt, narahatlıq, fərqindəlik"
                   className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-violet-500"
                 />
               </div>
 
               <ImageUploadInput
-                label="Cover Image (imageUrl)"
+                label="Üz Qabığı Şəkli"
                 value={imageUrl}
                 onChange={setImageUrl}
                 folder="trainings"
                 accentColor="violet"
-                placeholder="https://example.com/training.jpg"
+                placeholder="https://... və ya təlim şəkli yükləyin"
               />
 
               <label className="flex items-center gap-2 text-xs font-semibold text-slate-300 cursor-pointer">
@@ -671,7 +680,7 @@ export default function TrainingsManagement() {
                   onChange={(e) => setLive(e.target.checked)}
                   className="rounded border-[#2e3146] bg-[#1b1c2b]"
                 />
-                <span>Mark as currently LIVE</span>
+                <span>Hazırda CANLI kimi işarələ</span>
               </label>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-[#222437]">
@@ -680,7 +689,7 @@ export default function TrainingsManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 rounded-xl bg-[#1b1c2b] text-slate-300 text-xs font-bold cursor-pointer"
                 >
-                  Cancel
+                  Ləğv et
                 </button>
                 <button
                   type="submit"
@@ -688,7 +697,7 @@ export default function TrainingsManagement() {
                   className="px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{editingItem ? 'Update Training' : 'Create Training'}</span>
+                  <span>{editingItem ? 'Təlimi Yenilə' : 'Təlim Yarat'}</span>
                 </button>
               </div>
             </form>

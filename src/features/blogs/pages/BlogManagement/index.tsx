@@ -62,7 +62,7 @@ export default function BlogManagement() {
   const [jsonError, setJsonError] = useState<string | null>(null)
 
   // Dynamic Sections Array
-  const [sections, setSections] = useState<ContentSection[]>([{ title: 'Main Section', text: '' }])
+  const [sections, setSections] = useState<ContentSection[]>([{ title: 'Əsas Bölmə', text: '' }])
 
   const fetchItems = async () => {
     setIsLoading(true)
@@ -72,7 +72,7 @@ export default function BlogManagement() {
       setItems(Array.isArray(data) ? data : (data as any)?.content || [])
     } catch (err) {
       console.error('Failed to fetch blog posts', err)
-      setError('Could not load blog posts.')
+      setError('Bloq yazıları yüklənə bilmədi.')
     } finally {
       setIsLoading(false)
     }
@@ -88,8 +88,8 @@ export default function BlogManagement() {
     setContents(createEmptyMultilingualContent())
     setShortDescription('')
     setIntroText('')
-    setCategory('General')
-    setAuthorName('NexusMind Editorial')
+    setCategory('Ümumi')
+    setAuthorName('NexusMind Redaksiya')
     setImageUrl('')
     setSections([])
     setMetaTitle('')
@@ -112,8 +112,8 @@ export default function BlogManagement() {
     })
     setShortDescription(getLocalizedTitle(item.shortDescription) || '')
     setIntroText(getLocalizedTitle(item.introText) || '')
-    setCategory(item.category || 'General')
-    setAuthorName(item.authorName || 'NexusMind Editorial')
+    setCategory(item.category || 'Ümumi')
+    setAuthorName(item.authorName || 'NexusMind Redaksiya')
     setImageUrl(item.imageUrl || item.coverImage || '')
     setMetaTitle(item.metaTitle || '')
     setMetaDescription(normalizeTitleDto(item.metaDescription))
@@ -156,7 +156,7 @@ export default function BlogManagement() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isTitleValid(titles)) {
-      alert('Please provide at least Azerbaijani title.')
+      alert('Zəhmət olmasa ən azı Azərbaycan dilində başlıq daxil edin.')
       return
     }
 
@@ -166,7 +166,7 @@ export default function BlogManagement() {
         JSON.parse(schemaMarkup.trim())
         setJsonError(null)
       } catch (err: any) {
-        setJsonError(`Invalid JSON-LD Syntax: ${err.message}`)
+        setJsonError(`Yanlış JSON-LD sintaksisi: ${err.message}`)
         return
       }
     } else {
@@ -187,7 +187,7 @@ export default function BlogManagement() {
     const cleanedAdditionalSections: BlogSectionRequest[] = sections
       .filter((s) => s.text && s.text.trim().length > 0)
       .map((s) => {
-        const sTitle = (typeof s.title === 'string' ? s.title : getLocalizedTitle(s.title) || 'Section').trim()
+        const sTitle = (typeof s.title === 'string' ? s.title : getLocalizedTitle(s.title) || 'Bölmə').trim()
         const sText = s.text.trim()
         return {
           title: { az: sTitle, en: sTitle, ru: sTitle },
@@ -234,8 +234,8 @@ export default function BlogManagement() {
       introText: introTextDto,
       sections: allSections,
       imageUrl: imageUrl.trim() || undefined,
-      category: category.trim() || 'General',
-      authorName: authorName.trim() || 'NexusMind Editorial',
+      category: category.trim() || 'Ümumi',
+      authorName: authorName.trim() || 'NexusMind Redaksiya',
       metaTitle: metaTitle.trim() || undefined,
       metaDescription: isTitleValid(metaDescription) ? metaDescription : undefined,
       slug: slug.trim() || undefined,
@@ -253,14 +253,14 @@ export default function BlogManagement() {
       fetchItems()
     } catch (err) {
       console.error('Failed to save blog post', err)
-      alert('Failed to save blog post.')
+      alert('Bloq yazısı yadda saxlanılmadı.')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this blog post?')) return
+    if (!window.confirm('Bu bloq yazısını silmək istədiyinizə əminsiniz?')) return
     try {
       await contentService.deleteBlog(id)
       setItems(items.filter((item) => item.id !== id))
@@ -269,7 +269,7 @@ export default function BlogManagement() {
       }
     } catch (err) {
       console.error('Failed to delete blog post', err)
-      alert('Failed to delete blog post.')
+      alert('Bloq yazısı silinə bilmədi.')
     }
   }
 
@@ -296,10 +296,10 @@ export default function BlogManagement() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <FileText className="w-7 h-7 text-purple-400" />
-            <span>Blog Management</span>
+            <span>Bloq İdarəetməsi</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Publish, edit, and explore all published blog articles, thought leadership, and guides.
+            Bütün dərc edilmiş bloq yazılarını, ekspert fikirlərini və bələdçiləri dərc edin, redaktə edin və nəzərdən keçirin.
           </p>
         </div>
 
@@ -315,7 +315,7 @@ export default function BlogManagement() {
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Showcase & Reader</span>
+              <span>Vitrin və Oxuyucu</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -326,7 +326,7 @@ export default function BlogManagement() {
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>Table</span>
+              <span>Cədvəl</span>
             </button>
           </div>
 
@@ -335,7 +335,7 @@ export default function BlogManagement() {
             className="flex items-center justify-center gap-2 py-2.5 px-5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(168,85,247,0.3)] transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Create Blog Post</span>
+            <span>Yeni Bloq Yazısı</span>
           </button>
         </div>
       </div>
@@ -348,12 +348,12 @@ export default function BlogManagement() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search blog posts by title, author, or category..."
+            placeholder="Bloq yazılarını başlıq, müəllif və ya kateqoriyaya görə axtarın..."
             className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
           />
         </div>
         <div className="text-xs text-slate-400 font-semibold">
-          Total Blog Posts: <span className="text-white font-bold">{filteredItems.length}</span>
+          Ümumi Bloq Yazıları: <span className="text-white font-bold">{filteredItems.length}</span>
         </div>
       </div>
 
@@ -368,13 +368,13 @@ export default function BlogManagement() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
-          <span className="text-xs font-semibold">Loading blog posts...</span>
+          <span className="text-xs font-semibold">Bloq yazıları yüklənir...</span>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl text-center text-slate-500 space-y-3">
           <FileText className="w-12 h-12 mx-auto text-slate-600" />
-          <p className="text-sm font-semibold text-slate-400">No blog posts found.</p>
-          <p className="text-xs">Click "Create Blog Post" above to write your first piece.</p>
+          <p className="text-sm font-semibold text-slate-400">Bloq yazısı tapılmadı.</p>
+          <p className="text-xs">İlk bloq yazınızı yaratmaq üçün yuxarıdakı «Yeni Bloq Yazısı» düyməsinə klikləyin.</p>
         </div>
       ) : viewMode === 'feed' ? (
         /* LIVE BLOG FEED VIEW */
@@ -399,21 +399,21 @@ export default function BlogManagement() {
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-600">
                       <FileText className="w-10 h-10" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">No Cover Image</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Örtük Şəkli Yoxdur</span>
                     </div>
                   )}
 
                   {/* Badges Overlay */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-full bg-purple-600/90 text-white font-bold text-[10px] uppercase tracking-wider backdrop-blur-md shadow">
-                      {item.category || 'General'}
+                      {item.category || 'Ümumi'}
                     </span>
                   </div>
 
                   {/* Author Byline */}
                   <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-slate-200 text-[10px] font-medium flex items-center gap-1.5">
                     <User className="w-3 h-3 text-purple-400" />
-                    <span>{item.authorName || 'NexusMind Editorial'}</span>
+                    <span>{item.authorName || 'NexusMind Redaksiya'}</span>
                   </div>
                 </div>
 
@@ -424,14 +424,14 @@ export default function BlogManagement() {
                       {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.body || 'No summary available.'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.body || 'Xülasə mövcud deyil.'}
                     </p>
 
                     {sectionCount > 0 && (
                       <div className="pt-2">
                         <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-medium text-slate-300 flex items-center gap-1 w-fit">
                           <Layers className="w-2.5 h-2.5 text-purple-400" />
-                          <span>{sectionCount} Sections</span>
+                          <span>{sectionCount} Bölmə</span>
                         </span>
                       </div>
                     )}
@@ -444,21 +444,21 @@ export default function BlogManagement() {
                       className="text-xs font-bold text-purple-400 hover:text-purple-300 flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>Read Post</span>
+                      <span>Yazını Oxu</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEditModal(item)}
                         className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                        title="Edit Post"
+                        title="Yazını redaktə et"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                        title="Delete Post"
+                        title="Yazını sil"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -476,12 +476,12 @@ export default function BlogManagement() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                  <th className="py-3.5 px-4">Title</th>
-                  <th className="py-3.5 px-4">Author</th>
-                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Başlıq</th>
+                  <th className="py-3.5 px-4">Müəllif</th>
+                  <th className="py-3.5 px-4">Kateqoriya</th>
                   <th className="py-3.5 px-4">Slug</th>
-                  <th className="py-3.5 px-4">Summary</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">Xülasə</th>
+                  <th className="py-3.5 px-4 text-right">Əməliyyatlar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#222437] text-slate-300">
@@ -494,39 +494,39 @@ export default function BlogManagement() {
                       {getLocalizedTitle(item.title)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-300 font-medium">
-                      {item.authorName || 'NexusMind Editorial'}
+                      {item.authorName || 'NexusMind Redaksiya'}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[10px] uppercase tracking-wider">
-                        {item.category || 'General'}
+                        {item.category || 'Ümumi'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-mono text-[11px] text-slate-400">
                       {item.slug ? `/${item.slug}` : '—'}
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate">
-                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.body || 'N/A'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.body || 'Məlumat yoxdur'}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/org/blogs/${item.id}`)}
                           className="p-1.5 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 transition-colors cursor-pointer"
-                          title="Open Full Blog Preview"
+                          title="Tam Bloq Önizləməsini Aç"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleOpenEditModal(item)}
                           className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                          title="Edit Post"
+                          title="Yazını redaktə et"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                          title="Delete Post"
+                          title="Yazını sil"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -548,7 +548,7 @@ export default function BlogManagement() {
             <div className="p-4 sm:p-5 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
               <div className="flex items-center gap-2.5">
                 <FileText className="w-5 h-5 text-purple-400" />
-                <span className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Blog Post Reader</span>
+                <span className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">Bloq Oxuyucusu</span>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -560,7 +560,7 @@ export default function BlogManagement() {
                   className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
-                  <span>Edit</span>
+                  <span>Redaktə et</span>
                 </button>
                 <button
                   onClick={() => setViewingItem(null)}
@@ -587,11 +587,11 @@ export default function BlogManagement() {
               {/* Tags & Metadata */}
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="px-3.5 py-1.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold text-xs sm:text-sm">
-                  {viewingItem.category || 'General'}
+                  {viewingItem.category || 'Ümumi'}
                 </span>
                 <span className="px-3.5 py-1.5 rounded-full bg-slate-800 text-slate-300 text-xs sm:text-sm font-medium flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-purple-400" />
-                  <span>{viewingItem.authorName || 'NexusMind Editorial'}</span>
+                  <span>{viewingItem.authorName || 'NexusMind Redaksiya'}</span>
                 </span>
                 {viewingItem.slug && (
                   <span className="px-3.5 py-1.5 rounded-full bg-slate-800/60 text-slate-400 font-mono text-xs">
@@ -624,7 +624,7 @@ export default function BlogManagement() {
                 <div className="space-y-4 pt-4 border-t border-[#222437]">
                   <h3 className="text-xs sm:text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Layers className="w-4 h-4" />
-                    <span>Post Breakdown ({viewingItem.sections.length})</span>
+                    <span>Yazı Bölmələri ({viewingItem.sections.length})</span>
                   </h3>
                   <div className="space-y-3">
                     {viewingItem.sections.map((sec, idx) => (
@@ -652,7 +652,7 @@ export default function BlogManagement() {
                 <div className="p-4 rounded-xl bg-[#10111a] border border-[#222437] space-y-2 text-xs">
                   <div className="font-bold text-slate-400 flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-purple-400" />
-                    <span>SEO Meta Preview</span>
+                    <span>SEO Önizləmə</span>
                   </div>
                   {viewingItem.metaTitle && (
                     <div className="text-blue-400 font-medium sm:text-sm">{viewingItem.metaTitle}</div>
@@ -683,7 +683,7 @@ export default function BlogManagement() {
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
                 <FileText className="w-6 h-6 text-purple-400" />
-                <span>{editingItem ? 'Edit Blog Post (PUT)' : 'Create Blog Post (POST)'}</span>
+                <span>{editingItem ? 'Bloq Yazısını Redaktə Et' : 'Yeni Bloq Yazısı Yarat'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -696,7 +696,7 @@ export default function BlogManagement() {
             <form onSubmit={handleSave} className="space-y-6">
               {/* Section 1: Multilingual Title & Content */}
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider">1. Multilingual Title & Content</h4>
+                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider">1. Çoxdilli Başlıq və Məzmun</h4>
                 
                 <MultilingualContentInput
                   title={titles}
@@ -704,68 +704,68 @@ export default function BlogManagement() {
                   content={contents}
                   onContentChange={setContents}
                   accentColor="purple"
-                  titleLabel="Blog Title"
-                  contentLabel="Blog Content"
-                  contentPlaceholder="Write the full blog article content..."
+                  titleLabel="Bloq Başlığı"
+                  contentLabel="Bloq Məzmunu"
+                  contentPlaceholder="Tam bloq məqaləsinin məzmununu yazın..."
                   requiredLanguages={['az']}
                 />
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Author Name (authorName)</label>
+                    <label className="text-sm font-semibold text-slate-200">Müəllif Adı</label>
                     <input
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
-                      placeholder="e.g. NexusMind Editorial"
+                      placeholder="məs. NexusMind Redaksiya"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Category (category)</label>
+                    <label className="text-sm font-semibold text-slate-200">Kateqoriya</label>
                     <input
                       type="text"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      placeholder="e.g. Therapy, Mindset, Research"
+                      placeholder="məs. Terapiya, Düşüncə Tərzi, Araşdırma"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 <ImageUploadInput
-                  label="Blog Cover Image (imageUrl)"
+                  label="Bloq Örtük Şəkli"
                   value={imageUrl}
                   onChange={setImageUrl}
                   folder="blogs"
                   accentColor="purple"
-                  placeholder="https://example.com/blog-cover.jpg or upload blog cover"
+                  placeholder="https://example.com/blog-cover.jpg və ya örtük şəkli yükləyin"
                 />
               </div>
 
               {/* Section 2: Summary & Intro */}
               <div className="space-y-4 pt-4 border-t border-[#2e3146]">
-                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider">2. Intro & Summary</h4>
+                <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider">2. Giriş və Xülasə</h4>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Short Description (shortDescription)</label>
+                  <label className="text-sm font-semibold text-slate-200">Qısa Təsvir</label>
                   <input
                     type="text"
                     value={shortDescription}
                     onChange={(e) => setShortDescription(e.target.value)}
-                    placeholder="Brief summary..."
+                    placeholder="Qısa xülasə..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Intro Paragraph (introText)</label>
+                  <label className="text-sm font-semibold text-slate-200">Giriş Abzası</label>
                   <textarea
                     rows={3}
                     value={introText}
                     onChange={(e) => setIntroText(e.target.value)}
-                    placeholder="Introduction lead text..."
+                    placeholder="Giriş mətni..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
@@ -777,9 +777,9 @@ export default function BlogManagement() {
                   <div>
                     <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
                       <Layers className="w-4 h-4" />
-                      <span>Additional Sections (Optional)</span>
+                      <span>Əlavə Bölmələr (İstəyə bağlı)</span>
                     </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">Optional additional sub-sections if you wish to break the blog into multiple blocks.</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Bloqu bir neçə hissəyə bölmək istəsəniz, əlavə alt bölmələr yarada bilərsiniz.</p>
                   </div>
                   <button
                     type="button"
@@ -787,7 +787,7 @@ export default function BlogManagement() {
                     className="px-4 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>Add Section</span>
+                    <span>Bölmə Əlavə Et</span>
                   </button>
                 </div>
 
@@ -795,21 +795,21 @@ export default function BlogManagement() {
                   {sections.map((section, idx) => (
                     <div key={idx} className="p-4 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-3 relative group">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Section #{idx + 1}</span>
+                        <span className="text-xs font-bold text-purple-400 uppercase tracking-wider">Bölmə #{idx + 1}</span>
                         <button
                           type="button"
                           onClick={() => handleRemoveSection(idx)}
                           className="text-rose-400 hover:text-rose-300 text-xs transition-colors cursor-pointer flex items-center gap-1"
                         >
                           <Trash2 className="w-4 h-4" />
-                          <span>Remove</span>
+                          <span>Sil</span>
                         </button>
                       </div>
                       <input
                         type="text"
                         value={typeof section.title === 'string' ? section.title : getLocalizedTitle(section.title)}
                         onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
-                        placeholder="Section Heading..."
+                        placeholder="Bölmə başlığı..."
                         className="w-full px-4 py-2.5 bg-[#141521] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                       />
                       <textarea
@@ -817,7 +817,7 @@ export default function BlogManagement() {
                         required
                         value={section.text}
                         onChange={(e) => handleUpdateSection(idx, 'text', e.target.value)}
-                        placeholder="Section content and body text..."
+                        placeholder="Bölmə məzmunu və əsas mətn..."
                         className="w-full px-4 py-3 bg-[#141521] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                       />
                     </div>
@@ -829,28 +829,28 @@ export default function BlogManagement() {
               <div className="space-y-4 pt-4 border-t border-[#2e3146]">
                 <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  <span>SEO & Schema Settings</span>
+                  <span>SEO və Sxem Tənzimləmələri</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Custom Slug (slug)</label>
+                    <label className="text-sm font-semibold text-slate-200">Xüsusi Slug</label>
                     <input
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      placeholder="e.g. cbt-stress-management"
+                      placeholder="məs. kbt-stress-idareetmesi"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Meta Title (metaTitle)</label>
+                    <label className="text-sm font-semibold text-slate-200">Meta Başlıq</label>
                     <input
                       type="text"
                       value={metaTitle}
                       onChange={(e) => setMetaTitle(e.target.value)}
-                      placeholder="Search engine title..."
+                      placeholder="Axtarış sistemi başlığı..."
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                     />
                   </div>
@@ -858,8 +858,7 @@ export default function BlogManagement() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                    Meta Description (metaDescription)
-                    <span className="text-[10px] text-purple-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                    Meta Təsvir
                   </label>
                   {(['az', 'en', 'ru'] as const).map((lang) => (
                     <div key={lang} className="flex items-center gap-2">
@@ -868,7 +867,7 @@ export default function BlogManagement() {
                         rows={2}
                         value={metaDescription[lang]}
                         onChange={(e) => setMetaDescription({ ...metaDescription, [lang]: e.target.value })}
-                        placeholder={`Search engine preview description (${lang})...`}
+                        placeholder={`Axtarış sistemi önizləmə təsviri (${lang.toUpperCase()})...`}
                         className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                       />
                     </div>
@@ -876,12 +875,12 @@ export default function BlogManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Keywords (Comma separated)</label>
+                  <label className="text-sm font-semibold text-slate-200">Açar Sözlər (vergüllə ayrılmış)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. blog, mental health, advice"
+                    placeholder="məs. bloq, psixi sağlamlıq, tövsiyələr"
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                   {previewKeywords.length > 0 && (
@@ -901,7 +900,7 @@ export default function BlogManagement() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
-                    <span>Schema Markup (JSON-LD)</span>
+                    <span>Sxem İşarələməsi (JSON-LD)</span>
                     <span className="text-xs text-slate-400 font-mono">application/ld+json</span>
                   </label>
                   <textarea
@@ -923,7 +922,7 @@ export default function BlogManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  Ləğv et
                 </button>
                 <button
                   type="submit"
@@ -931,7 +930,7 @@ export default function BlogManagement() {
                   className="px-7 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(168,85,247,0.3)] disabled:opacity-50"
                 >
                   {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Publish Post (POST)'}</span>
+                  <span>{editingItem ? 'Dəyişiklikləri Yadda Saxla' : 'Yazını Dərc Et'}</span>
                 </button>
               </div>
             </form>

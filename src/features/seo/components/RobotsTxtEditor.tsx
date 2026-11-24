@@ -30,10 +30,10 @@ export default function RobotsTxtEditor() {
 
     try {
       await seoService.updateRobotsTxt(content)
-      setFeedback({ type: 'success', message: 'robots.txt directives saved successfully!' })
+      setFeedback({ type: 'success', message: 'robots.txt direktivləri uğurla yadda saxlanıldı!' })
     } catch (err) {
       console.error('Failed to update robots.txt', err)
-      setFeedback({ type: 'error', message: 'Failed to update robots.txt.' })
+      setFeedback({ type: 'error', message: 'robots.txt yenilənə bilmədi.' })
     } finally {
       setIsSaving(false)
     }
@@ -51,9 +51,9 @@ export default function RobotsTxtEditor() {
             <Bot className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">Crawler Directives (robots.txt)</h2>
+            <h2 className="text-lg font-bold text-white">Axtarış Botu Direktivləri (robots.txt)</h2>
             <p className="text-xs text-slate-400">
-              Control web search engine crawler access rules and specify your sitemap location.
+              Axtarış sistemi botlarının giriş qaydalarını idarə edin və sayt xəritəsinin ünvanını göstərin.
             </p>
           </div>
         </div>
@@ -78,30 +78,30 @@ export default function RobotsTxtEditor() {
 
       {/* Preset Directive Shortcuts */}
       <div className="flex flex-wrap items-center gap-2 pt-1">
-        <span className="text-xs text-slate-400 font-semibold mr-1">Insert Directive:</span>
+        <span className="text-xs text-slate-400 font-semibold mr-1">Direktiv Əlavə Et:</span>
         <button
           type="button"
           onClick={() => handleInsertPreset('User-agent: *\nAllow: /')}
-          className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-xs font-mono flex items-center gap-1 transition-all"
+          className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-xs font-mono flex items-center gap-1 transition-all cursor-pointer"
         >
           <PlusCircle className="w-3 h-3" />
-          <span>Allow All</span>
+          <span>Hamısına İcazə Ver</span>
         </button>
         <button
           type="button"
           onClick={() => handleInsertPreset('Disallow: /admin')}
-          className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-xs font-mono flex items-center gap-1 transition-all"
+          className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-xs font-mono flex items-center gap-1 transition-all cursor-pointer"
         >
           <PlusCircle className="w-3 h-3" />
-          <span>Disallow /admin</span>
+          <span>/admin Qadağan Et</span>
         </button>
         <button
           type="button"
           onClick={() => handleInsertPreset('Sitemap: https://nexusmind.az/sitemap.xml')}
-          className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-xs font-mono flex items-center gap-1 transition-all"
+          className="px-2.5 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 rounded-lg text-xs font-mono flex items-center gap-1 transition-all cursor-pointer"
         >
           <PlusCircle className="w-3 h-3" />
-          <span>Add Sitemap Link</span>
+          <span>Sitemap Linki Əlavə Et</span>
         </button>
       </div>
 
@@ -121,7 +121,7 @@ export default function RobotsTxtEditor() {
 
           <div className="flex items-center justify-between pt-2">
             <span className="text-[10px] text-slate-500 font-mono">
-              Lines: {content.split('\n').length} | Characters: {content.length}
+              Sətirlər: {content.split('\n').length} | Simvollar: {content.length}
             </span>
             <button
               type="submit"
@@ -129,7 +129,7 @@ export default function RobotsTxtEditor() {
               className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(99,102,241,0.25)] transition-all"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>Save robots.txt</span>
+              <span>robots.txt Yadda Saxla</span>
             </button>
           </div>
         </form>

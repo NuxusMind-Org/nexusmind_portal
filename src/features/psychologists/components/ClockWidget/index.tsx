@@ -2,15 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock } from 'lucide-react';
 
-const localeMap: Record<string, string> = {
-  az: 'az-AZ',
-  en: 'en-US',
-  ru: 'ru-RU',
-  tr: 'tr-TR',
-};
-
 export default function ClockWidget() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -18,9 +11,8 @@ export default function ClockWidget() {
     return () => clearInterval(timer);
   }, []);
 
-  const currentLocale = localeMap[i18n.language] || 'en-US';
-  const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const formattedDate = time.toLocaleDateString(currentLocale, { weekday: 'long', month: 'long', day: 'numeric' });
+  const formattedTime = time.toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const formattedDate = time.toLocaleDateString('az-AZ', { weekday: 'long', month: 'long', day: 'numeric' });
 
   return (
     <div className="bg-gradient-to-br from-[#1c1a2e] to-[#11121d] border border-violet-500/20 rounded-xl p-6 shadow-lg shadow-violet-500/5 relative overflow-hidden h-36 flex flex-col justify-center shrink-0 group hover:border-violet-500/40 transition-colors">
@@ -31,7 +23,7 @@ export default function ClockWidget() {
         <div className="flex items-center gap-2.5">
           <Clock className="w-4 h-4 text-violet-400" />
           <p className="text-[10px] font-bold text-violet-400/80 tracking-widest uppercase">
-            {t('psychologistDashboard.currentTime', { defaultValue: 'Current Time' })}
+            {t('psychologistDashboard.currentTime')}
           </p>
         </div>
       </div>

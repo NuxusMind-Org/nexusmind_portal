@@ -16,9 +16,9 @@ const EXAMPLE_SCHEMA = `{
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Bakı Psixologiya Mərkəzi",
-  "url": "https://yourdomain.com",
-  "logo": "https://yourdomain.com/logo.png",
-  "description": "Professional mental health services in Baku."
+  "url": "https://nexusmind.az",
+  "logo": "https://nexusmind.az/logo.png",
+  "description": "Bakıda peşəkar psixi sağlamlıq xidmətləri."
 }`
 
 export default function StructuredDataTab({
@@ -89,7 +89,7 @@ export default function StructuredDataTab({
       {/* Left Sidebar — Page Selector */}
       <div className="w-full lg:w-56 xl:w-64 shrink-0 border-r border-[#222437] bg-[#0e0f1a]">
         <div className="p-4 border-b border-[#222437]">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Website Pages</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Veb-sayt Səhifələri</p>
         </div>
         <nav className="py-2">
           {SEO_PAGES.map((page) => {
@@ -121,7 +121,7 @@ export default function StructuredDataTab({
           <div className="flex items-center gap-2">
             <Code2 className="w-4 h-4 text-violet-400" />
             <h3 className="text-sm font-bold text-slate-200">
-              JSON-LD Schema — <span className="text-violet-300">{pageLabel}</span>
+              JSON-LD Sxemi — <span className="text-violet-300">{pageLabel}</span>
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -130,7 +130,7 @@ export default function StructuredDataTab({
                 onClick={handleFormat}
                 className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-[#1b1c2b] hover:bg-[#222437] border border-[#2e3146] rounded-lg transition-all cursor-pointer"
               >
-                Format JSON
+                JSON Formatla
               </button>
             )}
           </div>
@@ -148,7 +148,7 @@ export default function StructuredDataTab({
         {!jsonError && hasContent && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg w-fit">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Valid JSON-LD</span>
+            <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Etibarlı JSON-LD</span>
           </div>
         )}
 
@@ -167,7 +167,7 @@ export default function StructuredDataTab({
 
         {/* Instructions */}
         <p className="text-[10px] text-slate-600">
-          Paste valid <code className="text-violet-400">{'<script type="application/ld+json">'}</code> content here. The <code className="text-violet-400">@context</code> and <code className="text-violet-400">@type</code> properties are required.
+          Etibarlı <code className="text-violet-400">{'<script type="application/ld+json">'}</code> məzmununu buraya daxil edin. <code className="text-violet-400">@context</code> və <code className="text-violet-400">@type</code> sahələri tələb olunur.
         </p>
 
         {/* Actions */}
@@ -177,14 +177,14 @@ export default function StructuredDataTab({
             disabled={isSaving || !isDirty || !!jsonError}
             className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
           >
-            {isSaving ? 'Saving…' : 'Save Schema'}
+            {isSaving ? 'Saxlanılır…' : 'Sxemi Yadda Saxla'}
           </button>
           <button
             onClick={handleReset}
             disabled={!isDirty}
             className="px-5 py-2 bg-[#1b1c2b] hover:bg-[#222437] disabled:opacity-40 disabled:cursor-not-allowed border border-[#2e3146] text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
           >
-            Cancel
+            Ləğv et
           </button>
           {hasContent && (
             <button
@@ -193,7 +193,7 @@ export default function StructuredDataTab({
               className="ml-auto flex items-center gap-1.5 px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              Delete Schema
+              Sxemi Sil
             </button>
           )}
         </div>

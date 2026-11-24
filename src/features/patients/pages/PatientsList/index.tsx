@@ -7,8 +7,18 @@ import type { Patient } from '../../types/patient'
 import { doctorService } from '../../../../api'
 import type { PasientRegisterEntity } from '../../../../types/portalDtos'
 
+const formatMoodLabel = (mood?: string): string => {
+  switch (mood?.toUpperCase()) {
+    case 'HAPPY': return 'Şən'
+    case 'SAD': return 'Kədərli'
+    case 'CALM': return 'Sakit'
+    case 'TIRED': return 'Yorğun'
+    default: return mood || 'Stabil'
+  }
+}
+
 const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patient => {
-  const name = [entity.name, entity.surname].filter(Boolean).join(' ') || `Patient #${entity.id}`
+  const name = [entity.name, entity.surname].filter(Boolean).join(' ') || `Pasiyent #${entity.id}`
   const avatarColors = [
     'from-teal-500/20 to-emerald-500/20 text-emerald-400',
     'from-slate-700/50 to-slate-800/50 text-slate-400',
@@ -17,9 +27,7 @@ const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patie
     'from-purple-600/20 to-pink-600/20 text-purple-400',
   ]
   const avatarColor = avatarColors[index % avatarColors.length]
-  const moodStr = entity.mood
-    ? entity.mood.charAt(0).toUpperCase() + entity.mood.slice(1).toLowerCase()
-    : 'Stable'
+  const moodStr = formatMoodLabel(entity.mood)
   const priority: 'High' | 'Medium' | 'Normal' =
     entity.mood === 'SAD' ? 'High' : entity.mood === 'TIRED' ? 'Medium' : 'Normal'
   const statusTag =
@@ -28,14 +36,14 @@ const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patie
   return {
     id: String(entity.id),
     name,
-    email: entity.email || 'N/A',
-    phone: entity.phone || 'N/A',
+    email: entity.email || '—',
+    phone: entity.phone || '—',
     avatarColor,
     status: 'Active',
     priority,
     tag: statusTag,
-    lastSession: entity.moodUpdatedDate ? `Mood updated ${entity.moodUpdatedDate}` : 'N/A',
-    nextSession: 'Scheduled',
+    lastSession: entity.moodUpdatedDate ? `Əhval yeniləndi: ${entity.moodUpdatedDate}` : '—',
+    nextSession: 'Planlaşdırılıb',
     mood: moodStr,
   }
 }
@@ -58,7 +66,7 @@ export default function PatientsList() {
       setPatients(Array.isArray(data) ? data.map(mapEntityToPatient) : [])
     } catch (err) {
       console.warn('Could not load live patients list from /doctors/me/patients:', err)
-      setLoadError('Could not load assigned patients from /doctors/me/patients.')
+      setLoadError('Təyin edilmiş pasiyentlər yüklənə bilmədi.')
     } finally {
       setIsLoading(false)
     }
@@ -86,14 +94,14 @@ export default function PatientsList() {
       avatarColor: 'from-emerald-600/20 to-green-600/20 text-emerald-400',
       status: 'Active',
       priority: 'Medium',
-      tag: 'Trauma recovery',
-      lastSession: 'N/A',
-      nextSession: 'July 10, 2026',
-      mood: 'Stable'
+      tag: 'Travma bərpası',
+      lastSession: '—',
+      nextSession: '10 İyul 2026',
+      mood: 'Stabil'
     }
 
     setPatients([newPatient, ...patients])
-    triggerFeedback('Success: Patient Oliver Queen added successfully!')
+    triggerFeedback('Pasiyent Oliver Queen uğurla əlavə edildi!')
   }
 
   const handleViewProfile = (id: string) => {
@@ -106,7 +114,7 @@ export default function PatientsList() {
   const handleScheduleSession = (id: string) => {
     const p = patients.find(p => p.id === id)
     if (p) {
-      triggerFeedback(`Successfully requested session scheduling slot for ${p.name}.`)
+      triggerFeedback(`${p.name} üçün sessiya planlaşdırma sorğusu uğurla göndərildi.`)
     }
   }
 
@@ -144,7 +152,7 @@ export default function PatientsList() {
             onClick={() => loadPatients()}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-2 bg-[#141521] hover:bg-[#1b1c2b] border border-[#222437] hover:border-slate-600 text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50"
-            title="Refresh Patients"
+            title="Pasiyentləri yenilə"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-violet-400' : ''}`} />
             <span>Yenilə</span>

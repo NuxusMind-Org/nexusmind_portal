@@ -4,25 +4,24 @@ import dayjs from 'dayjs'
 import './lib/dayjsLocales'
 import { resources } from './locales'
 
-const savedLang = localStorage.getItem('nexusmind-lang') || 'az'
+// Clear any legacy language preference and lock UI strictly to Azerbaijani
+try {
+  localStorage.removeItem('nexusmind-lang')
+} catch {
+  // Ignore storage errors
+}
 
-// Sync dayjs locale on load
-dayjs.locale(savedLang === 'en' ? 'en' : savedLang)
+dayjs.locale('az')
 
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: savedLang,
+    lng: 'az',
     fallbackLng: 'az',
     interpolation: {
-      escapeValue: false
-    }
+      escapeValue: false,
+    },
   })
-
-// Listen to language changes and keep dayjs in sync
-i18n.on('languageChanged', (lng) => {
-  dayjs.locale(lng === 'en' ? 'en' : lng)
-})
 
 export default i18n

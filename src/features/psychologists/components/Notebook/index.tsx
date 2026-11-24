@@ -65,7 +65,7 @@ export default function Notebook() {
             <FileText className="w-5 h-5 text-violet-400" />
           </div>
           <h2 className="text-lg font-bold text-white tracking-wide">
-            {t('psychologistDashboard.quickNotes', { defaultValue: 'Quick Notes' })}
+            {t('psychologistDashboard.quickNotes')}
           </h2>
         </div>
         
@@ -77,19 +77,18 @@ export default function Notebook() {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {t('psychologistDashboard.saving', { defaultValue: 'Saving...' })}
+              {t('psychologistDashboard.saving')}
             </span>
           ) : lastSaved ? (
             <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-500 uppercase tracking-wider bg-emerald-500/10 px-3 py-1.5 rounded-full">
               <CheckCircle2 className="w-3.5 h-3.5" />
               {t('psychologistDashboard.savedAt', {
-                time: lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                defaultValue: `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                time: lastSaved.toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
               })}
             </span>
           ) : (
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              {t('psychologistDashboard.draft', { defaultValue: 'Draft' })}
+              {t('psychologistDashboard.draft')}
             </span>
           )}
         </div>
@@ -100,7 +99,7 @@ export default function Notebook() {
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder={t('psychologistDashboard.notebookPlaceholder', { defaultValue: 'Start typing your session notes here...' })}
+          placeholder={t('psychologistDashboard.notebookPlaceholder')}
           className="w-full h-full min-h-[160px] resize-none bg-transparent p-6 text-sm text-slate-300 placeholder-slate-600 focus:outline-none custom-scrollbar leading-relaxed"
           spellCheck={false}
         />
@@ -113,7 +112,7 @@ export default function Notebook() {
           onClick={handleManualSave}
         >
           <Save className="w-4 h-4" />
-          {t('psychologistDashboard.saveNoteBtn', { defaultValue: 'Save Note' })}
+          {t('psychologistDashboard.saveNoteBtn')}
         </button>
       </div>
     </div>

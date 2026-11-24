@@ -100,11 +100,12 @@ function StageInner({
       if (data?.message) {
         onChatMessage({
           id: `msg_${Date.now()}_${Math.random()}`,
-          sender: msg.from?.name || msg.from?.identity || 'Patient',
+          sender: msg.from?.name || msg.from?.identity || 'Pasiyent',
           text: data.message,
-          time: new Date().toLocaleTimeString([], {
+          time: new Date().toLocaleTimeString('az-AZ', {
             hour: '2-digit',
             minute: '2-digit',
+            hour12: false,
           }),
           isSelf: false,
         })
@@ -225,7 +226,7 @@ export interface LiveKitCallStageProps {
 export function LiveKitCallStage({
   token,
   serverUrl,
-  doctorName = 'Psychologist',
+  doctorName = 'Psixoloq',
   onDisconnected,
   onStateChange,
   onChatMessage,

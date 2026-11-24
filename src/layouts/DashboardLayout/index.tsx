@@ -24,7 +24,6 @@ import { useAuthStore } from '../../store/authStore'
 import { useSidebarStore } from '../../store/sidebarStore'
 import { authService, searchService } from '../../api'
 import type { ContentSearchResult, DoctorSearchResult } from '../../types/portalDtos'
-import LanguageSelector from '../../features/dashboard/components/LanguageSelector'
 import { getInitialRouteForRole } from '../../utils/navigation'
 import nexusMindLogo from '@/assets/UpdatedNexusMindNavbarLogo.svg'
 
@@ -33,7 +32,7 @@ export default function DashboardLayout() {
   const clearProfile = useUserStore((state) => state.clearProfile)
   const logout = useAuthStore((state) => state.logout)
   const { isOpen, toggle, setOpen } = useSidebarStore()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   // Global search state (search-controller: /search/doctors & /search/content)
@@ -52,10 +51,9 @@ export default function DashboardLayout() {
     let active = true
     const timer = setTimeout(async () => {
       setIsSearching(true)
-      const lang = (i18n.language || 'az').slice(0, 2)
       const [docsRes, contentRes] = await Promise.allSettled([
-        searchService.searchDoctors(trimmed, lang),
-        searchService.searchContent(trimmed, lang, 0, 5),
+        searchService.searchDoctors(trimmed, 'az'),
+        searchService.searchContent(trimmed, 'az', 0, 5),
       ])
       if (!active) return
       setDoctorHits(docsRes.status === 'fulfilled' ? docsRes.value.slice(0, 5) : [])
@@ -66,7 +64,7 @@ export default function DashboardLayout() {
       active = false
       clearTimeout(timer)
     }
-  }, [globalQuery, i18n.language])
+  }, [globalQuery])
 
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
@@ -152,9 +150,9 @@ export default function DashboardLayout() {
   const getNavLabel = (label: string) => {
     switch (label) {
       case 'Panel':
-        return t('common.panel', { defaultValue: 'Panel' })
+        return t('common.panel')
       case 'Calendar':
-        return t('common.calendar', { defaultValue: 'Calendar' })
+        return t('common.calendar')
       case 'Dashboard':
         return t('common.dashboard')
       case 'Patients List':
@@ -162,25 +160,27 @@ export default function DashboardLayout() {
       case 'Therapy Sessions':
         return t('common.therapySessions')
       case 'Organizations':
-        return t('common.organizations', { defaultValue: 'Organizations' })
+        return t('common.organizations')
       case 'Psychologists':
-        return t('common.psychologists', { defaultValue: 'Psychologists' })
+        return t('common.psychologists')
       case 'Patients':
-        return t('common.patients', { defaultValue: 'Patients' })
+        return t('common.patients')
       case 'Analytics':
-        return t('common.analytics', { defaultValue: 'Analytics' })
+        return t('common.analytics')
       case 'Settings':
-        return t('common.settings', { defaultValue: 'Settings' })
+        return t('common.settings')
       case 'News (Xəbər)':
-        return t('nav.news', { defaultValue: 'News (Xəbər)' })
+        return t('nav.news')
       case 'Articles (Məqalə)':
-        return t('nav.articles', { defaultValue: 'Articles (Məqalə)' })
+        return t('nav.articles')
       case 'Blog Posts':
-        return t('nav.blogs', { defaultValue: 'Blog Posts' })
+        return t('nav.blogs')
       case 'Gallery':
-        return t('nav.gallery', { defaultValue: 'Gallery' })
+        return t('nav.gallery')
       case 'SEO Management':
-        return t('nav.seoManagement', { defaultValue: 'SEO Management' })
+        return t('nav.seoManagement')
+      case 'Profile':
+        return t('nav.profile')
       default:
         return label
     }
@@ -192,9 +192,9 @@ export default function DashboardLayout() {
         {/* Brand/Header */}
         <div className="p-6 border-b border-[#202235] space-y-1">
           <Link to={getInitialRouteForRole(profile?.role)} className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-            <img src={nexusMindLogo} alt="NexusMind Logo" className="h-7 w-auto object-contain" />
+            <img src={nexusMindLogo} alt="NexusMind Loqosu" className="h-7 w-auto object-contain" />
           </Link>
-          <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase pl-1">Enterprise AI</p>
+          <p className="text-[10px] font-semibold text-slate-500 tracking-widest uppercase pl-1">İdarəetmə Portalı</p>
         </div>
 
         {/* Navigation Links */}
@@ -269,7 +269,7 @@ export default function DashboardLayout() {
             <button
               onClick={toggle}
               className="md:hidden p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
-              title="Toggle Menu"
+              title="Menyunu aç/bağla"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -280,7 +280,7 @@ export default function DashboardLayout() {
                   BPM
                 </div>
                 <span className="text-[10px] font-extrabold text-slate-500 tracking-wider">
-                  {t('nav.currentOrg', { defaultValue: 'CURRENT ORGANIZATION:' })}
+                  {t('nav.currentOrg')}
                 </span>
                 <span className="text-white font-bold">BPM - Bakı Psixologiya Mərkəzi</span>
                 <span className="text-slate-500 text-[10px]">🔒</span>
@@ -306,13 +306,13 @@ export default function DashboardLayout() {
                 {searchOpen && globalQuery.trim().length >= 2 && (
                   <div className="absolute left-0 right-0 mt-2 bg-[#141521] border border-[#2e3146] rounded-xl shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto">
                     {!isSearching && doctorHits.length === 0 && contentHits.length === 0 ? (
-                      <div className="p-3 text-xs text-slate-500 text-center">No results found</div>
+                      <div className="p-3 text-xs text-slate-500 text-center">Nəticə tapılmadı</div>
                     ) : (
                       <div className="divide-y divide-[#222437]">
                         {doctorHits.length > 0 && (
                           <div className="p-2 space-y-1">
                             <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                              Doctors (/search/doctors)
+                              Həkimlər
                             </p>
                             {doctorHits.map((doc) => (
                               <button
@@ -325,7 +325,7 @@ export default function DashboardLayout() {
                                 }}
                                 className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#1b1c2b] text-xs text-slate-200 cursor-pointer"
                               >
-                                <div className="font-semibold text-white">{doc.fullName || `Doctor #${doc.id}`}</div>
+                                <div className="font-semibold text-white">{doc.fullName || `Həkim #${doc.id}`}</div>
                                 {doc.bio && <div className="text-[10px] text-slate-400 truncate">{doc.bio}</div>}
                               </button>
                             ))}
@@ -334,7 +334,7 @@ export default function DashboardLayout() {
                         {contentHits.length > 0 && (
                           <div className="p-2 space-y-1">
                             <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                              Content (/search/content)
+                              Məzmun
                             </p>
                             {contentHits.map((item) => {
                               const tLower = (item.type || '').toLowerCase()
@@ -343,6 +343,11 @@ export default function DashboardLayout() {
                                 : tLower.includes('meqale') || tLower.includes('article')
                                   ? `/org/meqale/${item.id}`
                                   : `/org/blogs/${item.id}`
+                              const typeLabel = tLower.includes('xeber') || tLower.includes('news')
+                                ? 'Xəbər'
+                                : tLower.includes('meqale') || tLower.includes('article')
+                                  ? 'Məqalə'
+                                  : 'Bloq'
                               return (
                                 <button
                                   key={`${item.type}-${item.id}`}
@@ -355,7 +360,7 @@ export default function DashboardLayout() {
                                   className="w-full text-left px-2 py-1.5 rounded-lg hover:bg-[#1b1c2b] text-xs text-slate-200 flex items-center justify-between gap-2 cursor-pointer"
                                 >
                                   <span className="truncate">{item.title}</span>
-                                  <span className="text-[10px] font-mono text-violet-300 shrink-0">{item.type}</span>
+                                  <span className="text-[10px] font-mono text-violet-300 shrink-0">{typeLabel}</span>
                                 </button>
                               )
                             })}
@@ -369,22 +374,16 @@ export default function DashboardLayout() {
             )}
           </div>
 
-
-
           {/* Right Section Details */}
           <div className="flex items-center gap-3 sm:gap-5 shrink-0">
-
-            {/* Language Selector Dropdown */}
-            <LanguageSelector />
-
             {/* User Avatar -> Profile */}
             <div className="flex items-center gap-3 pl-2 border-l border-[#202235]">
               <Link
                 to="/profile"
-                title="Account Profile & Security"
+                title="Hesab profili və təhlükəsizlik"
                 className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 border border-violet-500/50 flex items-center justify-center font-bold text-xs text-white shadow-[0_0_10px_rgba(139,92,246,0.3)] hover:scale-105 transition-transform"
               >
-                {profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'US'}
+                {profile?.name ? profile.name.substring(0, 2).toUpperCase() : 'İS'}
               </Link>
             </div>
           </div>

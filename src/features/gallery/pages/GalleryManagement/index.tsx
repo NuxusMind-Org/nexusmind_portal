@@ -24,6 +24,21 @@ import type { GalleryItemResponse, GalleryItemRequest, TitleDto } from '../../..
 import { ImageUploadInput } from '../../../../components/forms'
 import { getLocalizedTitle, createEmptyTitleDto, normalizeTitleDto, isTitleValid } from '../../../../utils/multilingual'
 
+const getGalleryCategoryLabel = (cat?: string) => {
+  switch (cat) {
+    case 'TERAPIYALAR':
+      return 'Terapiyalar'
+    case 'OTAQLAR':
+      return 'Otaqlar'
+    case 'TELIMLER':
+      return 'Təlimlər'
+    default:
+      return cat || 'Terapiyalar'
+  }
+}
+
+const getMediaTypeLabel = (type?: string) => (type === 'VIDEO' ? 'Video' : 'Şəkil')
+
 export default function GalleryManagement() {
   const navigate = useNavigate()
   const [items, setItems] = useState<GalleryItemResponse[]>([])
@@ -57,7 +72,7 @@ export default function GalleryManagement() {
       setItems(Array.isArray(data) ? data : (data as any)?.content || [])
     } catch (err) {
       console.error('Failed to fetch gallery items', err)
-      setError('Could not load gallery items.')
+      setError('Qalereya elementlərini yükləmək mümkün olmadı.')
     } finally {
       setIsLoading(false)
     }
@@ -95,7 +110,7 @@ export default function GalleryManagement() {
     if (!resolvedThumbnail) return
 
     setIsSaving(true)
-    const fallbackTitle = title.az.trim() || title.en.trim() || title.ru.trim() || 'Gallery Item'
+    const fallbackTitle = title.az.trim() || title.en.trim() || title.ru.trim() || 'Qalereya elementi'
     const completeTitle: TitleDto = {
       az: title.az.trim() || fallbackTitle,
       en: title.en.trim() || fallbackTitle,
@@ -127,14 +142,14 @@ export default function GalleryManagement() {
       fetchItems()
     } catch (err) {
       console.error('Failed to save gallery item', err)
-      alert('Failed to save gallery item. Please try again.')
+      alert('Qalereya elementini yadda saxlamaq mümkün olmadı. Zəhmət olmasa yenidən cəhd edin.')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this gallery item?')) return
+    if (!window.confirm('Bu qalereya elementini silmək istədiyinizdən əminsiniz?')) return
     try {
       await contentService.deleteGalleryItem(id)
       setItems(items.filter((item) => item.id !== id))
@@ -143,7 +158,7 @@ export default function GalleryManagement() {
       }
     } catch (err) {
       console.error('Failed to delete gallery item', err)
-      alert('Failed to delete gallery item.')
+      alert('Qalereya elementini silmək mümkün olmadı.')
     }
   }
 
@@ -187,10 +202,10 @@ export default function GalleryManagement() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <ImageIcon className="w-7 h-7 text-emerald-400" />
-            <span>Gallery & Media Management</span>
+            <span>Qalereya və Media İdarəetməsi</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Browse, preview, and manage facility photos, therapy rooms, session videos, and clinical media assets.
+            Mərkəzin fotolarını, terapiya otaqlarını, sessiya videolarını və media resurslarını idarə edin.
           </p>
         </div>
 
@@ -206,7 +221,7 @@ export default function GalleryManagement() {
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Media Showcase</span>
+              <span>Media Vitrini</span>
             </button>
             <button
               onClick={() => setViewMode('manager')}
@@ -217,7 +232,7 @@ export default function GalleryManagement() {
               }`}
             >
               <Filter className="w-3.5 h-3.5" />
-              <span>Asset Manager</span>
+              <span>Resurs Meneceri</span>
             </button>
           </div>
 
@@ -226,7 +241,7 @@ export default function GalleryManagement() {
             className="flex items-center justify-center gap-2 py-2.5 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.3)] transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Upload Asset</span>
+            <span>Resurs Yüklə</span>
           </button>
         </div>
       </div>
@@ -239,7 +254,7 @@ export default function GalleryManagement() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search gallery by title or category..."
+            placeholder="Başlıq və ya kateqoriyaya görə qalereyada axtar..."
             className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
@@ -258,7 +273,7 @@ export default function GalleryManagement() {
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                {cat === 'ALL' ? 'All Categories' : cat}
+                {cat === 'ALL' ? 'Bütün Kateqoriyalar' : getGalleryCategoryLabel(cat)}
               </button>
             ))}
           </div>
@@ -275,13 +290,13 @@ export default function GalleryManagement() {
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                {t === 'ALL' ? 'All Types' : t}
+                {t === 'ALL' ? 'Bütün Növlər' : getMediaTypeLabel(t)}
               </button>
             ))}
           </div>
 
           <div className="text-xs text-slate-400 font-semibold pl-2">
-            Items: <span className="text-white font-bold">{filteredItems.length}</span>
+            Elementlər: <span className="text-white font-bold">{filteredItems.length}</span>
           </div>
         </div>
       </div>
@@ -297,13 +312,13 @@ export default function GalleryManagement() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-emerald-400" />
-          <span className="text-xs font-semibold">Loading media assets...</span>
+          <span className="text-xs font-semibold">Media resursları yüklənir...</span>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl text-center text-slate-500 space-y-3">
           <ImageIcon className="w-12 h-12 mx-auto text-slate-600" />
-          <p className="text-sm font-semibold text-slate-400">No media assets found.</p>
-          <p className="text-xs">Click "Upload Asset" above to post your first photo or video.</p>
+          <p className="text-sm font-semibold text-slate-400">Heç bir media resursu tapılmadı.</p>
+          <p className="text-xs">İlk foto və ya videonu əlavə etmək üçün yuxarıdakı &quot;Resurs Yüklə&quot; düyməsinə klikləyin.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -323,24 +338,24 @@ export default function GalleryManagement() {
                   {displayImage ? (
                     <img
                       src={displayImage}
-                      alt={getLocalizedTitle(item.title) || 'Gallery item'}
+                      alt={getLocalizedTitle(item.title) || 'Qalereya elementi'}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-slate-600">
                       <ImageIcon className="w-8 h-8" />
-                      <span className="text-[10px] font-semibold uppercase">No Media File</span>
+                      <span className="text-[10px] font-semibold uppercase">Media Faylı Yoxdur</span>
                     </div>
                   )}
 
                   {/* Badges Overlay */}
                   <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
                     <span className="px-2 py-0.5 rounded-full bg-black/70 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider">
-                      {item.category || 'TERAPIYALAR'}
+                      {getGalleryCategoryLabel(item.category)}
                     </span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-600/90 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
                       {isVideo ? <Video className="w-2.5 h-2.5" /> : <ImageIcon className="w-2.5 h-2.5" />}
-                      <span>{item.mediaType || 'IMAGE'}</span>
+                      <span>{getMediaTypeLabel(item.mediaType)}</span>
                     </span>
                   </div>
 
@@ -356,10 +371,10 @@ export default function GalleryManagement() {
                 <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
                   <div>
                     <h3 className="text-xs font-bold text-white truncate group-hover:text-emerald-300 transition-colors">
-                      {getLocalizedTitle(item.title) || 'Untitled Asset'}
+                      {getLocalizedTitle(item.title) || 'Adsız Resurs'}
                     </h3>
                     <p className="text-[10px] text-slate-500 font-mono truncate mt-0.5">
-                      {item.mediaUrl || item.imageUrl || 'No URL'}
+                      {item.mediaUrl || item.imageUrl || 'URL yoxdur'}
                     </p>
                   </div>
 
@@ -370,15 +385,15 @@ export default function GalleryManagement() {
                         className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors cursor-pointer"
                       >
                         <Eye className="w-3 h-3" />
-                        <span>Inspect</span>
+                        <span>Bax</span>
                       </button>
                       <button
                         onClick={() => navigate(`/org/gallery/${item.id}`)}
                         className="text-[11px] font-medium text-slate-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
-                        title="Open Dedicated Asset Page"
+                        title="Resurs səhifəsini aç"
                       >
                         <ExternalLink className="w-3 h-3" />
-                        <span>Page</span>
+                        <span>Səhifə</span>
                       </button>
                     </div>
 
@@ -386,14 +401,14 @@ export default function GalleryManagement() {
                       <button
                         onClick={() => handleOpenEditModal(item)}
                         className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                        title="Edit Asset"
+                        title="Resursu redaktə et"
                       >
                         <Edit2 className="w-3 h-3" />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                        title="Delete Asset"
+                        title="Resursu sil"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -414,10 +429,10 @@ export default function GalleryManagement() {
             <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
               <div className="flex items-center gap-2.5">
                 <span className="px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold uppercase">
-                  {lightboxItem.category || 'TERAPIYALAR'}
+                  {getGalleryCategoryLabel(lightboxItem.category)}
                 </span>
                 <h3 className="text-sm font-bold text-white truncate max-w-md">
-                  {getLocalizedTitle(lightboxItem.title) || 'Media Asset Preview'}
+                  {getLocalizedTitle(lightboxItem.title) || 'Media Resursu Önizləməsi'}
                 </h3>
               </div>
 
@@ -425,17 +440,17 @@ export default function GalleryManagement() {
                 <button
                   onClick={() => handleCopyUrl(lightboxItem.mediaUrl || lightboxItem.imageUrl || '')}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
-                  title="Copy Media URL"
+                  title="Media URL-ini kopyala"
                 >
                   {copiedUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedUrl ? 'Copied!' : 'Copy URL'}</span>
+                  <span>{copiedUrl ? 'Kopyalandı!' : 'URL Kopyala'}</span>
                 </button>
                 <a
                   href={lightboxItem.mediaUrl || lightboxItem.imageUrl || ''}
                   target="_blank"
                   rel="noreferrer"
                   className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
-                  title="Open original in new tab"
+                  title="Orijinalı yeni pəncərədə aç"
                 >
                   <ExternalLink className="w-4 h-4" />
                 </a>
@@ -461,7 +476,7 @@ export default function GalleryManagement() {
               ) : (
                 <img
                   src={lightboxItem.mediaUrl || lightboxItem.imageUrl || lightboxItem.thumbnailUrl}
-                  alt={getLocalizedTitle(lightboxItem.title) || 'Full size'}
+                  alt={getLocalizedTitle(lightboxItem.title) || 'Tam ölçü'}
                   className="max-w-full max-h-[65vh] object-contain rounded-xl shadow-2xl"
                 />
               )}
@@ -471,7 +486,7 @@ export default function GalleryManagement() {
                 <button
                   onClick={handlePrevLightbox}
                   className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-all cursor-pointer shadow-lg"
-                  title="Previous Asset"
+                  title="Əvvəlki resurs"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -481,7 +496,7 @@ export default function GalleryManagement() {
                 <button
                   onClick={handleNextLightbox}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md transition-all cursor-pointer shadow-lg"
-                  title="Next Asset"
+                  title="Növbəti resurs"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -491,7 +506,7 @@ export default function GalleryManagement() {
             {/* Lightbox Footer Info */}
             <div className="p-4 border-t border-[#222437] bg-[#10111a] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
               <div className="space-y-0.5">
-                <p className="text-slate-300 font-semibold">{getLocalizedTitle(lightboxItem.title) || 'Untitled'}</p>
+                <p className="text-slate-300 font-semibold">{getLocalizedTitle(lightboxItem.title) || 'Adsız'}</p>
                 <p className="text-slate-500 font-mono text-[11px] truncate max-w-lg">
                   {lightboxItem.mediaUrl || lightboxItem.imageUrl}
                 </p>
@@ -507,7 +522,7 @@ export default function GalleryManagement() {
                   className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
-                  <span>Edit Asset</span>
+                  <span>Redaktə Et</span>
                 </button>
               </div>
             </div>
@@ -522,7 +537,7 @@ export default function GalleryManagement() {
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
                 <ImageIcon className="w-6 h-6 text-emerald-400" />
-                <span>{editingItem ? 'Edit Gallery Asset (PUT)' : 'Upload Gallery Asset (POST)'}</span>
+                <span>{editingItem ? 'Qalereya Resursunu Redaktə Et' : 'Yeni Qalereya Resursu Yüklə'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -535,8 +550,8 @@ export default function GalleryManagement() {
             <form onSubmit={handleSave} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                  Title (title)
-                  <span className="text-[10px] text-emerald-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  Başlıq
+                  <span className="text-[10px] text-emerald-400 font-mono ml-1">(AZ / EN / RU)</span>
                 </label>
                 {(['az', 'en', 'ru'] as const).map((lang) => (
                   <div key={lang} className="flex items-center gap-2">
@@ -545,7 +560,7 @@ export default function GalleryManagement() {
                       type="text"
                       value={title[lang]}
                       onChange={(e) => setTitle({ ...title, [lang]: e.target.value })}
-                      placeholder={`e.g. Individual Therapy Room 102 (${lang})`}
+                      placeholder={`məs. Fərdi Terapiya Otağı 102 (${lang.toUpperCase()})`}
                       className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                     />
                   </div>
@@ -554,8 +569,8 @@ export default function GalleryManagement() {
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                  Alt Text (altText)
-                  <span className="text-[10px] text-emerald-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  Alternativ Mətn (Alt)
+                  <span className="text-[10px] text-emerald-400 font-mono ml-1">(AZ / EN / RU)</span>
                 </label>
                 {(['az', 'en', 'ru'] as const).map((lang) => (
                   <div key={lang} className="flex items-center gap-2">
@@ -564,7 +579,7 @@ export default function GalleryManagement() {
                       type="text"
                       value={altText[lang]}
                       onChange={(e) => setAltText({ ...altText, [lang]: e.target.value })}
-                      placeholder={`Image alt text for accessibility (${lang})`}
+                      placeholder={`Əlçatanlıq üçün şəkil təsviri (${lang.toUpperCase()})`}
                       className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                     />
                   </div>
@@ -573,48 +588,48 @@ export default function GalleryManagement() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Media Type (mediaType)</label>
+                  <label className="text-sm font-semibold text-slate-200">Media Növü</label>
                   <select
                     value={mediaType}
                     onChange={(e) => setMediaType(e.target.value as any)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                   >
-                    <option value="IMAGE">IMAGE</option>
-                    <option value="VIDEO">VIDEO</option>
+                    <option value="IMAGE">Şəkil</option>
+                    <option value="VIDEO">Video</option>
                   </select>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Category (category)</label>
+                  <label className="text-sm font-semibold text-slate-200">Kateqoriya</label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                   >
-                    <option value="TERAPIYALAR">TERAPIYALAR</option>
-                    <option value="OTAQLAR">OTAQLAR</option>
-                    <option value="TELIMLER">TELIMLER</option>
+                    <option value="TERAPIYALAR">Terapiyalar</option>
+                    <option value="OTAQLAR">Otaqlar</option>
+                    <option value="TELIMLER">Təlimlər</option>
                   </select>
                 </div>
               </div>
 
               <ImageUploadInput
-                label="Media Asset * (mediaUrl / imageUrl)"
+                label="Media Faylı *"
                 value={mediaUrl}
                 onChange={setMediaUrl}
                 folder="gallery"
                 accentColor="emerald"
                 required
-                placeholder="https://example.com/media.jpg or upload media file"
+                placeholder="https://... və ya media faylı yükləyin"
               />
 
               <ImageUploadInput
-                label="Thumbnail Asset (thumbnailUrl)"
+                label="Önizləmə Şəkli"
                 value={thumbnailUrl}
                 onChange={setThumbnailUrl}
                 folder="gallery"
                 accentColor="emerald"
-                placeholder="https://example.com/thumbnail.jpg or upload thumbnail"
+                placeholder="https://... və ya önizləmə şəkli yükləyin"
               />
 
               <div className="flex justify-end gap-3.5 pt-4 border-t border-[#2e3146]">
@@ -623,7 +638,7 @@ export default function GalleryManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  Ləğv et
                 </button>
                 <button
                   type="submit"
@@ -631,7 +646,7 @@ export default function GalleryManagement() {
                   className="px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(16,185,129,0.3)] disabled:opacity-50"
                 >
                   {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Save Asset (POST)'}</span>
+                  <span>{editingItem ? 'Dəyişiklikləri Yadda Saxla' : 'Resursu Yadda Saxla'}</span>
                 </button>
               </div>
             </form>

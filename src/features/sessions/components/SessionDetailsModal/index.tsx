@@ -106,6 +106,19 @@ export default function SessionDetailsModal({
 
   if (!isOpen || !session) return null
 
+  const getStatusLabel = (status: Session['status']) => {
+    switch (status) {
+      case 'Completed':
+        return 'Tamamlandı'
+      case 'Waiting':
+        return 'Gözləyir'
+      case 'Cancelled':
+        return 'Ləğv edilib'
+      default:
+        return 'Planlaşdırılıb'
+    }
+  }
+
   const getPriorityStyles = (status: Session['status']) => {
     switch (status) {
       case 'Completed':
@@ -132,7 +145,7 @@ export default function SessionDetailsModal({
         {/* Close Button */}
         <button
           onClick={onClose}
-          title="Close"
+          title="Bağla"
           className="absolute top-4 right-4 p-2.5 bg-[#1b1c2b] border border-[#2e3146] hover:border-slate-500 text-slate-400 hover:text-white rounded-lg transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
@@ -141,12 +154,10 @@ export default function SessionDetailsModal({
         {/* Modal Title */}
         <div>
           <h3 className="text-lg font-bold text-white tracking-wide">
-            {t('sessions.overview', { defaultValue: 'Session Overview' })}
+            {t('sessions.overview')}
           </h3>
           <p className="text-xs text-slate-500 font-semibold mt-0.5">
-            {t('sessions.reviewConfig', {
-              defaultValue: 'Review clinical schedule configuration & details',
-            })}
+            {t('sessions.reviewConfig')}
           </p>
         </div>
 
@@ -171,7 +182,7 @@ export default function SessionDetailsModal({
         {/* Delivery Method Accent Block */}
         <div className="space-y-2">
           <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest block">
-            {t('sessions.deliveryChannel', { defaultValue: 'Delivery Channel' })}
+            {t('sessions.deliveryChannel')}
           </span>
 
           {session.deliveryMethod === 'VR Session' ? (
@@ -179,13 +190,10 @@ export default function SessionDetailsModal({
               <Eye className="w-5 h-5 text-violet-400 shrink-0 mt-0.5" />
               <div>
                 <h5 className="font-bold text-white text-xs uppercase tracking-wider">
-                  {t('sessions.vrExposure', { defaultValue: 'VR Exposure Therapy' })}
+                  {t('sessions.vrExposure')}
                 </h5>
                 <p className="text-[10px] text-slate-400 font-semibold mt-1 leading-normal">
-                  {t('sessions.vrDescription', {
-                    defaultValue:
-                      'Conducting active virtual reality session. Headset synchronization and environment loading required prior to session launch.',
-                  })}
+                  {t('sessions.vrDescription')}
                 </p>
               </div>
             </div>
@@ -194,13 +202,10 @@ export default function SessionDetailsModal({
               <Video className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
               <div>
                 <h5 className="font-bold text-white text-xs uppercase tracking-wider">
-                  {t('sessions.onlineCall', { defaultValue: 'Online Video Call' })}
+                  {t('sessions.onlineCall')}
                 </h5>
                 <p className="text-[10px] text-slate-400 font-semibold mt-1 leading-normal">
-                  {t('sessions.onlineDescription', {
-                    defaultValue:
-                      'Conducting secure standard browser-based telehealth video call. Stable camera and microphone permissions are required.',
-                  })}
+                  {t('sessions.onlineDescription')}
                 </p>
               </div>
             </div>
@@ -211,7 +216,7 @@ export default function SessionDetailsModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs font-semibold text-slate-400">
           <div className="space-y-1 bg-[#1b1c2b]/30 p-3 rounded-lg border border-[#222437]/50">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-              {t('sessions.scheduledTime', { defaultValue: 'Scheduled Time' })}
+              {t('sessions.scheduledTime')}
             </span>
             <div className="flex items-center gap-1.5 text-slate-200 mt-1">
               <Clock className="w-3.5 h-3.5 text-slate-500" />
@@ -221,7 +226,7 @@ export default function SessionDetailsModal({
 
           <div className="space-y-1 bg-[#1b1c2b]/30 p-3 rounded-lg border border-[#222437]/50">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block">
-              {t('sessions.scheduledDate', { defaultValue: 'Scheduled Date' })}
+              {t('sessions.scheduledDate')}
             </span>
             <div className="flex items-center gap-1.5 text-slate-200 mt-1">
               <Calendar className="w-3.5 h-3.5 text-slate-500" />
@@ -235,7 +240,7 @@ export default function SessionDetailsModal({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-slate-300 font-bold text-xs uppercase tracking-wider">
               <FileText className="w-3.5 h-3.5 text-violet-400" />
-              <span>Clinical Session Notes (SOAP)</span>
+              <span>Klinik Sessiya Qeydləri (SOAP)</span>
             </div>
             {!isEditingNotes && (
               <button
@@ -267,42 +272,42 @@ export default function SessionDetailsModal({
           {isLoadingNotes ? (
             <div className="p-3 rounded-lg flex items-center justify-center gap-2 text-xs text-slate-400">
               <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
-              <span>Loading clinical notes...</span>
+              <span>Klinik qeydlər yüklənir...</span>
             </div>
           ) : isEditingNotes ? (
             <div className="space-y-3 pt-2">
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Subjective (S)
+                  Subyektiv (S)
                 </label>
                 <textarea
                   value={noteSubjective}
                   onChange={(e) => setNoteSubjective(e.target.value)}
-                  placeholder="Patient reports / complaints..."
+                  placeholder="Pasiyentin şikayətləri və bildirdikləri..."
                   rows={2}
                   className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
                 />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Objective (O)
+                  Obyektiv (O)
                 </label>
                 <textarea
                   value={noteObjective}
                   onChange={(e) => setNoteObjective(e.target.value)}
-                  placeholder="Clinical observations, vital signs..."
+                  placeholder="Klinik müşahidələr, əsas göstəricilər..."
                   rows={2}
                   className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
                 />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                  Assessment (A)
+                  Qiymətləndirmə (A)
                 </label>
                 <textarea
                   value={noteAssessment}
                   onChange={(e) => setNoteAssessment(e.target.value)}
-                  placeholder="Analysis, progress, diagnosis..."
+                  placeholder="Təhlil, irəliləyiş, diaqnoz..."
                   rows={2}
                   className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
                 />
@@ -314,7 +319,7 @@ export default function SessionDetailsModal({
                 <textarea
                   value={notePlan}
                   onChange={(e) => setNotePlan(e.target.value)}
-                  placeholder="Treatment plan, interventions, next appointment..."
+                  placeholder="Müalicə planı, müdaxilələr, növbəti görüş..."
                   rows={2}
                   className="w-full bg-[#141521] border border-[#2e3146] focus:border-violet-500 rounded p-2 text-xs text-slate-200 focus:outline-none"
                 />
@@ -375,14 +380,14 @@ export default function SessionDetailsModal({
         {/* Status indicator row */}
         <div className="flex items-center justify-between text-xs font-semibold">
           <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-            {t('sessions.appointmentStatus', { defaultValue: 'Appointment Status' })}
+            {t('sessions.appointmentStatus')}
           </span>
           <span
             className={`text-[10px] font-bold border px-3 py-1 rounded-full uppercase tracking-wider ${getPriorityStyles(
               session.status
             )}`}
           >
-            {session.status}
+            {getStatusLabel(session.status)}
           </span>
         </div>
 
@@ -392,9 +397,7 @@ export default function SessionDetailsModal({
             <div className="flex items-center gap-1.5 p-3 bg-rose-500/5 text-rose-400 rounded-xl border border-rose-500/10 text-xs leading-relaxed">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>
-                {t('sessions.sessionCancelled', {
-                  defaultValue: 'This session was cancelled and cannot be started.',
-                })}
+                {t('sessions.sessionCancelled')}
               </span>
             </div>
           ) : session.status === 'Waiting' ? (
@@ -406,7 +409,7 @@ export default function SessionDetailsModal({
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
             >
               <Video className="w-3.5 h-3.5 text-white" />
-              <span>{t('sessions.joinRoom', { defaultValue: 'Join Telehealth Room' })}</span>
+              <span>{t('sessions.joinRoom')}</span>
             </button>
           ) : session.status === 'Scheduled' ? (
             <button
@@ -417,15 +420,13 @@ export default function SessionDetailsModal({
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_12px_rgba(16,185,129,0.25)] flex items-center justify-center gap-1.5"
             >
               <Video className="w-3.5 h-3.5 text-white" />
-              <span>{t('sessions.joinRoom', { defaultValue: 'Otağa Qoşul' })}</span>
+              <span>{t('sessions.joinRoom')}</span>
             </button>
           ) : (
             <div className="flex items-center gap-1.5 p-3 bg-emerald-500/5 text-emerald-400 rounded-xl border border-emerald-500/10 text-xs leading-relaxed">
               <AlertCircle className="w-4 h-4 shrink-0 text-emerald-500" />
               <span>
-                {t('sessions.sessionCompleted', {
-                  defaultValue: 'This session has been completed.',
-                })}
+                {t('sessions.sessionCompleted')}
               </span>
             </div>
           )}

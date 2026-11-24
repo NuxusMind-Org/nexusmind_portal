@@ -49,10 +49,22 @@ const PRIORITY_STYLES: Record<Priority, string> = {
   Normal: 'bg-slate-700/40 text-slate-400 border-slate-600/20',
 }
 
+const PRIORITY_LABELS: Record<Priority, string> = {
+  High: 'Yüksək',
+  Medium: 'Orta',
+  Normal: 'Normal',
+}
+
 const STATUS_STYLES: Record<PatientStatus, string> = {
   Active: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   Inactive: 'bg-slate-700/40 text-slate-400 border-slate-600/20',
   Discharged: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+}
+
+const STATUS_LABELS: Record<PatientStatus, string> = {
+  Active: 'Aktiv',
+  Inactive: 'Deaktiv',
+  Discharged: 'Tamamlanmış',
 }
 
 function MoodBadge({ mood }: { mood?: string }) {
@@ -62,7 +74,7 @@ function MoodBadge({ mood }: { mood?: string }) {
     return (
       <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold flex items-center gap-1 w-fit">
         <Smile className="w-3 h-3" />
-        <span>Happy</span>
+        <span>Şən</span>
       </span>
     )
   }
@@ -70,7 +82,7 @@ function MoodBadge({ mood }: { mood?: string }) {
     return (
       <span className="px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-bold flex items-center gap-1 w-fit">
         <Frown className="w-3 h-3" />
-        <span>Sad</span>
+        <span>Kədərli</span>
       </span>
     )
   }
@@ -78,7 +90,7 @@ function MoodBadge({ mood }: { mood?: string }) {
     return (
       <span className="px-2 py-0.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-400 text-[10px] font-bold flex items-center gap-1 w-fit">
         <Sun className="w-3 h-3" />
-        <span>Calm</span>
+        <span>Sakit</span>
       </span>
     )
   }
@@ -86,7 +98,7 @@ function MoodBadge({ mood }: { mood?: string }) {
     return (
       <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold flex items-center gap-1 w-fit">
         <Meh className="w-3 h-3" />
-        <span>Tired</span>
+        <span>Yorğun</span>
       </span>
     )
   }
@@ -100,7 +112,6 @@ function MoodBadge({ mood }: { mood?: string }) {
 export default function OrgPatientsList() {
   const profile = useUserStore((state) => state.profile)
   const isPlatformAdmin = profile?.role === 'platform_admin'
-  const endpointLabel = isPlatformAdmin ? 'GET /nexusmind/patients' : 'GET /bpm/patients'
 
   const [patients, setPatients] = useState<OrgPatient[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -122,7 +133,7 @@ export default function OrgPatientsList() {
         const entity = raw as PasientRegisterEntity
         const dto = raw as PatientDto
         const combinedName = [entity.name, entity.surname].filter(Boolean).join(' ').trim()
-        const rawName = combinedName || dto.fullName || `Patient #${raw.id}`
+        const rawName = combinedName || dto.fullName || `Pasiyent #${raw.id}`
         const initials = rawName
           .split(' ')
           .map((n) => n[0])
@@ -155,13 +166,13 @@ export default function OrgPatientsList() {
               ? 'İşçi'
               : entity.status === 'DIGER'
                 ? 'Digər'
-                : dto.treatmentTag || 'Patient'
+                : dto.treatmentTag || 'Pasiyent'
 
         return {
           id: String(raw.id),
           name: rawName,
-          email: raw.email || 'N/A',
-          phone: raw.phone || 'N/A',
+          email: raw.email || '—',
+          phone: raw.phone || '—',
           avatarInitials: initials || 'PT',
           avatarColor,
           status: statusLabel,
@@ -169,7 +180,7 @@ export default function OrgPatientsList() {
           treatmentTag: statusTag,
           assignedPsychologist:
             dto.assignedPsychologist ||
-            (entity.age ? `Age ${entity.age} • ${statusTag}` : statusTag),
+            (entity.age ? `Yaş ${entity.age} • ${statusTag}` : statusTag),
           mood: raw.mood,
           gender: dto.gender,
           birthDate: dto.birthDate,
@@ -185,8 +196,8 @@ export default function OrgPatientsList() {
 
       setPatients(mapped)
     } catch (err) {
-      console.error(`Failed to fetch patients from ${endpointLabel}`, err)
-      setError(`Could not load patients from ${endpointLabel}.`)
+      console.error('Failed to fetch patients', err)
+      setError('Pasiyent siyahısı yüklənə bilmədi.')
     } finally {
       setIsLoading(false)
     }
@@ -236,15 +247,12 @@ export default function OrgPatientsList() {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                <span>Patients & Clients Directory</span>
-                <span className="px-2 py-0.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-[10px] font-mono">
-                  {endpointLabel}
-                </span>
+                <span>Pasiyentlər və Müştərilər Kataloqu</span>
               </h1>
               <p className="text-xs text-slate-400 mt-0.5">
                 {isPlatformAdmin
-                  ? 'Platform-wide registered patient records managed by NexusMind Super Admin.'
-                  : 'BPM Organization patient records, registered therapy clients, and assigned treatment plans.'}
+                  ? 'NexusMind Super Admin tərəfindən idarə olunan platforma üzrə qeydiyyatlı pasiyent qeydləri.'
+                  : 'BPM təşkilatının pasiyent qeydləri, terapiya müştəriləri və təyin edilmiş müalicə planları.'}
               </p>
             </div>
           </div>
@@ -255,10 +263,10 @@ export default function OrgPatientsList() {
             onClick={fetchPatients}
             disabled={isLoading}
             className="flex items-center gap-1.5 px-3 py-2 bg-[#141521] hover:bg-[#1b1c2b] border border-[#2e3146] text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition-all cursor-pointer"
-            title="Refresh list"
+            title="Siyahını yenilə"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-teal-400' : ''}`} />
-            <span>Refresh</span>
+            <span>Yenilə</span>
           </button>
         </div>
       </div>
@@ -273,10 +281,10 @@ export default function OrgPatientsList() {
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Total Patients', value: stats.total, icon: Users, color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
-          { label: 'Active Treatments', value: stats.active, icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-          { label: 'High Priority', value: stats.highPriority, icon: ShieldCheck, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20' },
-          { label: 'Total Completed Sessions', value: stats.totalSessions, icon: TrendingUp, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
+          { label: 'Ümumi Pasiyentlər', value: stats.total, icon: Users, color: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/20' },
+          { label: 'Aktiv Müalicələr', value: stats.active, icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
+          { label: 'Yüksək Prioritet', value: stats.highPriority, icon: ShieldCheck, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20' },
+          { label: 'Tamamlanmış Sessiyalar', value: stats.totalSessions, icon: TrendingUp, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="bg-[#141521] border border-[#222437] rounded-2xl p-4 flex items-center gap-3 shadow-sm">
             <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${bg}`}>
@@ -299,7 +307,7 @@ export default function OrgPatientsList() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by patient name, email, phone, or address…"
+            placeholder="Pasiyent adı, e-poçt, telefon və ya ünvana görə axtarın…"
             className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 transition-colors"
           />
         </div>
@@ -311,10 +319,10 @@ export default function OrgPatientsList() {
             onChange={(e) => setStatusFilter(e.target.value as PatientStatus | 'All')}
             className="appearance-none pl-3 pr-8 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-300 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer"
           >
-            <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-            <option value="Discharged">Discharged</option>
+            <option value="All">Bütün Statuslar</option>
+            <option value="Active">Aktiv</option>
+            <option value="Inactive">Deaktiv</option>
+            <option value="Discharged">Tamamlanmış</option>
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
         </div>
@@ -326,9 +334,9 @@ export default function OrgPatientsList() {
             onChange={(e) => setPriorityFilter(e.target.value as Priority | 'All')}
             className="appearance-none pl-3 pr-8 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-300 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer"
           >
-            <option value="All">All Priorities</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
+            <option value="All">Bütün Prioritetlər</option>
+            <option value="High">Yüksək</option>
+            <option value="Medium">Orta</option>
             <option value="Normal">Normal</option>
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
@@ -342,7 +350,7 @@ export default function OrgPatientsList() {
             className="appearance-none pl-3 pr-8 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-xs text-slate-300 focus:outline-none focus:border-teal-500 transition-colors cursor-pointer max-w-[200px]"
           >
             {allPsychs.map((p) => (
-              <option key={p} value={p}>{p === 'All' ? 'All Psychologists' : p}</option>
+              <option key={p} value={p}>{p === 'All' ? 'Bütün Psixoloqlar' : p}</option>
             ))}
           </select>
           <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
@@ -353,13 +361,13 @@ export default function OrgPatientsList() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-2xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-teal-400" />
-          <span className="text-xs font-semibold">Loading patient directory from {endpointLabel}...</span>
+          <span className="text-xs font-semibold">Pasiyent kataloqu yüklənir...</span>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 bg-[#141521] border border-[#222437] rounded-2xl text-center">
           <Users className="w-12 h-12 text-slate-600 mb-3" />
-          <p className="text-sm font-bold text-slate-300">No patients found</p>
-          <p className="text-xs text-slate-500 mt-1">Try adjusting your search criteria or filters.</p>
+          <p className="text-sm font-bold text-slate-300">Pasiyent tapılmadı</p>
+          <p className="text-xs text-slate-500 mt-1">Axtarış meyarlarını və ya filtrləri dəyişdirin.</p>
         </div>
       ) : (
         <div className="bg-[#141521] border border-[#222437] rounded-2xl overflow-hidden shadow-md">
@@ -367,14 +375,14 @@ export default function OrgPatientsList() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                  <th className="py-3.5 px-4">Patient</th>
-                  <th className="py-3.5 px-4">Contact</th>
+                  <th className="py-3.5 px-4">Pasiyent</th>
+                  <th className="py-3.5 px-4">Əlaqə</th>
                   <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Priority</th>
-                  <th className="py-3.5 px-4">Mood State</th>
-                  <th className="py-3.5 px-4">Assigned Staff</th>
-                  <th className="py-3.5 px-4">Sessions</th>
-                  <th className="py-3.5 px-4">Registration</th>
+                  <th className="py-3.5 px-4">Prioritet</th>
+                  <th className="py-3.5 px-4">Əhval-ruhiyyə</th>
+                  <th className="py-3.5 px-4">Təyin Edilmiş Heyət</th>
+                  <th className="py-3.5 px-4">Sessiyalar</th>
+                  <th className="py-3.5 px-4">Qeydiyyat</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#222437] text-slate-300">
@@ -401,7 +409,7 @@ export default function OrgPatientsList() {
                         <Mail className="w-3 h-3 text-slate-500" />
                         <span className="font-mono text-[11px]">{patient.email}</span>
                       </div>
-                      {patient.phone !== 'N/A' && (
+                      {patient.phone !== '—' && (
                         <div className="flex items-center gap-1.5 text-slate-400">
                           <Phone className="w-3 h-3 text-slate-500" />
                           <span className="font-mono text-[10px]">{patient.phone}</span>
@@ -412,14 +420,14 @@ export default function OrgPatientsList() {
                     {/* Status */}
                     <td className="py-3.5 px-4">
                       <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${STATUS_STYLES[patient.status] || STATUS_STYLES.Active}`}>
-                        {patient.status}
+                        {STATUS_LABELS[patient.status] || patient.status}
                       </span>
                     </td>
 
                     {/* Priority */}
                     <td className="py-3.5 px-4">
                       <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider ${PRIORITY_STYLES[patient.priority] || PRIORITY_STYLES.Normal}`}>
-                        {patient.priority}
+                        {PRIORITY_LABELS[patient.priority] || patient.priority}
                       </span>
                     </td>
 
@@ -438,7 +446,7 @@ export default function OrgPatientsList() {
                     {/* Total Sessions */}
                     <td className="py-3.5 px-4">
                       <span className="font-bold text-white">{patient.sessionsTotal}</span>
-                      <span className="text-slate-500 text-[10px] ml-1">sessions</span>
+                      <span className="text-slate-500 text-[10px] ml-1">sessiya</span>
                     </td>
 
                     {/* Registered Date */}

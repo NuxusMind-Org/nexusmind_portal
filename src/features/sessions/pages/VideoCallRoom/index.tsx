@@ -183,7 +183,7 @@ export default function VideoCallRoom() {
       } catch (err: unknown) {
         console.error('Failed to initialize video call session:', err)
         if (isMounted) {
-          setErrorMsg('Failed to initialize session. Please check your network and try again.')
+          setErrorMsg('Sessiyanı başlatmaq mümkün olmadı. Zəhmət olmasa şəbəkə bağlantınızı yoxlayın və yenidən cəhd edin.')
         }
       } finally {
         if (isMounted) {
@@ -225,9 +225,9 @@ export default function VideoCallRoom() {
 
     const outgoing: InCallChatMessage = {
       id: `self_${Date.now()}`,
-      sender: profile?.name || 'Psychologist',
+      sender: profile?.name || 'Psixoloq',
       text: chatInput.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit', hour12: false }),
       isSelf: true,
     }
 
@@ -324,7 +324,7 @@ export default function VideoCallRoom() {
     }
   }
 
-  const patientName = appointment?.patientName || 'Patient'
+  const patientName = appointment?.patientName || 'Pasiyent'
   const patientInitials = patientName
     .split(' ')
     .map((n) => n[0])
@@ -433,7 +433,7 @@ export default function VideoCallRoom() {
           <button
             onClick={() => navigate('/psy/sessions')}
             className="p-2 bg-[#1b1c2b] hover:bg-[#25283e] border border-[#2e3146] text-slate-300 hover:text-white rounded-xl transition-all cursor-pointer shrink-0"
-            title="Back to Sessions"
+            title="Sessiyalara qayıt"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
@@ -444,12 +444,12 @@ export default function VideoCallRoom() {
                 {patientName}
               </h2>
               <span className="hidden xs:inline-flex px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider uppercase bg-purple-500/10 text-purple-400 border border-purple-500/20 whitespace-nowrap">
-                {appointment?.mode === 'VR' ? 'VR' : 'Online Video Call'}
+                {appointment?.mode === 'VR' ? 'VR' : 'Onlayn Video Zəng'}
               </span>
             </div>
             <p className="hidden sm:flex text-[11px] text-slate-400 font-semibold items-center gap-1.5 mt-0.5">
               <Shield className="w-3 h-3 text-emerald-400" />
-              <span>HIPAA Compliant End-to-End Encrypted Telehealth</span>
+              <span>HIPAA uyğun başdan-başa şifrələnmiş teletibbi zəng</span>
             </p>
           </div>
         </div>
@@ -463,7 +463,7 @@ export default function VideoCallRoom() {
               }`}
             ></span>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-              {isConnected ? 'LIVE • Connected' : isConnecting ? 'Connecting...' : 'Room Ready'}
+              {isConnected ? 'CANLI • Qoşulub' : isConnecting ? 'Qoşulur...' : 'Otaq Hazırdır'}
             </span>
           </div>
           <span className="text-slate-600">|</span>
@@ -560,7 +560,7 @@ export default function VideoCallRoom() {
               <LiveKitCallStage
                 token={joinToken}
                 serverUrl={livekitServerUrl}
-                doctorName={profile?.name || 'Psychologist'}
+                doctorName={profile?.name || 'Psixoloq'}
                 onDisconnected={handleLiveKitDisconnected}
                 onStateChange={handleLiveKitStateChange}
                 onChatMessage={handleIncomingChatMessage}
@@ -612,7 +612,7 @@ export default function VideoCallRoom() {
                     ? 'bg-[#1b1c2b] hover:bg-[#25283e] text-slate-200'
                     : 'bg-rose-600/20 border border-rose-500/30 text-rose-400'
                 }`}
-                title={isMicEnabled ? 'Mute Mic' : 'Unmute Mic'}
+                title={isMicEnabled ? 'Mikrofonu söndür' : 'Mikrofonu aç'}
               >
                 {isMicEnabled ? <Mic className="w-4 h-4 sm:w-5 sm:h-5" /> : <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
@@ -625,7 +625,7 @@ export default function VideoCallRoom() {
                     ? 'bg-[#1b1c2b] hover:bg-[#25283e] text-slate-200'
                     : 'bg-rose-600/20 border border-rose-500/30 text-rose-400'
                 }`}
-                title={isCameraEnabled ? 'Turn Off Camera' : 'Turn On Camera'}
+                title={isCameraEnabled ? 'Kameranı söndür' : 'Kameranı aç'}
               >
                 {isCameraEnabled ? <VideoIcon className="w-4 h-4 sm:w-5 sm:h-5" /> : <VideoOff className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
@@ -638,7 +638,7 @@ export default function VideoCallRoom() {
                     ? 'bg-violet-600 text-white shadow-[0_0_12px_rgba(124,58,237,0.5)]'
                     : 'bg-[#1b1c2b] hover:bg-[#25283e] text-slate-200'
                 }`}
-                title="Share Screen"
+                title="Ekranı paylaş"
               >
                 <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -750,7 +750,7 @@ export default function VideoCallRoom() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Sessiyaya Dəvət Linki</h3>
-                  <p className="text-[11px] text-slate-400">POST /api/calls/{sessionId}/invite</p>
+                  <p className="text-[11px] text-slate-400">Sessiya #{sessionId}</p>
                 </div>
               </div>
               <button
@@ -857,7 +857,7 @@ export default function VideoCallRoom() {
             <div className="text-center space-y-1">
               <h3 className="text-base font-bold text-white">Sessiyanı yekunlaşdırmaq istəyirsiniz?</h3>
               <p className="text-xs text-slate-400">
-                Sessiya bitirildikdə görüş statusu avtomatik olaraq <strong>Tamamlandı (COMPLETED)</strong> kimi qeyd ediləcək.
+                Sessiya bitirildikdə görüş statusu avtomatik olaraq <strong>Tamamlandı</strong> kimi qeyd ediləcək.
               </p>
             </div>
 

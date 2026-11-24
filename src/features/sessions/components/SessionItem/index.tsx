@@ -12,6 +12,19 @@ interface SessionItemProps {
 export default function SessionItem({ session, onJoinRoom, onCancelSession, onViewDetails }: SessionItemProps) {
   const { t } = useTranslation()
 
+  const getStatusLabel = (status: Session['status']) => {
+    switch (status) {
+      case 'Completed':
+        return 'Tamamlandı'
+      case 'Waiting':
+        return 'Gözləyir'
+      case 'Cancelled':
+        return 'Ləğv edilib'
+      default:
+        return 'Planlaşdırılıb'
+    }
+  }
+
   const getStatusStyles = (status: Session['status']) => {
     switch (status) {
       case 'Completed':
@@ -60,7 +73,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
           {session.status === 'Waiting' && (
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           )}
-          {session.status}
+          {getStatusLabel(session.status)}
         </span>
       </div>
 
@@ -75,7 +88,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
             className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-[0_4px_10px_rgba(16,185,129,0.15)]"
           >
             <Video className="w-3.5 h-3.5 text-white" />
-            <span>{t('sessions.joinRoom', { defaultValue: 'Otağa Qoşul' })}</span>
+            <span>{t('sessions.joinRoom')}</span>
           </button>
         )}
         
@@ -88,7 +101,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
             className="flex items-center gap-1.5 px-3 py-2 bg-[#1b1c2b] hover:bg-[#202237] border border-[#2e3146] text-slate-300 hover:text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5 text-slate-400" />
-            <span>{t('sessions.reviewSummary', { defaultValue: 'Xülasəyə Bax' })}</span>
+            <span>{t('sessions.reviewSummary')}</span>
           </button>
         )}
 
@@ -99,8 +112,8 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
               onCancelSession?.(session.id)
             }}
             className="p-2.5 bg-[#1b1c2b] hover:bg-rose-500/10 border border-[#2e3146] hover:border-rose-500/30 text-slate-400 hover:text-rose-400 rounded-lg transition-all cursor-pointer"
-            title="Cancel Session"
-            aria-label="Cancel Session"
+            title="Sessiyanı ləğv et"
+            aria-label="Sessiyanı ləğv et"
           >
             <Ban className="w-4 h-4" />
           </button>

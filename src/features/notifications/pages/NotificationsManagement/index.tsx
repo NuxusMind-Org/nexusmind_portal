@@ -110,7 +110,7 @@ export default function NotificationsManagement() {
       setHistory((prev) => [{ ...res, to: to.trim() }, ...prev].slice(0, 15))
     } catch (err) {
       console.error('Failed to send email notification:', err)
-      setError('Failed to send notification via POST /api/notifications/email.')
+      setError('E-poçt bildirişi göndərilə bilmədi.')
     } finally {
       setIsSending(false)
     }
@@ -124,13 +124,10 @@ export default function NotificationsManagement() {
         </div>
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-            <span>Email Notifications</span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-mono">
-              /api/notifications/*
-            </span>
+            <span>E-poçt Bildirişləri</span>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
-            Trigger templated email notifications using backend notification templates.
+            Sistem bildiriş şablonlarından istifadə edərək e-poçt bildirişləri göndərin.
           </p>
         </div>
       </div>
@@ -144,10 +141,10 @@ export default function NotificationsManagement() {
           <div className="flex items-center justify-between border-b border-[#222437] pb-3">
             <h2 className="text-sm font-bold text-white flex items-center gap-2">
               <Mail className="w-4 h-4 text-amber-400" />
-              <span>Compose Templated Email</span>
+              <span>Şablon E-poçt Hazırla</span>
             </h2>
             <span className="text-[10px] font-mono text-slate-500">
-              {isLoadingTemplates ? 'Loading templates...' : `${templates.length} templates`}
+              {isLoadingTemplates ? 'Şablonlar yüklənir...' : `${templates.length} şablon`}
             </span>
           </div>
 
@@ -162,25 +159,25 @@ export default function NotificationsManagement() {
             <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>
-                {result.message || 'Notification sent'} ({result.template}) at {result.sentAt}
+                {result.message || 'Bildiriş göndərildi'} ({result.template}) — {result.sentAt}
               </span>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-300">Recipient Email (to) *</label>
+            <label className="text-xs font-bold text-slate-300">Alıcı E-poçt Ünvanı *</label>
             <input
               type="email"
               required
               value={to}
               onChange={(e) => setTo(e.target.value)}
-              placeholder="patient@example.com"
+              placeholder="pasiyent@example.com"
               className="w-full px-3.5 py-2.5 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-300">Template (EmailTemplate) *</label>
+            <label className="text-xs font-bold text-slate-300">Bildiriş Şablonu *</label>
             <select
               value={template}
               onChange={(e) => setTemplate(e.target.value as EmailTemplate)}
@@ -196,14 +193,14 @@ export default function NotificationsManagement() {
 
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-300">Template Parameters (params)</label>
+              <label className="text-xs font-bold text-slate-300">Şablon Parametrləri</label>
               <button
                 type="button"
                 onClick={addParam}
                 className="px-2.5 py-1 rounded-lg bg-[#1b1c2b] hover:bg-amber-500/15 border border-[#2e3146] text-[11px] font-bold text-amber-300 flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="w-3 h-3" />
-                <span>Add Param</span>
+                <span>Parametr Əlavə Et</span>
               </button>
             </div>
             <div className="space-y-2">
@@ -213,14 +210,14 @@ export default function NotificationsManagement() {
                     type="text"
                     value={row.key}
                     onChange={(e) => updateParam(idx, 'key', e.target.value)}
-                    placeholder="Key (e.g. doctorName)"
+                    placeholder="Açar (məs. doctorName)"
                     className="w-1/3 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white font-mono focus:outline-none focus:border-amber-500"
                   />
                   <input
                     type="text"
                     value={row.value}
                     onChange={(e) => updateParam(idx, 'value', e.target.value)}
-                    placeholder="Value"
+                    placeholder="Dəyər"
                     className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                   <button
@@ -242,7 +239,7 @@ export default function NotificationsManagement() {
               className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_4px_16px_rgba(245,158,11,0.25)]"
             >
               {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              <span>Send Email</span>
+              <span>E-poçt Göndər</span>
             </button>
           </div>
         </form>
@@ -252,7 +249,7 @@ export default function NotificationsManagement() {
           <div className="bg-[#141521] border border-[#222437] rounded-2xl p-5 space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
               <FileCode2 className="w-3.5 h-3.5 text-amber-400" />
-              <span>Available Templates (GET /api/notifications/templates)</span>
+              <span>Mövcud Şablonlar</span>
             </h2>
             <div className="flex flex-wrap gap-1.5 max-h-56 overflow-y-auto">
               {templates.map((tpl) => (
@@ -274,10 +271,10 @@ export default function NotificationsManagement() {
 
           <div className="bg-[#141521] border border-[#222437] rounded-2xl p-5 space-y-3">
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Recent Dispatches (This Session)
+              Son Göndərişlər (Cari Sessiya)
             </h2>
             {history.length === 0 ? (
-              <p className="text-xs text-slate-500">No emails dispatched in this session yet.</p>
+              <p className="text-xs text-slate-500">Bu sessiyada hələ heç bir e-poçt göndərilməyib.</p>
             ) : (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {history.map((item, i) => (
@@ -289,7 +286,7 @@ export default function NotificationsManagement() {
                           item.success ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
                         }`}
                       >
-                        {item.success ? 'SENT' : 'FAILED'}
+                        {item.success ? 'GÖNDƏRİLDİ' : 'UĞURSUZ'}
                       </span>
                     </div>
                     <div className="text-[10px] text-amber-300 font-mono">{item.template}</div>

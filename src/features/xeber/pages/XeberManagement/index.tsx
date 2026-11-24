@@ -29,6 +29,19 @@ import {
   type MultilingualContent
 } from '../../../../utils/multilingual'
 
+const getXeberStatusLabel = (status?: string) => {
+  switch (status) {
+    case 'PUBLISHED':
+      return 'Dərc edilib'
+    case 'DRAFT':
+      return 'Qaralama'
+    case 'ARCHIVED':
+      return 'Arxivlənib'
+    default:
+      return 'Dərc edilib'
+  }
+}
+
 export default function XeberManagement() {
   const navigate = useNavigate()
   const [items, setItems] = useState<XeberResponseDto[]>([])
@@ -79,7 +92,7 @@ export default function XeberManagement() {
       }
     } catch (err) {
       console.error('Failed to fetch news', err)
-      setError('Could not load news articles.')
+      setError('Xəbərləri yükləmək mümkün olmadı.')
     } finally {
       setIsLoading(false)
     }
@@ -95,7 +108,7 @@ export default function XeberManagement() {
     setContents(createEmptyMultilingualContent())
     setShortDescription(createEmptyTitleDto())
     setIntroText(createEmptyTitleDto())
-    setCategory('General')
+    setCategory('Ümumi')
     setImageUrl('')
     setQuote('')
     setQuoteAuthor('')
@@ -124,7 +137,7 @@ export default function XeberManagement() {
     })
     setShortDescription(normalizeTitleDto(item.shortDescription))
     setIntroText(normalizeTitleDto(item.introText))
-    setCategory(item.category || 'General')
+    setCategory(item.category || 'Ümumi')
     setImageUrl(item.imageUrl || '')
     setQuote(item.quote || '')
     setQuoteAuthor(item.quoteAuthor || '')
@@ -149,7 +162,7 @@ export default function XeberManagement() {
         JSON.parse(schemaMarkup.trim())
         setJsonError(null)
       } catch (err: any) {
-        setJsonError(`Invalid JSON-LD Syntax: ${err.message}`)
+        setJsonError(`Yanlış JSON-LD sintaksisi: ${err.message}`)
         return
       }
     } else {
@@ -157,7 +170,7 @@ export default function XeberManagement() {
     }
 
     setIsSaving(true)
-    const primaryTitle = titles.az.trim() || titles.en.trim() || titles.ru.trim() || 'News Title'
+    const primaryTitle = titles.az.trim() || titles.en.trim() || titles.ru.trim() || 'Xəbər başlığı'
     const completeTitle: TitleDto = {
       az: titles.az.trim() || primaryTitle,
       en: titles.en.trim() || primaryTitle,
@@ -189,7 +202,7 @@ export default function XeberManagement() {
       quote: quote.trim() || undefined,
       quoteAuthor: quoteAuthor.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
-      category: category.trim() || 'General',
+      category: category.trim() || 'Ümumi',
       readTimeMinutes: Number(readTimeMinutes) || 5,
       status: status,
       content: mainText,
@@ -210,14 +223,14 @@ export default function XeberManagement() {
       fetchItems()
     } catch (err) {
       console.error('Failed to save news item', err)
-      alert('Failed to save news item. Please try again.')
+      alert('Xəbəri yadda saxlamaq mümkün olmadı. Zəhmət olmasa yenidən cəhd edin.')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this news item?')) return
+    if (!window.confirm('Bu xəbəri silmək istədiyinizdən əminsiniz?')) return
     try {
       await contentService.deleteXeber(id)
       setItems(items.filter((item) => item.id !== id))
@@ -226,7 +239,7 @@ export default function XeberManagement() {
       }
     } catch (err) {
       console.error('Failed to delete news item', err)
-      alert('Failed to delete news item.')
+      alert('Xəbəri silmək mümkün olmadı.')
     }
   }
 
@@ -264,10 +277,10 @@ export default function XeberManagement() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <Newspaper className="w-7 h-7 text-violet-400" />
-            <span>News Management (Xəbərlər)</span>
+            <span>Xəbər İdarəetməsi</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Manage, publish, and view all posted organization news, press releases, and articles.
+            Təşkilat xəbərlərini, press-relizləri və elanları yaradın, dərc edin və idarə edin.
           </p>
         </div>
 
@@ -283,7 +296,7 @@ export default function XeberManagement() {
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Feed & Reader</span>
+              <span>Lent Görünüşü</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -294,7 +307,7 @@ export default function XeberManagement() {
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>Table</span>
+              <span>Cədvəl</span>
             </button>
           </div>
 
@@ -303,7 +316,7 @@ export default function XeberManagement() {
             className="flex items-center justify-center gap-2 py-2.5 px-5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(124,58,237,0.3)] transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Create News</span>
+            <span>Yeni Xəbər</span>
           </button>
         </div>
       </div>
@@ -316,12 +329,12 @@ export default function XeberManagement() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search news by title, category, or content..."
+            placeholder="Başlıq, kateqoriya və ya mətnə görə xəbər axtar..."
             className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
           />
         </div>
         <div className="text-xs text-slate-400 font-semibold">
-          Total News Items: <span className="text-white font-bold">{filteredItems.length}</span>
+          Cəmi Xəbərlər: <span className="text-white font-bold">{filteredItems.length}</span>
         </div>
       </div>
 
@@ -336,13 +349,13 @@ export default function XeberManagement() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-violet-400" />
-          <span className="text-xs font-semibold">Loading news articles...</span>
+          <span className="text-xs font-semibold">Xəbərlər yüklənir...</span>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl text-center text-slate-500 space-y-3">
           <Newspaper className="w-12 h-12 mx-auto text-slate-600" />
-          <p className="text-sm font-semibold text-slate-400">No news articles found.</p>
-          <p className="text-xs">Click "Create News" above to publish your first announcement.</p>
+          <p className="text-sm font-semibold text-slate-400">Heç bir xəbər tapılmadı.</p>
+          <p className="text-xs">İlk elanınızı dərc etmək üçün yuxarıdakı &quot;Yeni Xəbər&quot; düyməsinə klikləyin.</p>
         </div>
       ) : viewMode === 'feed' ? (
         /* LIVE NEWS FEED VIEW */
@@ -365,14 +378,14 @@ export default function XeberManagement() {
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-600">
                       <Newspaper className="w-10 h-10" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">No Cover Image</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Üz Qabığı Şəkli Yoxdur</span>
                     </div>
                   )}
 
                   {/* Badges Overlay */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-full bg-violet-600/90 text-white font-bold text-[10px] uppercase tracking-wider backdrop-blur-md shadow">
-                      {item.category || 'General'}
+                      {item.category || 'Ümumi'}
                     </span>
                     <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow ${
                       item.status === 'PUBLISHED'
@@ -381,14 +394,14 @@ export default function XeberManagement() {
                         ? 'bg-slate-700/90 text-slate-200'
                         : 'bg-amber-500/90 text-white'
                     }`}>
-                      {item.status || 'PUBLISHED'}
+                      {getXeberStatusLabel(item.status)}
                     </span>
                   </div>
 
                   {/* Read Time */}
                   <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-slate-300 text-[10px] font-medium flex items-center gap-1">
                     <Clock className="w-3 h-3 text-violet-400" />
-                    <span>{item.readTimeMinutes || 5} min read</span>
+                    <span>{item.readTimeMinutes || 5} dəq oxunma</span>
                   </div>
                 </div>
 
@@ -399,7 +412,7 @@ export default function XeberManagement() {
                       {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'No summary available.'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'Xülasə əlavə edilməyib.'}
                     </p>
                   </div>
 
@@ -410,21 +423,21 @@ export default function XeberManagement() {
                       className="text-xs font-bold text-violet-400 hover:text-violet-300 flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>Read Full Article</span>
+                      <span>Tam Xəbəri Oxu</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEditModal(item)}
                         className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                        title="Edit News"
+                        title="Xəbəri redaktə et"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                        title="Delete News"
+                        title="Xəbəri sil"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -442,12 +455,12 @@ export default function XeberManagement() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                  <th className="py-3.5 px-4">Title</th>
-                  <th className="py-3.5 px-4">Category</th>
-                  <th className="py-3.5 px-4">Read Time</th>
+                  <th className="py-3.5 px-4">Başlıq</th>
+                  <th className="py-3.5 px-4">Kateqoriya</th>
+                  <th className="py-3.5 px-4">Oxunma Müddəti</th>
                   <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Summary</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">Xülasə</th>
+                  <th className="py-3.5 px-4 text-right">Əməliyyatlar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#222437] text-slate-300">
@@ -461,11 +474,11 @@ export default function XeberManagement() {
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold text-[10px] uppercase tracking-wider">
-                        {item.category || 'General'}
+                        {item.category || 'Ümumi'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 font-medium">
-                      {item.readTimeMinutes || 5} min
+                      {item.readTimeMinutes || 5} dəq
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
@@ -475,32 +488,32 @@ export default function XeberManagement() {
                           ? 'bg-slate-500/10 border border-slate-500/20 text-slate-400'
                           : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
                       }`}>
-                        {item.status || 'PUBLISHED'}
+                        {getXeberStatusLabel(item.status)}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-400 max-w-xs truncate">
-                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'N/A'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || '—'}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/org/xeber/${item.id}`)}
                           className="p-1.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors cursor-pointer"
-                          title="Open Full Article Preview"
+                          title="Xəbər önizləməsini aç"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleOpenEditModal(item)}
                           className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                          title="Edit News"
+                          title="Xəbəri redaktə et"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                          title="Delete News"
+                          title="Xəbəri sil"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -522,7 +535,7 @@ export default function XeberManagement() {
             <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
               <div className="flex items-center gap-2">
                 <Newspaper className="w-5 h-5 text-violet-400" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">News Article Viewer</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wider">Xəbər Oxuyucusu</span>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -534,7 +547,7 @@ export default function XeberManagement() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3 h-3" />
-                  <span>Edit</span>
+                  <span>Redaktə et</span>
                 </button>
                 <button
                   onClick={() => setViewingItem(null)}
@@ -561,15 +574,15 @@ export default function XeberManagement() {
               {/* Tags & Metadata */}
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 font-bold text-xs">
-                  {viewingItem.category || 'General'}
+                  {viewingItem.category || 'Ümumi'}
                 </span>
                 <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  {viewingItem.status || 'PUBLISHED'}
+                  {getXeberStatusLabel(viewingItem.status)}
                 </span>
                 <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1">
                   <Clock className="w-3 h-3 text-slate-400" />
-                  {viewingItem.readTimeMinutes || 5} min read
+                  {viewingItem.readTimeMinutes || 5} dəq oxunma
                 </span>
                 {viewingItem.slug && (
                   <span className="px-3 py-1 rounded-full bg-slate-800/60 text-slate-400 font-mono text-[11px]">
@@ -599,7 +612,7 @@ export default function XeberManagement() {
 
               {/* Main Content */}
               <div className="space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
-                {viewingItem.content || (viewingItem.sections && viewingItem.sections.map((s) => s.text).join('\n\n')) || 'No detailed content provided.'}
+                {viewingItem.content || (viewingItem.sections && viewingItem.sections.map((s) => s.text).join('\n\n')) || 'Ətraflı mətn əlavə edilməyib.'}
               </div>
 
               {/* Featured Quote */}
@@ -622,18 +635,18 @@ export default function XeberManagement() {
                 <div className="pt-4 border-t border-[#222437] space-y-3">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5 text-violet-400" />
-                    <span>SEO & Metadata Details</span>
+                    <span>SEO və Metaməlumat Təfərrüatları</span>
                   </h4>
                   <div className="p-4 bg-[#10111a] rounded-xl border border-[#222437] space-y-2 text-xs">
                     {viewingItem.metaTitle && (
-                      <p><span className="text-slate-400 font-semibold">Meta Title:</span> <span className="text-white">{viewingItem.metaTitle}</span></p>
+                      <p><span className="text-slate-400 font-semibold">Meta Başlıq:</span> <span className="text-white">{viewingItem.metaTitle}</span></p>
                     )}
                     {viewingItem.metaDescription && (
-                      <p><span className="text-slate-400 font-semibold">Meta Description:</span> <span className="text-white">{getLocalizedTitle(viewingItem.metaDescription)}</span></p>
+                      <p><span className="text-slate-400 font-semibold">Meta Təsvir:</span> <span className="text-white">{getLocalizedTitle(viewingItem.metaDescription)}</span></p>
                     )}
                     {viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                        <span className="text-slate-400 font-semibold">Keywords:</span>
+                        <span className="text-slate-400 font-semibold">Açar Sözlər:</span>
                         {viewingItem.metaKeywords.map((kw, i) => (
                           <span key={i} className="px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 text-[10px] font-mono">
                             {kw}
@@ -643,7 +656,7 @@ export default function XeberManagement() {
                     )}
                     {viewingItem.schemaMarkup && (
                       <div className="pt-2">
-                        <span className="text-slate-400 font-semibold block mb-1">Schema Markup (JSON-LD):</span>
+                        <span className="text-slate-400 font-semibold block mb-1">Sxem Qeydi (JSON-LD):</span>
                         <pre className="p-2.5 bg-[#0a0b12] rounded-lg text-[10px] font-mono text-emerald-400 overflow-x-auto border border-[#1b1c2b]">
                           {viewingItem.schemaMarkup}
                         </pre>
@@ -664,7 +677,7 @@ export default function XeberManagement() {
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
                 <Newspaper className="w-6 h-6 text-violet-400" />
-                <span>{editingItem ? 'Edit News Item (PUT)' : 'Create News Item (POST)'}</span>
+                <span>{editingItem ? 'Xəbəri Redaktə Et' : 'Yeni Xəbər Yarat'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -684,25 +697,25 @@ export default function XeberManagement() {
                 accentColor="violet"
                 contentRows={6}
                 requiredLanguages={['az']}
-                titleLabel="News Title"
-                contentLabel="Article Content"
+                titleLabel="Xəbər Başlığı"
+                contentLabel="Xəbərin Mətni"
               />
 
               {/* Category, Read Time, and Status */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Category</label>
+                  <label className="text-sm font-semibold text-slate-200">Kateqoriya</label>
                   <input
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g. Health, Announcements"
+                    placeholder="məs. Sağlamlıq, Elanlar"
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Read Time (minutes)</label>
+                  <label className="text-sm font-semibold text-slate-200">Oxunma Müddəti (dəqiqə)</label>
                   <input
                     type="number"
                     min={1}
@@ -719,27 +732,27 @@ export default function XeberManagement() {
                     onChange={(e) => setStatus(e.target.value as any)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-violet-500 transition-colors"
                   >
-                    <option value="PUBLISHED">PUBLISHED</option>
-                    <option value="DRAFT">DRAFT</option>
-                    <option value="ARCHIVED">ARCHIVED</option>
+                    <option value="PUBLISHED">Dərc edilib</option>
+                    <option value="DRAFT">Qaralama</option>
+                    <option value="ARCHIVED">Arxivlənib</option>
                   </select>
                 </div>
               </div>
 
               <ImageUploadInput
-                label="News Image (imageUrl)"
+                label="Xəbər Şəkli"
                 value={imageUrl}
                 onChange={setImageUrl}
                 folder="news"
                 accentColor="violet"
-                placeholder="https://example.com/image.jpg or upload an image"
+                placeholder="https://... və ya xəbər şəkli yükləyin"
               />
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-violet-400" />
-                  Short Description
-                  <span className="text-[10px] text-violet-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  Qısa Təsvir
+                  <span className="text-[10px] text-violet-400 font-mono ml-1">(AZ / EN / RU)</span>
                 </label>
                 {(['az', 'en', 'ru'] as const).map((lang) => (
                   <div key={lang} className="flex items-center gap-2">
@@ -748,7 +761,7 @@ export default function XeberManagement() {
                       type="text"
                       value={shortDescription[lang]}
                       onChange={(e) => setShortDescription({ ...shortDescription, [lang]: e.target.value })}
-                      placeholder={`Brief summary (${lang})...`}
+                      placeholder={`Qısa xülasə (${lang.toUpperCase()})...`}
                       className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
@@ -758,8 +771,8 @@ export default function XeberManagement() {
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-violet-400" />
-                  Intro Text
-                  <span className="text-[10px] text-violet-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                  Giriş Mətni
+                  <span className="text-[10px] text-violet-400 font-mono ml-1">(AZ / EN / RU)</span>
                 </label>
                 {(['az', 'en', 'ru'] as const).map((lang) => (
                   <div key={lang} className="flex items-center gap-2">
@@ -768,7 +781,7 @@ export default function XeberManagement() {
                       rows={2}
                       value={introText[lang]}
                       onChange={(e) => setIntroText({ ...introText, [lang]: e.target.value })}
-                      placeholder={`Introductory paragraph (${lang})...`}
+                      placeholder={`Giriş paraqrafı (${lang.toUpperCase()})...`}
                       className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 leading-relaxed transition-colors"
                     />
                   </div>
@@ -777,23 +790,23 @@ export default function XeberManagement() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Featured Quote</label>
+                  <label className="text-sm font-semibold text-slate-200">Seçilmiş Sitat</label>
                   <input
                     type="text"
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
-                    placeholder="Quoted highlight..."
+                    placeholder="Önə çıxarılan sitat..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Quote Author</label>
+                  <label className="text-sm font-semibold text-slate-200">Sitat Müəllifi</label>
                   <input
                     type="text"
                     value={quoteAuthor}
                     onChange={(e) => setQuoteAuthor(e.target.value)}
-                    placeholder="Author name..."
+                    placeholder="Müəllifin adı..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                 </div>
@@ -804,29 +817,29 @@ export default function XeberManagement() {
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-violet-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <span>SEO & Metadata Fields</span>
+                    <span>SEO və Metaməlumat Sahələri</span>
                   </h4>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Custom URL Slug</label>
+                    <label className="text-sm font-semibold text-slate-200">Xüsusi URL Slug</label>
                     <input
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      placeholder="e.g. mental-health-seminar-2026"
+                      placeholder="məs. psixi-saglamliq-seminari-2026"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Meta Title</label>
+                    <label className="text-sm font-semibold text-slate-200">Meta Başlıq</label>
                     <input
                       type="text"
                       value={metaTitle}
                       onChange={(e) => setMetaTitle(e.target.value)}
-                      placeholder="Search engine title..."
+                      placeholder="Axtarış mühərrikləri üçün başlıq..."
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                     />
                   </div>
@@ -834,8 +847,8 @@ export default function XeberManagement() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                    Meta Description
-                    <span className="text-[10px] text-violet-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                    Meta Təsvir
+                    <span className="text-[10px] text-violet-400 font-mono ml-1">(AZ / EN / RU)</span>
                   </label>
                   {(['az', 'en', 'ru'] as const).map((lang) => (
                     <div key={lang} className="flex items-center gap-2">
@@ -844,7 +857,7 @@ export default function XeberManagement() {
                         rows={2}
                         value={metaDescription[lang]}
                         onChange={(e) => setMetaDescription({ ...metaDescription, [lang]: e.target.value })}
-                        placeholder={`Search engine description (${lang})...`}
+                        placeholder={`Axtarış mühərriki təsviri (${lang.toUpperCase()})...`}
                         className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 leading-relaxed transition-colors"
                       />
                     </div>
@@ -852,12 +865,12 @@ export default function XeberManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Meta Keywords (Comma separated)</label>
+                  <label className="text-sm font-semibold text-slate-200">Meta Açar Sözlər (vergüllə ayrılmış)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. psixologiya, təlim, seminar, sağlamlıq"
+                    placeholder="məs. psixologiya, təlim, seminar, sağlamlıq"
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                   {previewKeywords.length > 0 && (
@@ -877,7 +890,7 @@ export default function XeberManagement() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
-                    <span>Schema Markup (JSON-LD)</span>
+                    <span>Sxem Qeydi (JSON-LD)</span>
                     <span className="text-xs text-slate-400 font-mono">application/ld+json</span>
                   </label>
                   <textarea
@@ -899,7 +912,7 @@ export default function XeberManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  Ləğv et
                 </button>
                 <button
                   type="submit"
@@ -907,7 +920,7 @@ export default function XeberManagement() {
                   className="px-7 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(124,58,237,0.3)]"
                 >
                   {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Publish News (POST)'}</span>
+                  <span>{editingItem ? 'Dəyişiklikləri Yadda Saxla' : 'Xəbəri Dərc Et'}</span>
                 </button>
               </div>
             </form>

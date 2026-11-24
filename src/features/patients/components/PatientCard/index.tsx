@@ -21,12 +21,57 @@ export default function PatientCard({ patient, onViewProfile }: PatientCardProps
     }
   }
 
+  const getPriorityLabel = (priority: Patient['priority']) => {
+    switch (priority) {
+      case 'High':
+        return 'Yüksək'
+      case 'Medium':
+        return 'Orta'
+      default:
+        return 'Normal'
+    }
+  }
+
+  const getMoodLabel = (mood: string) => {
+    switch (mood.toLowerCase()) {
+      case 'happy':
+      case 'şən':
+        return 'Şən'
+      case 'sad':
+      case 'kədərli':
+        return 'Kədərli'
+      case 'calm':
+      case 'sakit':
+        return 'Sakit'
+      case 'tired':
+      case 'yorğun':
+        return 'Yorğun'
+      case 'stable':
+      case 'stabil':
+        return 'Stabil'
+      case 'anxious':
+        return 'Narahat'
+      case 'stressed':
+        return 'Stressli'
+      case 'improving':
+        return 'Yaxşılaşır'
+      default:
+        return mood
+    }
+  }
+
   const getMoodStyles = (mood: string) => {
     switch (mood.toLowerCase()) {
       case 'anxious':
       case 'stressed':
+      case 'sad':
+      case 'kədərli':
+      case 'tired':
+      case 'yorğun':
         return 'bg-amber-500 text-amber-400'
       case 'improving':
+      case 'happy':
+      case 'şən':
         return 'bg-emerald-500 text-emerald-400'
       default:
         return 'bg-purple-500 text-purple-400'
@@ -55,7 +100,7 @@ export default function PatientCard({ patient, onViewProfile }: PatientCardProps
             </div>
           </div>
           <span className={`text-[11px] font-bold border px-2 py-0.5 rounded uppercase tracking-wider ${getPriorityStyles(patient.priority)}`}>
-            {patient.priority}
+            {getPriorityLabel(patient.priority)}
           </span>
         </div>
 
@@ -100,7 +145,7 @@ export default function PatientCard({ patient, onViewProfile }: PatientCardProps
           </div>
           <div className="flex items-center gap-1.5">
             <span className={`w-2 h-2 rounded-full ${getMoodStyles(patient.mood).split(' ')[0]}`}></span>
-            <span className="text-white font-bold text-[10px]">{patient.mood}</span>
+            <span className="text-white font-bold text-[10px]">{getMoodLabel(patient.mood)}</span>
           </div>
         </div>
       </div>

@@ -18,8 +18,8 @@ export default function SeoScriptManager() {
       setBodyScripts(data.customBodyScripts || '')
       setUpdatedAt(data.updatedAt || null)
     } catch (err) {
-      console.error('Failed to load site scripts from GET /site-settings/scripts', err)
-      setError('Could not load site scripts from GET /site-settings/scripts.')
+      console.error('Failed to load site scripts', err)
+      setError('Sayt skriptləri yüklənə bilmədi.')
     } finally {
       setIsLoading(false)
     }
@@ -38,8 +38,8 @@ export default function SeoScriptManager() {
       })
       .catch((err) => {
         if (!active) return
-        console.error('Failed to load site scripts from GET /site-settings/scripts', err)
-        setError('Could not load site scripts from GET /site-settings/scripts.')
+        console.error('Failed to load site scripts', err)
+        setError('Sayt skriptləri yüklənə bilmədi.')
       })
       .finally(() => {
         if (active) setIsLoading(false)
@@ -58,13 +58,10 @@ export default function SeoScriptManager() {
           </div>
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <span>Global Site Scripts</span>
-              <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/25 text-cyan-300 text-[10px] font-mono">
-                GET /site-settings/scripts
-              </span>
+              <span>Qlobal Sayt Skriptləri</span>
             </h2>
             <p className="text-xs text-slate-400">
-              Inspect active &lt;head&gt; and &lt;body&gt; tracking scripts returned by the backend site-settings controller.
+              Server tərəfindən təqdim edilən aktiv &lt;head&gt; və &lt;body&gt; izləmə skriptlərinə baxın.
             </p>
           </div>
         </div>
@@ -76,17 +73,17 @@ export default function SeoScriptManager() {
           className="px-4 py-2 rounded-xl bg-[#1b1c2b] hover:bg-[#23253a] border border-[#2e3146] text-slate-200 font-bold text-xs flex items-center gap-2 cursor-pointer transition-all self-start sm:self-auto"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
+          <span>Yenilə</span>
         </button>
       </div>
 
       <div className="p-3.5 rounded-xl bg-cyan-500/5 border border-cyan-500/20 text-cyan-200/90 text-xs flex items-start gap-2.5">
         <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
         <div>
-          <p className="font-semibold">Read-Only Endpoint</p>
+          <p className="font-semibold">Yalnız Oxumaq Üçün</p>
           <p className="text-slate-400 mt-0.5">
-            NexusMind API v1.0 exposes <code className="text-cyan-300">GET /site-settings/scripts</code> for reading active head/body scripts. Use the <strong>robots.txt</strong>, <strong>sitemap.xml</strong>, and <strong>llms.txt</strong> tabs to edit writable SEO files.
-            {updatedAt && <span className="ml-2 text-slate-500 font-mono">Last updated: {updatedAt}</span>}
+            Aktiv &lt;head&gt; və &lt;body&gt; skriptləri bu bölmədə yalnız baxış üçün göstərilir. Redaktə edilə bilən SEO faylları üçün <strong>robots.txt</strong>, <strong>sitemap.xml</strong> və <strong>llms.txt</strong> bölmələrindən istifadə edin.
+            {updatedAt && <span className="ml-2 text-slate-500 font-mono">Son yenilənmə: {updatedAt}</span>}
           </p>
         </div>
       </div>
@@ -106,26 +103,26 @@ export default function SeoScriptManager() {
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-              <span>Custom &lt;head&gt; Scripts (customHeadScripts)</span>
-              <span className="text-[10px] text-slate-500 font-mono">Read-only</span>
+              <span>Xüsusi &lt;head&gt; Skriptləri</span>
+              <span className="text-[10px] text-slate-500 font-mono">Yalnız oxumaq üçün</span>
             </label>
             <textarea
               rows={6}
               readOnly
-              value={headScripts || '<!-- No customHeadScripts configured on server -->'}
+              value={headScripts || '<!-- Serverdə xüsusi <head> skripti konfiqurasiya edilməyib -->'}
               className="w-full p-4 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono focus:outline-none"
             />
           </div>
 
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-              <span>Custom &lt;body&gt; Scripts (customBodyScripts)</span>
-              <span className="text-[10px] text-slate-500 font-mono">Read-only</span>
+              <span>Xüsusi &lt;body&gt; Skriptləri</span>
+              <span className="text-[10px] text-slate-500 font-mono">Yalnız oxumaq üçün</span>
             </label>
             <textarea
               rows={6}
               readOnly
-              value={bodyScripts || '<!-- No customBodyScripts configured on server -->'}
+              value={bodyScripts || '<!-- Serverdə xüsusi <body> skripti konfiqurasiya edilməyib -->'}
               className="w-full p-4 bg-[#10111a] border border-[#2e3146] rounded-xl text-xs text-cyan-300 font-mono focus:outline-none"
             />
           </div>

@@ -31,6 +31,18 @@ import {
   type MultilingualContent
 } from '../../../../utils/multilingual'
 
+function getMeqaleStatusLabel(status?: string): string {
+  switch (status) {
+    case 'DRAFT':
+      return 'Qaralama'
+    case 'ARCHIVED':
+      return 'Arxivlənib'
+    case 'PUBLISHED':
+    default:
+      return 'Dərc edilib'
+  }
+}
+
 export default function MeqaleManagement() {
   const navigate = useNavigate()
   const [items, setItems] = useState<MeqaleResponseDto[]>([])
@@ -66,7 +78,7 @@ export default function MeqaleManagement() {
   const [jsonError, setJsonError] = useState<string | null>(null)
 
   // Structured Sections & Highlight Cards Arrays
-  const [sections, setSections] = useState<ContentSection[]>([{ title: 'Main Section', text: '' }])
+  const [sections, setSections] = useState<ContentSection[]>([{ title: 'Əsas Bölmə', text: '' }])
   const [highlightCards, setHighlightCards] = useState<HighlightCard[]>([])
 
   const fetchItems = async () => {
@@ -85,7 +97,7 @@ export default function MeqaleManagement() {
       }
     } catch (err) {
       console.error('Failed to fetch articles', err)
-      setError('Could not load articles.')
+      setError('Məqalələr yüklənə bilmədi.')
     } finally {
       setIsLoading(false)
     }
@@ -103,11 +115,11 @@ export default function MeqaleManagement() {
     setIntroText(createEmptyTitleDto())
     setQuote('')
     setImageUrl('')
-    setCategory('Psychology')
+    setCategory('Psixologiya')
     setDoctorId('')
     setStatus('PUBLISHED')
-    setAuthor('BPM Editorial')
-    setSections([{ title: 'Main Section', text: '' }])
+    setAuthor('BPM Redaksiya')
+    setSections([{ title: 'Əsas Bölmə', text: '' }])
     setHighlightCards([])
     setMetaTitle('')
     setMetaDescription(createEmptyTitleDto())
@@ -134,10 +146,10 @@ export default function MeqaleManagement() {
     setIntroText(normalizeTitleDto(item.introText))
     setQuote(item.quote || '')
     setImageUrl(item.imageUrl || '')
-    setCategory(item.category || 'Psychology')
+    setCategory(item.category || 'Psixologiya')
     setDoctorId(item.doctorId || '')
     setStatus((item.status as any) || 'PUBLISHED')
-    setAuthor(item.author || 'BPM Editorial')
+    setAuthor(item.author || 'BPM Redaksiya')
     setMetaTitle(item.metaTitle || '')
     setMetaDescription(normalizeTitleDto(item.metaDescription))
     setSlug(item.slug || '')
@@ -154,7 +166,7 @@ export default function MeqaleManagement() {
         }))
       )
     } else {
-      setSections([{ title: 'Main Section', text: item.content || '' }])
+      setSections([{ title: 'Əsas Bölmə', text: item.content || '' }])
     }
 
     // Populate highlight cards
@@ -212,7 +224,7 @@ export default function MeqaleManagement() {
         JSON.parse(schemaMarkup.trim())
         setJsonError(null)
       } catch (err: any) {
-        setJsonError(`Invalid JSON-LD Syntax: ${err.message}`)
+        setJsonError(`Yanlış JSON-LD sintaksisi: ${err.message}`)
         return
       }
     } else {
@@ -221,7 +233,7 @@ export default function MeqaleManagement() {
 
     setIsSaving(true)
 
-    const primaryTitle = titles.az.trim() || titles.en.trim() || titles.ru.trim() || 'Article Title'
+    const primaryTitle = titles.az.trim() || titles.en.trim() || titles.ru.trim() || 'Məqalə Başlığı'
     const completeTitle: TitleDto = {
       az: titles.az.trim() || primaryTitle,
       en: titles.en.trim() || primaryTitle,
@@ -267,8 +279,8 @@ export default function MeqaleManagement() {
       introText: isTitleValid(introText) ? introText : undefined,
       quote: quote.trim() || undefined,
       imageUrl: imageUrl.trim() || undefined,
-      category: category.trim() || 'Psychology',
-      author: author.trim() || 'BPM Editorial',
+      category: category.trim() || 'Psixologiya',
+      author: author.trim() || 'BPM Redaksiya',
       doctorId: doctorId !== '' ? Number(doctorId) : undefined,
       status: status,
       sections: cleanedSections.length > 0 ? cleanedSections : [{ title: completeTitle, text: { az: mainContentFallback, en: mainContentFallback, ru: mainContentFallback } }],
@@ -291,14 +303,14 @@ export default function MeqaleManagement() {
       fetchItems()
     } catch (err) {
       console.error('Failed to save article', err)
-      alert('Failed to save article. Please check all fields.')
+      alert('Məqalə yadda saxlanılmadı. Zəhmət olmasa bütün sahələri yoxlayın.')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this article?')) return
+    if (!window.confirm('Bu məqaləni silmək istədiyinizə əminsiniz?')) return
     try {
       await contentService.deleteMeqale(id)
       setItems(items.filter((item) => item.id !== id))
@@ -307,7 +319,7 @@ export default function MeqaleManagement() {
       }
     } catch (err) {
       console.error('Failed to delete article', err)
-      alert('Failed to delete article.')
+      alert('Məqalə silinə bilmədi.')
     }
   }
 
@@ -340,10 +352,10 @@ export default function MeqaleManagement() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <BookOpen className="w-7 h-7 text-indigo-400" />
-            <span>Article Management (Məqalələr)</span>
+            <span>Məqalə İdarəetməsi</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Manage, publish, and view in-depth articles, highlight takeaways, and clinical psychology pieces.
+            Ətraflı məqalələri, əsas məqamları və klinik psixologiya yazılarını idarə edin, dərc edin və nəzərdən keçirin.
           </p>
         </div>
 
@@ -359,7 +371,7 @@ export default function MeqaleManagement() {
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Feed & Reader</span>
+              <span>Lent Görünüşü</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
@@ -370,7 +382,7 @@ export default function MeqaleManagement() {
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>Table</span>
+              <span>Cədvəl</span>
             </button>
           </div>
 
@@ -379,7 +391,7 @@ export default function MeqaleManagement() {
             className="flex items-center justify-center gap-2 py-2.5 px-5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(99,102,241,0.3)] transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Create Article</span>
+            <span>Yeni Məqalə</span>
           </button>
         </div>
       </div>
@@ -392,12 +404,12 @@ export default function MeqaleManagement() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search articles by title, author, category, or summary..."
+            placeholder="Məqalələri başlıq, müəllif, kateqoriya və ya xülasəyə görə axtarın..."
             className="w-full pl-9 pr-4 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
         <div className="text-xs text-slate-400 font-semibold">
-          Total Articles: <span className="text-white font-bold">{filteredItems.length}</span>
+          Ümumi Məqalələr: <span className="text-white font-bold">{filteredItems.length}</span>
         </div>
       </div>
 
@@ -412,13 +424,13 @@ export default function MeqaleManagement() {
       {isLoading ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
-          <span className="text-xs font-semibold">Loading articles...</span>
+          <span className="text-xs font-semibold">Məqalələr yüklənir...</span>
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="p-16 bg-[#141521] border border-[#222437] rounded-xl text-center text-slate-500 space-y-3">
           <BookOpen className="w-12 h-12 mx-auto text-slate-600" />
-          <p className="text-sm font-semibold text-slate-400">No articles found.</p>
-          <p className="text-xs">Click "Create Article" above to draft your first piece.</p>
+          <p className="text-sm font-semibold text-slate-400">Məqalə tapılmadı.</p>
+          <p className="text-xs">İlk məqalənizi hazırlamaq üçün yuxarıdakı «Yeni Məqalə» düyməsinə klikləyin.</p>
         </div>
       ) : viewMode === 'feed' ? (
         /* LIVE ARTICLES FEED VIEW */
@@ -444,14 +456,14 @@ export default function MeqaleManagement() {
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-2 text-slate-600">
                       <BookOpen className="w-10 h-10" />
-                      <span className="text-[10px] font-semibold uppercase tracking-wider">No Cover Image</span>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">Örtük Şəkli Yoxdur</span>
                     </div>
                   )}
 
                   {/* Badges Overlay */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">
                     <span className="px-2.5 py-1 rounded-full bg-indigo-600/90 text-white font-bold text-[10px] uppercase tracking-wider backdrop-blur-md shadow">
-                      {item.category || 'Psychology'}
+                      {item.category || 'Psixologiya'}
                     </span>
                     <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow ${
                       item.status === 'PUBLISHED'
@@ -460,14 +472,14 @@ export default function MeqaleManagement() {
                         ? 'bg-slate-700/90 text-slate-200'
                         : 'bg-amber-500/90 text-white'
                     }`}>
-                      {item.status || 'PUBLISHED'}
+                      {getMeqaleStatusLabel(item.status)}
                     </span>
                   </div>
 
                   {/* Author / Doctor */}
                   <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-slate-200 text-[10px] font-medium flex items-center gap-1.5">
                     <User className="w-3 h-3 text-indigo-400" />
-                    <span>{item.author || 'BPM Editorial'}</span>
+                    <span>{item.author || 'BPM Redaksiya'}</span>
                   </div>
                 </div>
 
@@ -478,7 +490,7 @@ export default function MeqaleManagement() {
                       {getLocalizedTitle(item.title)}
                     </h3>
                     <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed">
-                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'No summary available.'}
+                      {getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || item.content || 'Xülasə mövcud deyil.'}
                     </p>
 
                     {/* Section / Highlights Indicators */}
@@ -486,13 +498,13 @@ export default function MeqaleManagement() {
                       {sectionCount > 0 && (
                         <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-medium text-slate-300 flex items-center gap-1">
                           <Layers className="w-2.5 h-2.5 text-indigo-400" />
-                          <span>{sectionCount} Sections</span>
+                          <span>{sectionCount} Bölmə</span>
                         </span>
                       )}
                       {cardCount > 0 && (
                         <span className="px-2 py-0.5 rounded bg-indigo-500/10 text-[10px] font-medium text-indigo-300 flex items-center gap-1">
                           <Sparkles className="w-2.5 h-2.5" />
-                          <span>{cardCount} Key Points</span>
+                          <span>{cardCount} Əsas Məqam</span>
                         </span>
                       )}
                     </div>
@@ -505,21 +517,21 @@ export default function MeqaleManagement() {
                       className="text-xs font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
-                      <span>Read Full Article</span>
+                      <span>Tam Məqaləni Oxu</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEditModal(item)}
                         className="p-1.5 rounded-lg bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                        title="Edit Article"
+                        title="Məqaləni redaktə et"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
                         className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                        title="Delete Article"
+                        title="Məqaləni sil"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -537,12 +549,12 @@ export default function MeqaleManagement() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="border-b border-[#222437] text-slate-500 font-bold uppercase tracking-wider bg-[#10111a]">
-                  <th className="py-3.5 px-4">Title</th>
-                  <th className="py-3.5 px-4">Author</th>
-                  <th className="py-3.5 px-4">Category</th>
+                  <th className="py-3.5 px-4">Başlıq</th>
+                  <th className="py-3.5 px-4">Müəllif</th>
+                  <th className="py-3.5 px-4">Kateqoriya</th>
                   <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Sections</th>
-                  <th className="py-3.5 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">Bölmələr</th>
+                  <th className="py-3.5 px-4 text-right">Əməliyyatlar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#222437] text-slate-300">
@@ -555,11 +567,11 @@ export default function MeqaleManagement() {
                       {getLocalizedTitle(item.title)}
                     </td>
                     <td className="py-3.5 px-4 text-slate-300 font-medium">
-                      {item.author || 'BPM Editorial'}
+                      {item.author || 'BPM Redaksiya'}
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-[10px] uppercase tracking-wider">
-                        {item.category || 'Psychology'}
+                        {item.category || 'Psixologiya'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
@@ -570,32 +582,32 @@ export default function MeqaleManagement() {
                           ? 'bg-slate-500/10 border border-slate-500/20 text-slate-400'
                           : 'bg-amber-500/10 border border-amber-500/20 text-amber-400'
                       }`}>
-                        {item.status || 'PUBLISHED'}
+                        {getMeqaleStatusLabel(item.status)}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-400">
-                      {item.sections ? `${item.sections.length} sections` : 'Single'}
+                      {item.sections ? `${item.sections.length} bölmə` : 'Tək bölmə'}
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => navigate(`/org/meqale/${item.id}`)}
                           className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition-colors cursor-pointer"
-                          title="Open Full Article Preview"
+                          title="Tam Məqalə Önizləməsini Aç"
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleOpenEditModal(item)}
                           className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                          title="Edit Article"
+                          title="Məqaləni redaktə et"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                          title="Delete Article"
+                          title="Məqaləni sil"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -617,7 +629,7 @@ export default function MeqaleManagement() {
             <div className="p-4 border-b border-[#222437] flex items-center justify-between bg-[#10111a]">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-400" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">Article Reader</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wider">Məqalə Oxuyucusu</span>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -629,7 +641,7 @@ export default function MeqaleManagement() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3 h-3" />
-                  <span>Edit</span>
+                  <span>Redaktə et</span>
                 </button>
                 <button
                   onClick={() => setViewingItem(null)}
@@ -656,19 +668,19 @@ export default function MeqaleManagement() {
               {/* Tags & Metadata */}
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-bold text-xs">
-                  {viewingItem.category || 'Psychology'}
+                  {viewingItem.category || 'Psixologiya'}
                 </span>
                 <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
-                  {viewingItem.status || 'PUBLISHED'}
+                  {getMeqaleStatusLabel(viewingItem.status)}
                 </span>
                 <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5">
                   <User className="w-3 h-3 text-indigo-400" />
-                  <span>{viewingItem.author || 'BPM Editorial'}</span>
+                  <span>{viewingItem.author || 'BPM Redaksiya'}</span>
                 </span>
                 {viewingItem.doctorId && (
                   <span className="px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-mono">
-                    Doctor ID: #{viewingItem.doctorId}
+                    Həkim ID: #{viewingItem.doctorId}
                   </span>
                 )}
               </div>
@@ -697,7 +709,7 @@ export default function MeqaleManagement() {
                 <div className="space-y-3 pt-2">
                   <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    <span>Key Highlights & Takeaways</span>
+                    <span>Əsas Məqamlar və Nəticələr</span>
                   </h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {viewingItem.highlightCards.map((card, idx) => (
@@ -746,7 +758,7 @@ export default function MeqaleManagement() {
                 <div className="p-5 bg-gradient-to-r from-indigo-950/30 to-[#141521] border border-indigo-500/30 rounded-2xl relative">
                   <QuoteIcon className="w-8 h-8 text-indigo-400/20 absolute right-4 top-4" />
                   <p className="text-sm font-medium text-white italic">
-                    "{viewingItem.quote}"
+                    &quot;{viewingItem.quote}&quot;
                   </p>
                 </div>
               )}
@@ -756,12 +768,12 @@ export default function MeqaleManagement() {
                 <div className="pt-4 border-t border-[#222437] space-y-3">
                   <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                     <Globe className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>SEO & Metadata Details</span>
+                    <span>SEO və Metaməlumat Detalları</span>
                   </h4>
                   <div className="p-4 bg-[#10111a] rounded-xl border border-[#222437] space-y-2 text-xs">
                     {viewingItem.metaKeywords && viewingItem.metaKeywords.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-slate-400 font-semibold">Keywords:</span>
+                        <span className="text-slate-400 font-semibold">Açar sözlər:</span>
                         {viewingItem.metaKeywords.map((kw, i) => (
                           <span key={i} className="px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 text-[10px] font-mono">
                             {kw}
@@ -771,7 +783,7 @@ export default function MeqaleManagement() {
                     )}
                     {viewingItem.schemaMarkup && (
                       <div className="pt-2">
-                        <span className="text-slate-400 font-semibold block mb-1">Schema Markup (JSON-LD):</span>
+                        <span className="text-slate-400 font-semibold block mb-1">Sxem İşarələməsi (JSON-LD):</span>
                         <pre className="p-2.5 bg-[#0a0b12] rounded-lg text-[10px] font-mono text-emerald-400 overflow-x-auto border border-[#1b1c2b]">
                           {viewingItem.schemaMarkup}
                         </pre>
@@ -792,7 +804,7 @@ export default function MeqaleManagement() {
             <div className="flex items-center justify-between border-b border-[#2e3146] pb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2.5">
                 <BookOpen className="w-6 h-6 text-indigo-400" />
-                <span>{editingItem ? 'Edit Article (PUT)' : 'Create Article (POST)'}</span>
+                <span>{editingItem ? 'Məqaləni Redaktə Et' : 'Yeni Məqalə Yarat'}</span>
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -813,66 +825,65 @@ export default function MeqaleManagement() {
                   accentColor="indigo"
                   contentRows={6}
                   requiredLanguages={['az']}
-                  titleLabel="Article Title"
-                  contentLabel="Primary Article Content"
+                  titleLabel="Məqalə Başlığı"
+                  contentLabel="Əsas Məqalə Məzmunu"
                 />
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Category (category)</label>
+                    <label className="text-sm font-semibold text-slate-200">Kateqoriya</label>
                     <input
                       type="text"
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
-                      placeholder="e.g. Psychology, Therapy, Well-being"
+                      placeholder="məs. Psixologiya, Terapiya, Rifah"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Author (author)</label>
+                    <label className="text-sm font-semibold text-slate-200">Müəllif</label>
                     <input
                       type="text"
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
-                      placeholder="e.g. Dr. Jane Smith or BPM Editorial"
+                      placeholder="məs. Dr. Leyla Əliyeva və ya BPM Redaksiya"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Status (status)</label>
+                    <label className="text-sm font-semibold text-slate-200">Status</label>
                     <select
                       value={status}
                       onChange={(e) => setStatus(e.target.value as any)}
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500 transition-colors"
                     >
-                      <option value="PUBLISHED">PUBLISHED</option>
-                      <option value="DRAFT">DRAFT</option>
-                      <option value="ARCHIVED">ARCHIVED</option>
+                      <option value="PUBLISHED">Dərc edilib</option>
+                      <option value="DRAFT">Qaralama</option>
+                      <option value="ARCHIVED">Arxivlənib</option>
                     </select>
                   </div>
                 </div>
 
                 <ImageUploadInput
-                  label="Cover Image (imageUrl)"
+                  label="Örtük Şəkli"
                   value={imageUrl}
                   onChange={setImageUrl}
                   folder="articles"
                   accentColor="indigo"
-                  placeholder="https://example.com/article-cover.jpg or upload cover image"
+                  placeholder="https://example.com/article-cover.jpg və ya örtük şəkli yükləyin"
                 />
               </div>
 
               {/* Section 2: Summary & Quotes */}
               <div className="space-y-4 pt-4 border-t border-[#2e3146]">
-                <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">2. Intro & Featured Quote</h4>
+                <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider">2. Giriş və Seçilmiş Sitat</h4>
                 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-indigo-400" />
-                    Short Description (shortDescription)
-                    <span className="text-[10px] text-indigo-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                    Qısa Təsvir
                   </label>
                   {(['az', 'en', 'ru'] as const).map((lang) => (
                     <div key={lang} className="flex items-center gap-2">
@@ -881,7 +892,7 @@ export default function MeqaleManagement() {
                         type="text"
                         value={shortDescription[lang]}
                         onChange={(e) => setShortDescription({ ...shortDescription, [lang]: e.target.value })}
-                        placeholder={`Brief summary for card previews (${lang})...`}
+                        placeholder={`Kart önizləməsi üçün qısa xülasə (${lang.toUpperCase()})...`}
                         className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                       />
                     </div>
@@ -891,8 +902,7 @@ export default function MeqaleManagement() {
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
                     <Globe className="w-3.5 h-3.5 text-indigo-400" />
-                    Intro Paragraph (introText)
-                    <span className="text-[10px] text-indigo-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                    Giriş Abzası
                   </label>
                   {(['az', 'en', 'ru'] as const).map((lang) => (
                     <div key={lang} className="flex items-center gap-2">
@@ -901,7 +911,7 @@ export default function MeqaleManagement() {
                         rows={2}
                         value={introText[lang]}
                         onChange={(e) => setIntroText({ ...introText, [lang]: e.target.value })}
-                        placeholder={`Lead-in paragraph (${lang})...`}
+                        placeholder={`Giriş abzası (${lang.toUpperCase()})...`}
                         className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed transition-colors"
                       />
                     </div>
@@ -909,12 +919,12 @@ export default function MeqaleManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Key Takeaway Quote (quote)</label>
+                  <label className="text-sm font-semibold text-slate-200">Əsas Nəticə Sitatı</label>
                   <input
                     type="text"
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
-                    placeholder="Inspirational or clinical takeaway..."
+                    placeholder="İlhamverici və ya klinik nəticə sitatı..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
@@ -926,9 +936,9 @@ export default function MeqaleManagement() {
                   <div>
                     <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
-                      <span>Highlight Cards (highlightCards)</span>
+                      <span>Vurğulanan Kartlar</span>
                     </h4>
-                    <p className="text-xs text-slate-400">Add highlight bullet boxes with title and text.</p>
+                    <p className="text-xs text-slate-400">Başlıq və mətnlə vurğulanan əsas məqam kartları əlavə edin.</p>
                   </div>
                   <button
                     type="button"
@@ -936,18 +946,18 @@ export default function MeqaleManagement() {
                     className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Add Card</span>
+                    <span>Kart Əlavə Et</span>
                   </button>
                 </div>
 
                 {highlightCards.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic py-2">No highlight cards added. Click "Add Card" to create key takeaway callouts.</p>
+                  <p className="text-xs text-slate-500 italic py-2">Vurğulanan kart əlavə edilməyib. Əsas məqam qutuları yaratmaq üçün «Kart Əlavə Et» düyməsinə klikləyin.</p>
                 ) : (
                   <div className="space-y-3">
                     {highlightCards.map((card, idx) => (
                       <div key={idx} className="p-4 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-3 relative group">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-indigo-400 uppercase">Card #{idx + 1}</span>
+                          <span className="text-xs font-bold text-indigo-400 uppercase">Kart #{idx + 1}</span>
                           <button
                             type="button"
                             onClick={() => handleRemoveHighlightCard(idx)}
@@ -961,14 +971,14 @@ export default function MeqaleManagement() {
                             type="text"
                             value={card.title}
                             onChange={(e) => handleUpdateHighlightCard(idx, 'title', e.target.value)}
-                            placeholder="Card Title..."
+                            placeholder="Kart başlığı..."
                             className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                           />
                           <input
                             type="text"
                             value={card.icon || 'Sparkles'}
                             onChange={(e) => handleUpdateHighlightCard(idx, 'icon', e.target.value)}
-                            placeholder="Icon Name (e.g. Sparkles, Brain, Heart)"
+                            placeholder="İkon adı (məs. Sparkles, Brain, Heart)"
                             className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                           />
                         </div>
@@ -976,7 +986,7 @@ export default function MeqaleManagement() {
                           rows={2}
                           value={card.text}
                           onChange={(e) => handleUpdateHighlightCard(idx, 'text', e.target.value)}
-                          placeholder="Card description or tips..."
+                          placeholder="Kart təsviri və ya tövsiyələr..."
                           className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
                         />
                       </div>
@@ -991,9 +1001,9 @@ export default function MeqaleManagement() {
                   <div>
                     <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                       <Layers className="w-4 h-4" />
-                      <span>Article Sections (sections)</span>
+                      <span>Məqalə Bölmələri</span>
                     </h4>
-                    <p className="text-xs text-slate-400">Structured paragraphs with section titles.</p>
+                    <p className="text-xs text-slate-400">Bölmə başlıqları ilə strukturlaşdırılmış abzaslar.</p>
                   </div>
                   <button
                     type="button"
@@ -1001,7 +1011,7 @@ export default function MeqaleManagement() {
                     className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>Add Section</span>
+                    <span>Bölmə Əlavə Et</span>
                   </button>
                 </div>
 
@@ -1009,7 +1019,7 @@ export default function MeqaleManagement() {
                   {sections.map((section, idx) => (
                     <div key={idx} className="p-4 bg-[#1b1c2b] border border-[#2e3146] rounded-xl space-y-3 relative group">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-indigo-400 uppercase">Section #{idx + 1}</span>
+                        <span className="text-xs font-bold text-indigo-400 uppercase">Bölmə #{idx + 1}</span>
                         {sections.length > 1 && (
                           <button
                             type="button"
@@ -1024,7 +1034,7 @@ export default function MeqaleManagement() {
                         type="text"
                         value={typeof section.title === 'string' ? section.title : getLocalizedTitle(section.title)}
                         onChange={(e) => handleUpdateSection(idx, 'title', e.target.value)}
-                        placeholder="Section Heading / Title..."
+                        placeholder="Bölmə başlığı..."
                         className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                       />
                       <textarea
@@ -1032,7 +1042,7 @@ export default function MeqaleManagement() {
                         required
                         value={section.text}
                         onChange={(e) => handleUpdateSection(idx, 'text', e.target.value)}
-                        placeholder="Section content and body text..."
+                        placeholder="Bölmə məzmunu və əsas mətn..."
                         className="w-full px-3.5 py-2.5 bg-[#141521] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
                       />
                     </div>
@@ -1044,36 +1054,35 @@ export default function MeqaleManagement() {
               <div className="space-y-4 pt-4 border-t border-[#2e3146]">
                 <h4 className="text-sm font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
                   <Globe className="w-4 h-4" />
-                  <span>SEO & Discoverability Metadata</span>
+                  <span>SEO və Axtarış Metaməlumatları</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Custom URL Slug</label>
+                    <label className="text-sm font-semibold text-slate-200">Xüsusi URL Slug</label>
                     <input
                       type="text"
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      placeholder="e.g. anxiety-modern-life"
+                      placeholder="məs. muasir-heyatda-narahatliq"
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-200">Meta Title</label>
+                    <label className="text-sm font-semibold text-slate-200">Meta Başlıq</label>
                     <input
                       type="text"
                       value={metaTitle}
                       onChange={(e) => setMetaTitle(e.target.value)}
-                      placeholder="SEO Title..."
+                      placeholder="SEO başlığı..."
                       className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-                      Meta Description
-                      <span className="text-[10px] text-indigo-400 font-mono ml-1">TitleDto (az/en/ru)</span>
+                      Meta Təsvir
                     </label>
                     {(['az', 'en', 'ru'] as const).map((lang) => (
                       <div key={lang} className="flex items-center gap-2">
@@ -1082,7 +1091,7 @@ export default function MeqaleManagement() {
                           type="text"
                           value={metaDescription[lang]}
                           onChange={(e) => setMetaDescription({ ...metaDescription, [lang]: e.target.value })}
-                          placeholder={`SEO Description (${lang})...`}
+                          placeholder={`SEO təsviri (${lang.toUpperCase()})...`}
                           className="flex-1 px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                         />
                       </div>
@@ -1091,12 +1100,12 @@ export default function MeqaleManagement() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-200">Meta Keywords (comma-separated)</label>
+                  <label className="text-sm font-semibold text-slate-200">Meta Açar Sözlər (vergüllə ayrılmış)</label>
                   <input
                     type="text"
                     value={metaKeywordsInput}
                     onChange={(e) => setMetaKeywordsInput(e.target.value)}
-                    placeholder="e.g. psixologiya, terapiya, mental health"
+                    placeholder="məs. psixologiya, terapiya, psixi sağlamlıq"
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                   {previewKeywords.length > 0 && (
@@ -1116,7 +1125,7 @@ export default function MeqaleManagement() {
 
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
-                    <span>Schema Markup (JSON-LD)</span>
+                    <span>Sxem İşarələməsi (JSON-LD)</span>
                     <span className="text-xs text-slate-400 font-mono">application/ld+json</span>
                   </label>
                   <textarea
@@ -1138,7 +1147,7 @@ export default function MeqaleManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition-colors cursor-pointer"
                 >
-                  Cancel
+                  Ləğv et
                 </button>
                 <button
                   type="submit"
@@ -1146,7 +1155,7 @@ export default function MeqaleManagement() {
                   className="px-7 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer shadow-[0_4px_16px_rgba(99,102,241,0.3)]"
                 >
                   {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>{editingItem ? 'Save Changes (PUT)' : 'Publish Article (POST)'}</span>
+                  <span>{editingItem ? 'Dəyişiklikləri Yadda Saxla' : 'Məqaləni Dərc Et'}</span>
                 </button>
               </div>
             </form>

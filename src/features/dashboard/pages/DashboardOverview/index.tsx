@@ -41,7 +41,7 @@ import type { TitleDto, MultilingualContent } from '../../../../utils/multilingu
 export default function DashboardOverview() {
   const profile = useUserStore((state) => state.profile)
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   // Content State
   const [xeberList, setXeberList] = useState<XeberResponseDto[]>([])
@@ -131,7 +131,7 @@ export default function DashboardOverview() {
     setFormShortDesc('')
     setFormIntroText('')
     setFormContent('')
-    setFormCategory('Announcements')
+    setFormCategory('Elanlar')
     setFormQuote('')
     setFormImageUrl('')
     setFormStatus('PUBLISHED')
@@ -153,7 +153,7 @@ export default function DashboardOverview() {
     setFormIntroText('')
     setFormContent('')
     setFormAuthor('Super Admin')
-    setFormCategory('Psychology')
+    setFormCategory('Psixologiya')
     setFormQuote('')
     setFormImageUrl('')
     setFormStatus('PUBLISHED')
@@ -171,8 +171,8 @@ export default function DashboardOverview() {
     setFormShortDesc('')
     setFormIntroText('')
     setFormContent('')
-    setFormAuthor('NexusMind Editorial')
-    setFormCategory('General')
+    setFormAuthor('NexusMind Redaksiya')
+    setFormCategory('Ümumi')
     setFormImageUrl('')
     setFormMetaKeywords('')
     setFormMetaTitle('')
@@ -196,20 +196,20 @@ export default function DashboardOverview() {
     setEditingItem(item)
     if (type === 'xeber') {
       const normalizedTitle = normalizeTitleDto(item.title)
-      setFormTitle(getLocalizedTitle(item.title, i18n.language))
+      setFormTitle(getLocalizedTitle(item.title, 'az'))
       setMultilingualTitle(normalizedTitle)
-      const primaryText = item.content || (item.sections && getLocalizedTitle(item.sections[0]?.text, i18n.language)) || ''
+      const primaryText = item.content || (item.sections && getLocalizedTitle(item.sections[0]?.text, 'az')) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
-      setFormShortDesc(getLocalizedTitle(item.shortDescription, i18n.language) || '')
-      setFormIntroText(getLocalizedTitle(item.introText, i18n.language) || '')
+      setFormShortDesc(getLocalizedTitle(item.shortDescription, 'az') || '')
+      setFormIntroText(getLocalizedTitle(item.introText, 'az') || '')
       setFormContent(primaryText)
-      setFormCategory(item.category || 'General')
+      setFormCategory(item.category || 'Ümumi')
       setFormQuote(item.quote || '')
       setFormImageUrl(item.imageUrl || '')
       setFormStatus(item.status || 'PUBLISHED')
       setFormReadTime(item.readTimeMinutes || 5)
       setFormMetaTitle(item.metaTitle || '')
-      setFormMetaDesc(getLocalizedTitle(item.metaDescription, i18n.language) || '')
+      setFormMetaDesc(getLocalizedTitle(item.metaDescription, 'az') || '')
       setFormSlug(item.slug || '')
       setFormSchemaMarkup(item.schemaMarkup || '')
       const kw = item.metaKeywords
@@ -217,15 +217,15 @@ export default function DashboardOverview() {
     } else if (type === 'meqale') {
       const titleObj = (item as any).titleDto || item.title
       const normalizedTitle = normalizeTitleDto(titleObj)
-      setFormTitle(getLocalizedTitle(titleObj, i18n.language))
+      setFormTitle(getLocalizedTitle(titleObj, 'az'))
       setMultilingualTitle(normalizedTitle)
-      const primaryText = item.content || (item.sections && getLocalizedTitle(item.sections[0]?.text, i18n.language)) || ''
+      const primaryText = item.content || (item.sections && getLocalizedTitle(item.sections[0]?.text, 'az')) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
-      setFormShortDesc(getLocalizedTitle(item.shortDescription, i18n.language) || '')
-      setFormIntroText(getLocalizedTitle(item.introText, i18n.language) || '')
+      setFormShortDesc(getLocalizedTitle(item.shortDescription, 'az') || '')
+      setFormIntroText(getLocalizedTitle(item.introText, 'az') || '')
       setFormContent(primaryText)
       setFormAuthor(item.author || 'Super Admin')
-      setFormCategory(item.category || 'Psychology')
+      setFormCategory(item.category || 'Psixologiya')
       setFormQuote(item.quote || '')
       setFormImageUrl(item.imageUrl || '')
       setFormStatus(item.status || 'PUBLISHED')
@@ -235,24 +235,24 @@ export default function DashboardOverview() {
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'blog') {
       const normalizedTitle = normalizeTitleDto(item.title)
-      setFormTitle(getLocalizedTitle(item.title, i18n.language))
+      setFormTitle(getLocalizedTitle(item.title, 'az'))
       setMultilingualTitle(normalizedTitle)
-      const primaryText = item.body || (item.sections && getLocalizedTitle(item.sections[0]?.text, i18n.language)) || ''
+      const primaryText = item.body || (item.sections && getLocalizedTitle(item.sections[0]?.text, 'az')) || ''
       setMultilingualContent({ az: primaryText, en: '', ru: '' })
-      setFormShortDesc(getLocalizedTitle(item.shortDescription, i18n.language) || '')
-      setFormIntroText(getLocalizedTitle(item.introText, i18n.language) || '')
+      setFormShortDesc(getLocalizedTitle(item.shortDescription, 'az') || '')
+      setFormIntroText(getLocalizedTitle(item.introText, 'az') || '')
       setFormContent(primaryText)
-      setFormAuthor(item.authorName || 'NexusMind Editorial')
-      setFormCategory(item.category || 'General')
+      setFormAuthor(item.authorName || 'NexusMind Redaksiya')
+      setFormCategory(item.category || 'Ümumi')
       setFormImageUrl(item.imageUrl || item.coverImage || '')
       setFormMetaTitle(item.metaTitle || '')
-      setFormMetaDesc(getLocalizedTitle(item.metaDescription, i18n.language) || '')
+      setFormMetaDesc(getLocalizedTitle(item.metaDescription, 'az') || '')
       setFormSlug(item.slug || '')
       setFormSchemaMarkup(item.schemaMarkup || item.schema_markup || '')
       const kw = item.metaKeywords || item.meta_keywords
       setFormMetaKeywords(kw && Array.isArray(kw) ? kw.join(', ') : '')
     } else if (type === 'gallery') {
-      setFormTitle(getLocalizedTitle(item.title, i18n.language) || item.title || '')
+      setFormTitle(getLocalizedTitle(item.title, 'az') || item.title || '')
       setFormImageUrl(item.mediaUrl || item.imageUrl || '')
       setFormCategory(item.category || 'TERAPIYALAR')
       setFormMediaType(item.mediaType || 'IMAGE')
@@ -332,7 +332,7 @@ export default function DashboardOverview() {
       introText: introTextDto,
       sections: mainText ? [{ title: completeTitle, text: contentDto }] : undefined,
       quote: formQuote.trim() || undefined,
-      category: formCategory.trim() || 'General',
+      category: formCategory.trim() || 'Ümumi',
       imageUrl: formImageUrl.trim() || undefined,
       readTimeMinutes: Number(formReadTime) || 5,
       status: formStatus,
@@ -407,7 +407,7 @@ export default function DashboardOverview() {
       introText: introTextDto,
       sections: mainText ? [{ title: completeTitle, text: contentDto }] : undefined,
       quote: formQuote.trim() || undefined,
-      category: formCategory.trim() || 'Psychology',
+      category: formCategory.trim() || 'Psixologiya',
       doctorId: formDoctorId ? Number(formDoctorId) : undefined,
       author: formAuthor.trim() || 'Super Admin',
       imageUrl: formImageUrl.trim() || undefined,
@@ -471,8 +471,8 @@ export default function DashboardOverview() {
       shortDescription: shortDescDto,
       introText: introTextDto,
       sections: mainText ? [{ title: completeTitle, text: contentDto }] : undefined,
-      category: formCategory.trim() || 'General',
-      authorName: formAuthor.trim() || 'NexusMind Editorial',
+      category: formCategory.trim() || 'Ümumi',
+      authorName: formAuthor.trim() || 'NexusMind Redaksiya',
       imageUrl: formImageUrl.trim() || undefined,
       metaTitle: formMetaTitle.trim() || undefined,
       metaDescription: formMetaDesc.trim() ? {
@@ -504,7 +504,7 @@ export default function DashboardOverview() {
     e.preventDefault()
     if (!formImageUrl.trim()) return
     setIsSavingContent(true)
-    const fallbackTitle = formTitle.trim() || 'Gallery Item'
+    const fallbackTitle = formTitle.trim() || 'Qalereya elementi'
     const validCategory = (
       ['TERAPIYALAR', 'OTAQLAR', 'TELIMLER'].includes(formCategory.trim())
         ? formCategory.trim()
@@ -779,10 +779,10 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {xeberList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, i18n.language)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, 'az')}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold text-[9px] uppercase tracking-wider">
-                                {item.category || 'General'}
+                                {item.category || 'Ümumi'}
                               </span>
                             </td>
                             <td className="py-3 px-4">
@@ -799,21 +799,21 @@ export default function DashboardOverview() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {getLocalizedTitle(item.shortDescription, i18n.language) || getLocalizedTitle(item.introText, i18n.language) || item.content || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription, 'az') || getLocalizedTitle(item.introText, 'az') || item.content || '—'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => handleOpenEditItem('xeber', item)}
                                   className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                                  title="PUT Edit"
+                                  title="Redaktə et"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteContentItem('xeber', item.id)}
                                   className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                                  title="DELETE News"
+                                  title="Xəbəri sil"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -861,29 +861,29 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {meqaleList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, i18n.language)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, 'az')}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-bold text-[9px] uppercase tracking-wider">
                                 {item.author || 'Super Admin'}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-slate-400">{item.category || 'Psychology'}</td>
+                            <td className="py-3 px-4 text-slate-400">{item.category || 'Psixologiya'}</td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {getLocalizedTitle(item.shortDescription, i18n.language) || getLocalizedTitle(item.introText, i18n.language) || item.content || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription, 'az') || getLocalizedTitle(item.introText, 'az') || item.content || '—'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => handleOpenEditItem('meqale', item)}
                                   className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                                  title="PUT Edit"
+                                  title="Redaktə et"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteContentItem('meqale', item.id)}
                                   className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                                  title="DELETE Article"
+                                  title="Məqaləni sil"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -931,29 +931,29 @@ export default function DashboardOverview() {
                       <tbody className="divide-y divide-[#222437] text-slate-300">
                         {blogList.map((item) => (
                           <tr key={item.id} className="hover:bg-[#191b2b] transition-colors">
-                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, i18n.language)}</td>
+                            <td className="py-3 px-4 font-bold text-white max-w-xs truncate">{getLocalizedTitle(item.title, 'az')}</td>
                             <td className="py-3 px-4">
                               <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[9px] uppercase tracking-wider">
-                                {item.authorName || 'NexusMind Editorial'}
+                                {item.authorName || 'NexusMind Redaksiya'}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-slate-400">{item.category || 'General'}</td>
+                            <td className="py-3 px-4 text-slate-400">{item.category || 'Ümumi'}</td>
                             <td className="py-3 px-4 text-slate-400 max-w-md truncate">
-                              {getLocalizedTitle(item.shortDescription, i18n.language) || getLocalizedTitle(item.introText, i18n.language) || item.body || 'N/A'}
+                              {getLocalizedTitle(item.shortDescription, 'az') || getLocalizedTitle(item.introText, 'az') || item.body || '—'}
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => handleOpenEditItem('blog', item)}
                                   className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                                  title="PUT Edit"
+                                  title="Redaktə et"
                                 >
                                   <Edit2 className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteContentItem('blog', item.id)}
                                   className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
-                                  title="DELETE Blog"
+                                  title="Bloqu sil"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -995,7 +995,7 @@ export default function DashboardOverview() {
                           <div className="aspect-video w-full rounded-lg overflow-hidden bg-slate-900 relative">
                             <img
                               src={displayImg}
-                              alt={getLocalizedTitle(item.title, i18n.language) || 'Gallery Item'}
+                              alt={getLocalizedTitle(item.title, 'az') || 'Qalereya elementi'}
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 ;(e.target as HTMLImageElement).src =
@@ -1004,7 +1004,7 @@ export default function DashboardOverview() {
                             />
                           </div>
                           <div className="flex items-center justify-between pt-1">
-                            <span className="text-xs font-bold text-white truncate">{getLocalizedTitle(item.title, i18n.language) || 'Asset'}</span>
+                            <span className="text-xs font-bold text-white truncate">{getLocalizedTitle(item.title, 'az') || 'Resurs'}</span>
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleOpenEditItem('gallery', item)}
@@ -1063,7 +1063,7 @@ export default function DashboardOverview() {
                     type="text"
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    placeholder="Category..."
+                    placeholder="Kateqoriya..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
                   />
                 </div>
@@ -1235,7 +1235,7 @@ export default function DashboardOverview() {
                     type="text"
                     value={formAuthor}
                     onChange={(e) => setFormAuthor(e.target.value)}
-                    placeholder="Author..."
+                    placeholder="Müəllif..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
@@ -1245,7 +1245,7 @@ export default function DashboardOverview() {
                     type="text"
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    placeholder="Category..."
+                    placeholder="Kateqoriya..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
                   />
                 </div>
@@ -1395,7 +1395,7 @@ export default function DashboardOverview() {
                     type="text"
                     value={formAuthor}
                     onChange={(e) => setFormAuthor(e.target.value)}
-                    placeholder="Author..."
+                    placeholder="Müəllif..."
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
@@ -1405,7 +1405,7 @@ export default function DashboardOverview() {
                     type="text"
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    placeholder="e.g. Psychology, Therapy"
+                    placeholder="məs. Psixologiya, Terapiya"
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                   />
                 </div>
@@ -1554,8 +1554,8 @@ export default function DashboardOverview() {
                     onChange={(e) => setFormMediaType(e.target.value as any)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                   >
-                    <option value="IMAGE">IMAGE</option>
-                    <option value="VIDEO">VIDEO</option>
+                    <option value="IMAGE">Şəkil</option>
+                    <option value="VIDEO">Video</option>
                   </select>
                 </div>
                 <div className="space-y-2">
@@ -1565,9 +1565,9 @@ export default function DashboardOverview() {
                     onChange={(e) => setFormCategory(e.target.value)}
                     className="w-full px-4 py-3 bg-[#1b1c2b] border border-[#2e3146] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
                   >
-                    <option value="TERAPIYALAR">TERAPIYALAR</option>
-                    <option value="OTAQLAR">OTAQLAR</option>
-                    <option value="TELIMLER">TELIMLER</option>
+                    <option value="TERAPIYALAR">Terapiyalar</option>
+                    <option value="OTAQLAR">Otaqlar</option>
+                    <option value="TELIMLER">Təlimlər</option>
                   </select>
                 </div>
               </div>
@@ -1723,7 +1723,7 @@ export default function DashboardOverview() {
         <div className="bg-slate-900/40 rounded-2xl p-8 border border-slate-800 text-white relative overflow-hidden shadow-md">
           <div className="relative z-10 space-y-2">
             <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-              {t('adminDashboard.welcomeTitle', { name: profile?.name || 'User' })}
+              {t('adminDashboard.welcomeTitle', { name: profile?.name || 'İstifadəçi' })}
             </h2>
             <p className="text-slate-400 text-sm font-medium">
               {t('adminDashboard.welcomeSubtitle')}

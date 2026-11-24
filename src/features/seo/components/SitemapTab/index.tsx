@@ -57,7 +57,7 @@ export default function SitemapTab({ sitemap, isSaving, onSave, onDirty }: Sitem
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-200">sitemap.xml</h3>
-            <p className="text-xs text-slate-500">Helps search engines discover and index all pages of your website.</p>
+            <p className="text-xs text-slate-500">Axtarış sistemlərinin veb-saytınızın bütün səhifələrini aşkarlayıb indeksləməsinə kömək edir.</p>
           </div>
         </div>
         <button
@@ -65,7 +65,7 @@ export default function SitemapTab({ sitemap, isSaving, onSave, onDirty }: Sitem
           className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-[#1b1c2b] hover:bg-[#222437] border border-[#2e3146] rounded-lg transition-all cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
-          Restore Default
+          Standartı Bərpa Et
         </button>
       </div>
 
@@ -78,7 +78,7 @@ export default function SitemapTab({ sitemap, isSaving, onSave, onDirty }: Sitem
       ) : isValid ? (
         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg w-fit">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Valid XML</span>
+          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Etibarlı XML</span>
         </div>
       ) : null}
 
@@ -94,7 +94,7 @@ export default function SitemapTab({ sitemap, isSaving, onSave, onDirty }: Sitem
       />
 
       {sitemap.lastUpdated && (
-        <p className="text-[10px] text-slate-600">Last saved: {new Date(sitemap.lastUpdated).toLocaleString()}</p>
+        <p className="text-[10px] text-slate-600">Son yadda saxlanılma: {new Date(sitemap.lastUpdated).toLocaleString('az-AZ')}</p>
       )}
 
       {/* Actions */}
@@ -104,14 +104,14 @@ export default function SitemapTab({ sitemap, isSaving, onSave, onDirty }: Sitem
           disabled={isSaving || !isDirty || !!xmlError}
           className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          {isSaving ? 'Saving…' : 'Save sitemap.xml'}
+          {isSaving ? 'Saxlanılır…' : 'sitemap.xml Yadda Saxla'}
         </button>
         <button
           onClick={handleReset}
           disabled={!isDirty}
           className="px-5 py-2 bg-[#1b1c2b] hover:bg-[#222437] disabled:opacity-40 disabled:cursor-not-allowed border border-[#2e3146] text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          Cancel
+          Ləğv et
         </button>
       </div>
     </div>

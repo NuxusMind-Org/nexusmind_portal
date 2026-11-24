@@ -34,8 +34,8 @@ export function MultilingualContentInput({
   accentColor = 'violet',
   contentRows = 6,
   requiredLanguages = ['az'],
-  titleLabel = 'Title',
-  contentLabel = 'Main Content',
+  titleLabel = 'Başlıq',
+  contentLabel = 'Əsas Mətn',
   titlePlaceholder,
   contentPlaceholder,
   showShortDescription = false
@@ -102,18 +102,18 @@ export function MultilingualContentInput({
   const placeholders = {
     az: {
       title: titlePlaceholder || 'Məzmunun Azərbaycan dilində başlığı...',
-      shortDesc: 'Qısa xülasə və ya intro (AZ)...',
+      shortDesc: 'Qısa xülasə və ya giriş (AZ)...',
       content: contentPlaceholder || 'Əsas mətn və ya məqalə mətni (Azərbaycan dili)...'
     },
     en: {
-      title: titlePlaceholder ? `${titlePlaceholder} (English)` : 'Content title in English...',
-      shortDesc: 'Brief summary or intro (EN)...',
-      content: contentPlaceholder ? `${contentPlaceholder} (English)` : 'Full body content (English)...'
+      title: titlePlaceholder ? `${titlePlaceholder} (İngilis dili)` : 'Məzmunun ingilis dilində başlığı...',
+      shortDesc: 'Qısa xülasə və ya giriş (EN)...',
+      content: contentPlaceholder ? `${contentPlaceholder} (İngilis dili)` : 'Əsas mətn (İngilis dili)...'
     },
     ru: {
-      title: titlePlaceholder ? `${titlePlaceholder} (Russian)` : 'Заголовок на русском языке...',
-      shortDesc: 'Краткое описание (RU)...',
-      content: contentPlaceholder ? `${contentPlaceholder} (Russian)` : 'Основной текст статьи (Русский язык)...'
+      title: titlePlaceholder ? `${titlePlaceholder} (Rus dili)` : 'Məzmunun rus dilində başlığı...',
+      shortDesc: 'Qısa xülasə və ya giriş (RU)...',
+      content: contentPlaceholder ? `${contentPlaceholder} (Rus dili)` : 'Əsas mətn (Rus dili)...'
     }
   }
 
@@ -124,10 +124,10 @@ export function MultilingualContentInput({
         <div className="flex items-center gap-2.5">
           <Globe className="w-5 h-5 text-slate-400" />
           <span className="text-sm font-bold text-white uppercase tracking-wider">
-            Multilingual Content (AZ / EN / RU)
+            Çoxdilli Məzmun (AZ / EN / RU)
           </span>
           <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-            (Dedicated fields for each language)
+            (Hər dil üçün ayrıca sahələr)
           </span>
         </div>
 
@@ -140,7 +140,7 @@ export function MultilingualContentInput({
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>Tabbed</span>
+            <span>Vərəqlər</span>
           </button>
           <button
             type="button"
@@ -150,7 +150,7 @@ export function MultilingualContentInput({
             }`}
           >
             <Columns2 className="w-3.5 h-3.5" />
-            <span>All Languages</span>
+            <span>Bütün Dillər</span>
           </button>
         </div>
       </div>
@@ -191,14 +191,14 @@ export function MultilingualContentInput({
                       </span>
                     ) : hasTitle ? (
                       <span className="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold">
-                        Title ✓
+                        Başlıq ✓
                       </span>
                     ) : isRequired ? (
                       <span className="p-0.5 rounded-full bg-rose-500/20 text-rose-300">
                         <AlertCircle className="w-3.5 h-3.5" />
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-500">optional</span>
+                      <span className="text-xs text-slate-500">istəyə bağlı</span>
                     )}
                   </div>
                 </button>
@@ -221,7 +221,7 @@ export function MultilingualContentInput({
                   )}
                 </label>
                 <span className="text-xs text-slate-500">
-                  {title[activeLang]?.length || 0} chars
+                  {title[activeLang]?.length || 0} simvol
                 </span>
               </div>
               <input
@@ -238,7 +238,7 @@ export function MultilingualContentInput({
             {showShortDescription && shortDescription && onShortDescriptionChange && (
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-200 flex items-center gap-2">
-                  <span>Short Description</span>
+                  <span>Qısa Təsvir</span>
                   <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-[#1e2030] text-slate-300 font-bold">
                     {activeLang.toUpperCase()}
                   </span>
@@ -266,7 +266,7 @@ export function MultilingualContentInput({
                   )}
                 </label>
                 <span className="text-xs text-slate-500">
-                  {content[activeLang]?.length || 0} characters
+                  {content[activeLang]?.length || 0} simvol
                 </span>
               </div>
               <textarea
@@ -301,7 +301,7 @@ export function MultilingualContentInput({
                   </div>
                   {isLangFilled(lang.code).isComplete && (
                     <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      <Check className="w-3.5 h-3.5" /> Ready
+                      <Check className="w-3.5 h-3.5" /> Hazırdır
                     </span>
                   )}
                 </div>
@@ -323,7 +323,7 @@ export function MultilingualContentInput({
                 {showShortDescription && shortDescription && onShortDescriptionChange && (
                   <div className="space-y-2">
                     <label className="text-xs font-semibold text-slate-300">
-                      Short Description ({lang.code.toUpperCase()})
+                      Qısa Təsvir ({lang.code.toUpperCase()})
                     </label>
                     <input
                       type="text"

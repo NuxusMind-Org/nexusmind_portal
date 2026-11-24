@@ -5,26 +5,26 @@ import type { SeoPageDefinition, SeoTabDefinition, PageSeoMetadata, SeoPageKey }
 // Add future pages here without changing architecture
 // ─────────────────────────────────────────────
 export const SEO_PAGES: SeoPageDefinition[] = [
-  { key: 'home',          label: 'Home',                description: 'Website homepage' },
-  { key: 'about',         label: 'About',               description: 'About us page' },
-  { key: 'services',      label: 'Services',            description: 'Services overview page' },
-  { key: 'psychologists', label: 'Psychologists',       description: 'Psychologist directory page' },
-  { key: 'blog',          label: 'Blog',                description: 'Blog listing page' },
-  { key: 'faq',           label: 'FAQ',                 description: 'Frequently asked questions' },
-  { key: 'contact',       label: 'Contact',             description: 'Contact us page' },
-  { key: 'blog-individual', label: 'Individual Blog Post', description: 'Template for single blog article pages', isDynamic: true },
+  { key: 'home',          label: 'Ana Səhifə',            description: 'Veb-saytın ana səhifəsi' },
+  { key: 'about',         label: 'Haqqımızda',            description: 'Haqqımızda səhifəsi' },
+  { key: 'services',      label: 'Xidmətlər',             description: 'Xidmətlərin icmalı səhifəsi' },
+  { key: 'psychologists', label: 'Psixoloqlar',           description: 'Psixoloqlar kataloqu səhifəsi' },
+  { key: 'blog',          label: 'Bloq',                  description: 'Bloq siyahısı səhifəsi' },
+  { key: 'faq',           label: 'Tez-tez Verilən Suallar', description: 'Tez-tez verilən suallar səhifəsi' },
+  { key: 'contact',       label: 'Əlaqə',                 description: 'Əlaqə səhifəsi' },
+  { key: 'blog-individual', label: 'Fərdi Bloq Yazısı',   description: 'Tək bloq məqaləsi səhifələri üçün şablon', isDynamic: true },
 ]
 
 // ─────────────────────────────────────────────
 // Tab navigation definitions
 // ─────────────────────────────────────────────
 export const SEO_TABS: SeoTabDefinition[] = [
-  { id: 'general',  label: 'General SEO',        description: 'Page metadata, Open Graph, Twitter cards, and robots directives' },
-  { id: 'schema',   label: 'Structured Data',    description: 'Schema.org JSON-LD markup per page' },
-  { id: 'scripts',  label: 'Scripts',            description: 'Head and body script injection (Analytics, GTM, Pixels)' },
-  { id: 'robots',   label: 'robots.txt',         description: 'Control crawler access to your website' },
-  { id: 'sitemap',  label: 'sitemap.xml',        description: 'XML sitemap for search engine indexing' },
-  { id: 'llms',     label: 'llms.txt',           description: 'Large language model discovery configuration' },
+  { id: 'general',  label: 'Ümumi SEO',              description: 'Səhifə metaməlumatları, Open Graph, Twitter kartları və bot direktivləri' },
+  { id: 'schema',   label: 'Strukturlaşdırılmış Məlumat', description: 'Hər səhifə üçün Schema.org JSON-LD işarələməsi' },
+  { id: 'scripts',  label: 'Skriptlər',              description: 'Head və body skriptləri (Analitika, GTM, Piksellər)' },
+  { id: 'robots',   label: 'robots.txt',             description: 'Axtarış botlarının sayta girişini tənzimləyin' },
+  { id: 'sitemap',  label: 'sitemap.xml',            description: 'Axtarış sistemlərinin indeksləməsi üçün XML sayt xəritəsi' },
+  { id: 'llms',     label: 'llms.txt',               description: 'Böyük dil modelləri üçün konfiqurasiya' },
 ]
 
 // ─────────────────────────────────────────────
@@ -47,7 +47,7 @@ export const getDefaultPageSeoMetadata = (pageKey: SeoPageKey): PageSeoMetadata 
 export const DEFAULT_ROBOTS_TXT = `User-agent: *
 Allow: /
 
-Sitemap: https://yourdomain.com/sitemap.xml`
+Sitemap: https://nexusmind.az/sitemap.xml`
 
 // ─────────────────────────────────────────────
 // Default sitemap.xml content
@@ -55,7 +55,7 @@ Sitemap: https://yourdomain.com/sitemap.xml`
 export const DEFAULT_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://yourdomain.com/</loc>
+    <loc>https://nexusmind.az/</loc>
     <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
@@ -66,16 +66,16 @@ export const DEFAULT_SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
 // Default llms.txt content
 // ─────────────────────────────────────────────
 export const DEFAULT_LLMS_TXT = `# llms.txt
-# This file provides guidance for large language models (LLMs) about this website.
+# Bu fayl böyük dil modellərinə (LLM) veb-sayt haqqında bələdçilik təqdim edir.
 
-# Organization
-> Organization: BPM - Bakı Psixologiya Mərkəzi
-> Website: https://yourdomain.com
-> Description: Mental health services platform.
+# Təşkilat
+> Təşkilat: BPM - Bakı Psixologiya Mərkəzi
+> Veb-sayt: https://nexusmind.az
+> Təsvir: Psixi sağlamlıq xidmətləri platforması.
 
-## Allowed
-> Allow LLMs to reference public pages including: Home, About, Services, Blog, FAQ, Contact.
+## İcazə Verilənlər
+> Süni intellekt sistemlərinin ictimai səhifələrə istinad etməsinə icazə verilir: Ana Səhifə, Haqqımızda, Xidmətlər, Bloq, Suallar, Əlaqə.
 
-## Restricted
-> Do not index or reference patient data, clinical records, or internal admin pages.
+## Məhdudlaşdırılmış
+> Pasiyent məlumatlarını, klinik qeydləri və ya daxili idarəetmə səhifələrini indeksləməyin və istinad etməyin.
 `

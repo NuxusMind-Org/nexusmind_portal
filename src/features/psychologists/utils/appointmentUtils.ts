@@ -53,7 +53,7 @@ export function formatAppointmentTime(
   const timeStr = `${pad(hour)}:${pad(minute)}`
 
   if (includeDuration) {
-    return `${timeStr} (${durationMinutes} min)`
+    return `${timeStr} (${durationMinutes} dəq)`
   }
   return timeStr
 }
@@ -65,7 +65,7 @@ export function formatAppointmentMode(mode?: AppointmentMode | string) {
   switch (mode?.toUpperCase()) {
     case 'VR':
       return {
-        label: 'VR Session',
+        label: 'VR Sessiyası',
         shortLabel: 'VR',
         bg: 'bg-purple-500/10',
         text: 'text-purple-400',
@@ -74,8 +74,8 @@ export function formatAppointmentMode(mode?: AppointmentMode | string) {
       }
     case 'VIDEO_CALL':
       return {
-        label: 'Online Video Call',
-        shortLabel: 'Online',
+        label: 'Onlayn Video Zəng',
+        shortLabel: 'Onlayn',
         bg: 'bg-blue-500/10',
         text: 'text-blue-400',
         border: 'border-blue-500/20',
@@ -83,8 +83,8 @@ export function formatAppointmentMode(mode?: AppointmentMode | string) {
       }
     case 'APP':
       return {
-        label: 'App Session',
-        shortLabel: 'App',
+        label: 'Tətbiq Sessiyası',
+        shortLabel: 'Tətbiq',
         bg: 'bg-emerald-500/10',
         text: 'text-emerald-400',
         border: 'border-emerald-500/20',
@@ -92,8 +92,8 @@ export function formatAppointmentMode(mode?: AppointmentMode | string) {
       }
     default:
       return {
-        label: mode || 'General Session',
-        shortLabel: mode || 'Session',
+        label: mode || 'Ümumi Sessiya',
+        shortLabel: mode || 'Sessiya',
         bg: 'bg-slate-500/10',
         text: 'text-slate-400',
         border: 'border-slate-500/20',
@@ -109,42 +109,42 @@ export function formatAppointmentStatus(status?: AppointmentStatus | string) {
   switch (status?.toUpperCase()) {
     case 'SCHEDULED':
       return {
-        label: 'Scheduled',
+        label: 'Planlaşdırılıb',
         bg: 'bg-violet-500/10',
         text: 'text-violet-400',
         border: 'border-violet-500/20',
       }
     case 'WAITING':
       return {
-        label: 'Waiting',
+        label: 'Gözləyir',
         bg: 'bg-amber-500/10',
         text: 'text-amber-400',
         border: 'border-amber-500/20',
       }
     case 'IN_PROGRESS':
       return {
-        label: 'In Progress',
+        label: 'Davam edir',
         bg: 'bg-cyan-500/10',
         text: 'text-cyan-400',
         border: 'border-cyan-500/20',
       }
     case 'COMPLETED':
       return {
-        label: 'Completed',
+        label: 'Tamamlandı',
         bg: 'bg-slate-500/10',
         text: 'text-slate-400',
         border: 'border-slate-500/20',
       }
     case 'CANCELLED':
       return {
-        label: 'Cancelled',
+        label: 'Ləğv edilib',
         bg: 'bg-rose-500/10',
         text: 'text-rose-400',
         border: 'border-rose-500/20',
       }
     default:
       return {
-        label: status || 'Scheduled',
+        label: status || 'Planlaşdırılıb',
         bg: 'bg-violet-500/10',
         text: 'text-violet-400',
         border: 'border-violet-500/20',

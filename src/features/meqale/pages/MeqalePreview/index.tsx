@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  BookOpen, 
-  CheckCircle2, 
-  Globe, 
-  Tag, 
-  Quote as QuoteIcon, 
-  Loader2, 
-  AlertCircle, 
-  Share2, 
-  Check, 
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  Globe,
+  Tag,
+  Quote as QuoteIcon,
+  Loader2,
+  AlertCircle,
+  Share2,
+  Check,
   Sparkles,
-  User
+  User,
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { MeqaleResponseDto } from '../../../../types/portalDtos'
 import { getLocalizedTitle } from '../../../../utils/multilingual'
+
+const getStatusLabel = (status?: string) => {
+  switch (status) {
+    case 'PUBLISHED':
+      return 'Dərc edilib'
+    case 'DRAFT':
+      return 'Qaralama'
+    case 'ARCHIVED':
+      return 'Arxivlənib'
+    default:
+      return 'Dərc edilib'
+  }
+}
 
 export default function MeqalePreview() {
   const { id } = useParams<{ id: string }>()
@@ -29,7 +42,7 @@ export default function MeqalePreview() {
 
   useEffect(() => {
     if (!id) {
-      setError('No article ID provided.')
+      setError('Məqalə ID-si göstərilməyib.')
       setIsLoading(false)
       return
     }
@@ -42,11 +55,11 @@ export default function MeqalePreview() {
         if (data) {
           setItem(data)
         } else {
-          setError('Article not found.')
+          setError('Məqalə tapılmadı.')
         }
       } catch (err: any) {
         console.error('Failed to fetch article details', err)
-        setError(err?.response?.data?.message || 'Failed to load article.')
+        setError(err?.response?.data?.message || 'Məqaləni yükləmək mümkün olmadı.')
       } finally {
         setIsLoading(false)
       }
@@ -65,7 +78,7 @@ export default function MeqalePreview() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-slate-400">
         <Loader2 className="w-9 h-9 animate-spin text-indigo-400" />
-        <span className="text-sm font-semibold">Loading article reader...</span>
+        <span className="text-sm font-semibold">Məqalə oxuyucusu yüklənir...</span>
       </div>
     )
   }
@@ -76,14 +89,14 @@ export default function MeqalePreview() {
         <div className="p-4 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
           <AlertCircle className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-white">Article Not Found</h2>
-        <p className="text-xs text-slate-400 max-w-md">{error || 'The requested article could not be retrieved.'}</p>
+        <h2 className="text-xl font-bold text-white">Məqalə Tapılmadı</h2>
+        <p className="text-xs text-slate-400 max-w-md">{error || 'İstənilən məqalə əldə edilə bilmədi.'}</p>
         <button
           onClick={() => navigate('/org/meqale')}
           className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Articles</span>
+          <span>Məqalələrə Qayıt</span>
         </button>
       </div>
     )
@@ -101,7 +114,7 @@ export default function MeqalePreview() {
             className="p-2 rounded-xl bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-semibold">Back to Articles</span>
+            <span className="font-semibold">Məqalələrə Qayıt</span>
           </button>
           <span className="text-slate-600">/</span>
           <span className="text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
@@ -119,7 +132,7 @@ export default function MeqalePreview() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Article Reader
+              Məqalə Oxuyucusu
             </button>
             <button
               onClick={() => setActiveTab('seo')}
@@ -129,17 +142,17 @@ export default function MeqalePreview() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              SEO & Schema
+              SEO və Sxem
             </button>
           </div>
 
           <button
             onClick={handleCopyLink}
             className="p-2 rounded-xl bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-medium"
-            title="Copy URL"
+            title="Linki kopyala"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-            <span className="hidden sm:inline">{copied ? 'Copied' : 'Share'}</span>
+            <span className="hidden sm:inline">{copied ? 'Kopyalandı' : 'Paylaş'}</span>
           </button>
         </div>
       </div>
@@ -167,11 +180,11 @@ export default function MeqalePreview() {
           <div className="px-6 sm:px-12 space-y-5">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-bold text-xs uppercase tracking-wider">
-                {item.category || 'Psychology'}
+                {item.category || 'Psixologiya'}
               </span>
               <span className="px-3.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-indigo-400" />
-                <span>{item.author || 'BPM Editorial'}</span>
+                <span>{item.author || 'BPM Redaksiya'}</span>
               </span>
               <span className={`px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
                 item.status === 'PUBLISHED'
@@ -181,11 +194,11 @@ export default function MeqalePreview() {
                   : 'bg-amber-500/15 border border-amber-500/30 text-amber-300'
               }`}>
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>{item.status || 'PUBLISHED'}</span>
+                <span>{getStatusLabel(item.status)}</span>
               </span>
               {item.doctorId && (
                 <span className="px-3.5 py-1 rounded-full bg-indigo-950/60 border border-indigo-500/30 text-indigo-300 text-xs font-mono">
-                  Doctor #{item.doctorId}
+                  Həkim #{item.doctorId}
                 </span>
               )}
             </div>
@@ -213,7 +226,7 @@ export default function MeqalePreview() {
             <div className="mx-6 sm:mx-12 space-y-4">
               <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-wider">
                 <Sparkles className="w-4 h-4" />
-                <span>Key Clinical Takeaways</span>
+                <span>Əsas Klinik Nəticələr</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {item.highlightCards.map((card, idx) => (
@@ -253,7 +266,7 @@ export default function MeqalePreview() {
                 ))}
               </div>
             ) : (
-              <div className="whitespace-pre-line">{item.content || 'No detailed content available.'}</div>
+              <div className="whitespace-pre-line">{item.content || 'Ətraflı məzmun mövcud deyil.'}</div>
             )}
           </div>
 
@@ -273,26 +286,26 @@ export default function MeqalePreview() {
           <div className="flex items-center gap-3 pb-4 border-b border-[#222437]">
             <Globe className="w-6 h-6 text-indigo-400" />
             <div>
-              <h2 className="text-lg font-bold text-white">Article SEO & Search Graph</h2>
-              <p className="text-xs text-slate-400">Search keywords, author indexing, and JSON-LD schema metadata.</p>
+              <h2 className="text-lg font-bold text-white">Məqalə SEO və Axtarış Məlumatları</h2>
+              <p className="text-xs text-slate-400">Axtarış açar sözləri, müəllif məlumatları və JSON-LD sxem qeydləri.</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div className="p-4 bg-[#1b1c2b] rounded-xl border border-[#2e3146] space-y-1">
-              <span className="text-slate-400 font-semibold">Author Credits:</span>
-              <p className="text-white font-semibold">{item.author || 'BPM Editorial'}</p>
+              <span className="text-slate-400 font-semibold">Müəllif:</span>
+              <p className="text-white font-semibold">{item.author || 'BPM Redaksiya'}</p>
             </div>
             <div className="p-4 bg-[#1b1c2b] rounded-xl border border-[#2e3146] space-y-1">
-              <span className="text-slate-400 font-semibold">Category Domain:</span>
-              <p className="text-white font-semibold">{item.category || 'Psychology'}</p>
+              <span className="text-slate-400 font-semibold">Kateqoriya:</span>
+              <p className="text-white font-semibold">{item.category || 'Psixologiya'}</p>
             </div>
           </div>
 
           {/* Keywords */}
           {item.metaKeywords && item.metaKeywords.length > 0 && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">Indexed Search Keywords:</span>
+              <span className="text-xs font-semibold text-slate-300">İndekslənmiş Açar Sözlər:</span>
               <div className="flex flex-wrap gap-2">
                 {item.metaKeywords.map((kw, i) => (
                   <span
@@ -310,7 +323,7 @@ export default function MeqalePreview() {
           {/* Schema JSON-LD */}
           {item.schemaMarkup && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300 block">Structured Data Graph (JSON-LD):</span>
+              <span className="text-xs font-semibold text-slate-300 block">Strukturlaşdırılmış Məlumat (JSON-LD):</span>
               <pre className="p-4 bg-[#0a0b12] rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto border border-[#222437]">
                 {item.schemaMarkup}
               </pre>

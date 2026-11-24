@@ -61,7 +61,7 @@ export default function SitemapManager() {
 
   const handleAddUrl = () => {
     const newEntry: SitemapUrlEntry = {
-      loc: 'https://nexusmind.az/new-page',
+      loc: 'https://nexusmind.az/yeni-sehife',
       priority: 0.8,
       changefreq: 'weekly',
     }
@@ -94,10 +94,10 @@ export default function SitemapManager() {
         urls,
         xml: xmlToSave,
       })
-      setFeedback({ type: 'success', message: 'Sitemap updated successfully!' })
+      setFeedback({ type: 'success', message: 'Sayt xəritəsi (sitemap.xml) uğurla yeniləndi!' })
     } catch (err) {
       console.error('Failed to update sitemap', err)
-      setFeedback({ type: 'error', message: 'Failed to update sitemap.' })
+      setFeedback({ type: 'error', message: 'Sayt xəritəsi yenilənə bilmədi.' })
     } finally {
       setIsSaving(false)
     }
@@ -112,9 +112,9 @@ export default function SitemapManager() {
             <Network className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">Sitemap Viewer & Editor (sitemap.xml)</h2>
+            <h2 className="text-lg font-bold text-white">Sayt Xəritəsi Redaktoru (sitemap.xml)</h2>
             <p className="text-xs text-slate-400">
-              Manage indexed page URLs, priorities, and update frequencies.
+              İndekslənən səhifə URL-lərini, prioritetlərini və yenilənmə tezliyini idarə edin.
             </p>
           </div>
         </div>
@@ -131,7 +131,7 @@ export default function SitemapManager() {
             }`}
           >
             <LayoutList className="w-3.5 h-3.5" />
-            <span>Visual Mode</span>
+            <span>Vizual Rejim</span>
           </button>
           <button
             type="button"
@@ -143,7 +143,7 @@ export default function SitemapManager() {
             }`}
           >
             <Code className="w-3.5 h-3.5" />
-            <span>Raw XML Mode</span>
+            <span>Xam XML Rejimi</span>
           </button>
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function SitemapManager() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-300">
-                  Sitemap URLs ({urls.length})
+                  Sayt Xəritəsi URL-ləri ({urls.length})
                 </span>
                 <button
                   type="button"
@@ -183,7 +183,7 @@ export default function SitemapManager() {
                   className="px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add URL Entry</span>
+                  <span>URL Əlavə Et</span>
                 </button>
               </div>
 
@@ -194,36 +194,36 @@ export default function SitemapManager() {
                     className="bg-[#10111a] border border-[#222437] rounded-xl p-3.5 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center"
                   >
                     <div className="sm:col-span-6 space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400">URL Location (loc)</label>
+                      <label className="text-[10px] font-semibold text-slate-400">URL Ünvanı</label>
                       <input
                         type="url"
                         required
                         value={entry.loc}
                         onChange={(e) => handleUpdateUrl(idx, 'loc', e.target.value)}
-                        placeholder="https://nexusmind.az/page"
+                        placeholder="https://nexusmind.az/sehife"
                         className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
                       />
                     </div>
 
                     <div className="sm:col-span-3 space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400">Frequency</label>
+                      <label className="text-[10px] font-semibold text-slate-400">Yenilənmə Tezliyi</label>
                       <select
                         value={entry.changefreq || 'weekly'}
                         onChange={(e) => handleUpdateUrl(idx, 'changefreq', e.target.value)}
                         className="w-full px-3 py-2 bg-[#1b1c2b] border border-[#2e3146] rounded-lg text-xs text-white focus:outline-none focus:border-purple-500"
                       >
-                        <option value="always">always</option>
-                        <option value="hourly">hourly</option>
-                        <option value="daily">daily</option>
-                        <option value="weekly">weekly</option>
-                        <option value="monthly">monthly</option>
-                        <option value="yearly">yearly</option>
-                        <option value="never">never</option>
+                        <option value="always">Həmişə</option>
+                        <option value="hourly">Saatlıq</option>
+                        <option value="daily">Gündəlik</option>
+                        <option value="weekly">Həftəlik</option>
+                        <option value="monthly">Aylıq</option>
+                        <option value="yearly">İllik</option>
+                        <option value="never">Heç vaxt</option>
                       </select>
                     </div>
 
                     <div className="sm:col-span-2 space-y-1">
-                      <label className="text-[10px] font-semibold text-slate-400">Priority (0.1 - 1.0)</label>
+                      <label className="text-[10px] font-semibold text-slate-400">Prioritet (0.1 - 1.0)</label>
                       <input
                         type="number"
                         step="0.1"
@@ -240,7 +240,7 @@ export default function SitemapManager() {
                         type="button"
                         onClick={() => handleRemoveUrl(idx)}
                         className="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-colors cursor-pointer"
-                        title="Remove URL"
+                        title="URL-i sil"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -252,8 +252,8 @@ export default function SitemapManager() {
           ) : (
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                <span>Raw XML Content (&lt;urlset&gt;)</span>
-                <span className="text-[10px] text-slate-500 font-mono">Standard Sitemap 0.9 XML</span>
+                <span>Xam XML Məzmunu (&lt;urlset&gt;)</span>
+                <span className="text-[10px] text-slate-500 font-mono">Standart Sitemap 0.9 XML</span>
               </label>
               <textarea
                 rows={12}
@@ -272,7 +272,7 @@ export default function SitemapManager() {
               className="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center gap-2 cursor-pointer shadow-[0_4px_16px_rgba(147,51,234,0.25)] transition-all"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>Save Sitemap</span>
+              <span>Sitemap Yadda Saxla</span>
             </button>
           </div>
         </form>

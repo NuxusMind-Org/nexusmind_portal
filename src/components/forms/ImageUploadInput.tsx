@@ -30,8 +30,8 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
   value,
   onChange,
   folder = 'general',
-  label = 'Image URL / Upload',
-  placeholder = 'https://... or upload an image file',
+  label = 'Şəkil URL / Yüklə',
+  placeholder = 'https://... və ya şəkil faylı yükləyin',
   required = false,
   disabled = false,
   helperText,
@@ -101,13 +101,13 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
 
     // Validate size
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setErrorMessage(`File size exceeds maximum allowed ${maxSizeMB}MB limit.`)
+      setErrorMessage(`Faylın ölçüsü icazə verilən maksimum ${maxSizeMB} MB həddini aşır.`)
       return
     }
 
     // Validate type
     if (!file.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (JPG, PNG, WebP, SVG, etc.).')
+      setErrorMessage('Zəhmət olmasa düzgün şəkil faylı seçin (JPG, PNG, WebP, SVG və s.).')
       return
     }
 
@@ -119,16 +119,16 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
       if (response && response.imageUrl) {
         onChange(response.imageUrl)
       } else {
-        throw new Error('Upload succeeded but server did not return an imageUrl.')
+        throw new Error('Yükləmə tamamlandı, lakin server şəkil ünvanı qaytarmadı.')
       }
     } catch (err: any) {
       console.error('File upload error:', err)
-      const message = 
-        err?.response?.data?.message || 
-        err?.response?.data?.error || 
-        (err?.response?.status ? `Upload failed (${err.response.status}: ${err.response.statusText || 'Server Error'})` : null) || 
-        err?.message || 
-        'Failed to upload image. Please try again.'
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        (err?.response?.status ? `Yükləmə uğursuz oldu (${err.response.status})` : null) ||
+        err?.message ||
+        'Şəkli yükləmək mümkün olmadı. Zəhmət olmasa yenidən cəhd edin.'
       setErrorMessage(message)
     } finally {
       setIsUploading(false)
@@ -191,7 +191,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           </label>
           {folder && (
             <span className={`text-xs px-2.5 py-0.5 rounded-full border font-mono ${styles.badge}`}>
-              folder: {folder}
+              qovluq: {folder}
             </span>
           )}
         </div>
@@ -202,7 +202,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           className="text-xs font-semibold text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
         >
           <LinkIcon className="w-3.5 h-3.5" />
-          <span>{showUrlInput ? 'Hide URL text' : 'Direct URL edit'}</span>
+          <span>{showUrlInput ? 'URL sahəsini gizlət' : 'Birbaşa URL daxil et'}</span>
         </button>
       </div>
 
@@ -224,7 +224,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
             {!previewError ? (
               <img
                 src={value}
-                alt="Upload preview"
+                alt="Yüklənmiş şəkil önizləməsi"
                 className="w-full h-full object-cover"
                 onError={() => setPreviewError(true)}
               />
@@ -242,7 +242,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="text-sm font-bold text-white truncate">Image Attached</span>
+              <span className="text-sm font-bold text-white truncate">Şəkil əlavə edildi</span>
             </div>
             <p className="text-xs text-slate-400 font-mono truncate max-w-full">
               {value}
@@ -255,7 +255,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
                 className="text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <UploadCloud className="w-3.5 h-3.5" />
-                <span>Replace file</span>
+                <span>Faylı dəyişdir</span>
               </button>
               <a
                 href={value}
@@ -264,7 +264,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
                 className="text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1.5"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
-                <span>Open image</span>
+                <span>Şəkli aç</span>
               </a>
             </div>
           </div>
@@ -274,7 +274,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
             type="button"
             onClick={handleClearImage}
             disabled={disabled || isUploading}
-            title="Remove image"
+            title="Şəkli sil"
             className="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors shrink-0 cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
@@ -294,8 +294,7 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
           {isUploading ? (
             <div className="flex flex-col items-center justify-center py-3 space-y-2.5">
               <Loader2 className={`w-10 h-10 animate-spin ${styles.iconColor}`} />
-              <div className="text-sm font-bold text-white">Uploading to {folder} folder...</div>
-              <div className="text-xs text-slate-400 font-mono">POST /upload?folder={folder}</div>
+              <div className="text-sm font-bold text-white">{folder} qovluğuna yüklənir...</div>
             </div>
           ) : (
             <>
@@ -304,10 +303,10 @@ export const ImageUploadInput: React.FC<ImageUploadInputProps> = ({
               </div>
               <div className="space-y-1">
                 <p className="text-sm sm:text-base font-bold text-white">
-                  <span className="underline decoration-dotted underline-offset-4">Click to browse</span> or drag and drop image
+                  <span className="underline decoration-dotted underline-offset-4">Fayl seçmək üçün klikləyin</span> və ya şəkli buraya sürükləyin
                 </p>
                 <p className="text-xs text-slate-400">
-                  PNG, JPG, WEBP, SVG or GIF up to {maxSizeMB}MB
+                  PNG, JPG, WEBP, SVG və ya GIF (maks. {maxSizeMB} MB)
                 </p>
               </div>
             </>

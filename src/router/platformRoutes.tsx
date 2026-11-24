@@ -11,11 +11,11 @@ export const platformRoutes: RouteObject = {
       children: [
         {
           path: 'organizations',
-          element: <div>Platform Organizations Placeholder</div>,
+          element: <div>Platforma Təşkilatları</div>,
         },
         {
           path: 'analytics',
-          element: <div>Platform Analytics Placeholder</div>,
+          element: <div>Platforma Analitikası</div>,
         },
       ],
     },

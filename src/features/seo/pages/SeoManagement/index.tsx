@@ -17,10 +17,10 @@ export default function SeoManagement() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
             <SearchCheck className="w-8 h-8 text-cyan-400" />
-            <span>SEO Management Suite</span>
+            <span>SEO İdarəetmə Paneli</span>
           </h1>
           <p className="text-xs text-slate-400 font-medium mt-1">
-            Exclusive Organization Admin tools for search engine optimization, tracking scripts, crawler directives, and AI indexing.
+            Axtarış sistemlərinin optimallaşdırılması, izləmə skriptləri, bot direktivləri və süni intellekt indeksləməsi üçün idarəetmə alətləri.
           </p>
         </div>
       </div>
@@ -36,7 +36,7 @@ export default function SeoManagement() {
           }`}
         >
           <Code2 className="w-4 h-4" />
-          <span>Site Scripts</span>
+          <span>Sayt Skriptləri</span>
         </button>
 
         <button
@@ -72,7 +72,7 @@ export default function SeoManagement() {
           }`}
         >
           <Cpu className="w-4 h-4" />
-          <span>llms.txt (AI)</span>
+          <span>llms.txt (Süni İntellekt)</span>
         </button>
       </div>
 

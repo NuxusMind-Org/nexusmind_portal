@@ -24,7 +24,14 @@ export interface DoctorPricesPanelProps {
   compact?: boolean
 }
 
-const SESSION_TYPE_OPTIONS = ['INDIVIDUAL', 'COUPLE', 'FAMILY', 'CHILD', 'GROUP']
+const SESSION_TYPE_OPTIONS = ['INDIVIDUAL', 'COUPLE', 'FAMILY', 'CHILD', 'GROUP'] as const
+const SESSION_TYPE_LABELS: Record<string, string> = {
+  INDIVIDUAL: 'Fərdi',
+  COUPLE: 'Cütlük',
+  FAMILY: 'Ailə',
+  CHILD: 'Uşaq',
+  GROUP: 'Qrup',
+}
 const CURRENCY_OPTIONS = ['AZN', 'USD', 'EUR']
 
 const resolveNumericId = (val: unknown): number | null => {
@@ -119,7 +126,7 @@ export function DoctorPricesPanel({ doctorId, doctorName, compact = false }: Doc
 
   const validateForm = (): string | null => {
     if (!formData.label.trim()) {
-      return t('pricing.labelRequired', { defaultValue: 'Xidmət adı (label) mütləqdir.' })
+      return t('pricing.labelRequired')
     }
     if (formData.amount === undefined || isNaN(Number(formData.amount)) || Number(formData.amount) < 0) {
       return t('pricing.amountInvalid', { defaultValue: 'Məbləğ 0 və ya daha böyük olmalıdır.' })
@@ -224,11 +231,8 @@ export function DoctorPricesPanel({ doctorId, doctorName, compact = false }: Doc
             <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 flex-wrap">
               <span>
                 {doctorName
-                  ? `${doctorName} — ${t('pricing.title', { defaultValue: 'Seans Qiymətləri' })}`
-                  : t('pricing.title', { defaultValue: 'Seans Qiymətləri və Tariflər' })}
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono">
-                /doctors/{activeDoctorId}/prices
+                  ? `${doctorName} — ${t('pricing.title')}`
+                  : t('pricing.title')}
               </span>
             </h2>
             {!compact && (
@@ -359,7 +363,7 @@ export function DoctorPricesPanel({ doctorId, doctorName, compact = false }: Doc
                     <td className="py-3.5 px-4 font-bold text-white">{item.label || '—'}</td>
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-violet-500/10 text-violet-300 border border-violet-500/20">
-                        {item.sessionType || 'INDIVIDUAL'}
+                        {SESSION_TYPE_LABELS[item.sessionType || 'INDIVIDUAL'] || item.sessionType || 'Fərdi'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-slate-300 font-semibold">
@@ -510,7 +514,7 @@ export function DoctorPricesPanel({ doctorId, doctorName, compact = false }: Doc
                   >
                     {SESSION_TYPE_OPTIONS.map((st) => (
                       <option key={st} value={st}>
-                        {st}
+                        {SESSION_TYPE_LABELS[st] || st}
                       </option>
                     ))}
                   </select>

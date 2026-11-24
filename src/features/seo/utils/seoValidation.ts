@@ -16,27 +16,27 @@ export function validateJsonLd(raw: string): string | null {
     const parsed = JSON.parse(trimmed)
 
     if (typeof parsed !== 'object' || parsed === null) {
-      return 'Schema must be a valid JSON object or array.'
+      return 'Sxem etibarlı JSON obyekti və ya massivi olmalıdır.'
     }
 
     return null // valid
   } catch (err) {
     if (err instanceof SyntaxError) {
-      return `Invalid JSON: ${err.message}`
+      return `Yanlış JSON: ${err.message}`
     }
-    return 'Invalid JSON format.'
+    return 'Yanlış JSON formatı.'
   }
 }
 
 // ─────────────────────────────────────────────
 // XML Validator (basic well-formedness check)
-// Returns null if valid, error message if invalid
+// Returns null if valid, error message string if invalid
 // ─────────────────────────────────────────────
 export function validateXml(raw: string): string | null {
   const trimmed = raw.trim()
 
   if (!trimmed) {
-    return 'Sitemap content cannot be empty.'
+    return 'Sitemap məzmunu boş ola bilməz.'
   }
 
   if (typeof DOMParser !== 'undefined') {
@@ -45,18 +45,18 @@ export function validateXml(raw: string): string | null {
       const doc = parser.parseFromString(trimmed, 'application/xml')
       const parseError = doc.querySelector('parsererror')
       if (parseError) {
-        const errorText = parseError.textContent ?? 'Invalid XML.'
-        return `XML parse error: ${errorText.split('\n')[0]}`
+        const errorText = parseError.textContent ?? 'Yanlış XML.'
+        return `XML sintaksis xətası: ${errorText.split('\n')[0]}`
       }
       return null // valid
     } catch {
-      return 'Failed to parse XML.'
+      return 'XML oxunarkən xəta baş verdi.'
     }
   }
 
   // Fallback: basic tag balance check
   if (!trimmed.startsWith('<?xml') && !trimmed.startsWith('<')) {
-    return 'Content does not appear to be valid XML.'
+    return 'Məzmun etibarlı XML formatında görünmür.'
   }
 
   return null

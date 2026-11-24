@@ -36,13 +36,13 @@ const STANDARD_HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17];
 const HOURS = Array.from({ length: 23 }, (_, i) => i);
 
 const DAY_LABELS = [
-  { azName: 'Bazar ertəsi', shortAz: 'B.E', shortEn: 'MON' },
-  { azName: 'Çərşənbə axşamı', shortAz: 'Ç.A', shortEn: 'TUE' },
-  { azName: 'Çərşənbə', shortAz: 'ÇƏR', shortEn: 'WED' },
-  { azName: 'Cümə axşamı', shortAz: 'C.A', shortEn: 'THU' },
-  { azName: 'Cümə', shortAz: 'CÜM', shortEn: 'FRI' },
-  { azName: 'Şənbə', shortAz: 'ŞƏN', shortEn: 'SAT' },
-  { azName: 'Bazar', shortAz: 'BAZ', shortEn: 'SUN' },
+  { azName: 'Bazar ertəsi', shortAz: 'B.E' },
+  { azName: 'Çərşənbə axşamı', shortAz: 'Ç.A' },
+  { azName: 'Çərşənbə', shortAz: 'ÇƏR' },
+  { azName: 'Cümə axşamı', shortAz: 'C.A' },
+  { azName: 'Cümə', shortAz: 'CÜM' },
+  { azName: 'Şənbə', shortAz: 'ŞƏN' },
+  { azName: 'Bazar', shortAz: 'BAZ' },
 ];
 
 type HourMap = Record<string, number[]>;

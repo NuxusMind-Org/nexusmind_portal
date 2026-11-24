@@ -18,15 +18,15 @@ const HEAD_PLACEHOLDER = `<!-- Google Analytics -->
   gtag('config', 'G-XXXXXXXXXX');
 </script>
 
-<!-- Google Search Console Verification -->
-<meta name="google-site-verification" content="your-verification-code" />
+<!-- Google Search Console Doğrulama -->
+<meta name="google-site-verification" content="dogrulama-kodunuz" />
 
 <!-- Meta Pixel -->
 <script>
   !function(f,b,e,v,n,t,s)
   {if(f.fbq)return;n=f.fbq=function(){...}
   }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', 'YOUR_PIXEL_ID');
+  fbq('init', 'PIXEL_ID');
   fbq('track', 'PageView');
 </script>`
 
@@ -34,7 +34,7 @@ const BODY_PLACEHOLDER = `<!-- Google Tag Manager (body) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-<!-- Other body scripts -->
+<!-- Digər body skriptləri -->
 `
 
 export default function ScriptsTab({ scripts, isSaving, onSave, onDirty }: ScriptsTabProps) {
@@ -72,8 +72,8 @@ export default function ScriptsTab({ scripts, isSaving, onSave, onDirty }: Scrip
       <div className="flex items-start gap-3 p-4 bg-sky-500/5 border border-sky-500/15 rounded-xl">
         <Info className="w-4 h-4 text-sky-400 mt-0.5 shrink-0" />
         <div className="text-xs text-sky-300 space-y-1">
-          <p className="font-bold">About Script Injection</p>
-          <p className="text-sky-400/80">Head scripts are injected inside <code className="bg-sky-900/40 px-1 rounded">&lt;head&gt;</code>. Body scripts are injected right after the opening <code className="bg-sky-900/40 px-1 rounded">&lt;body&gt;</code> tag. Do not include wrapping <code className="bg-sky-900/40 px-1 rounded">&lt;html&gt;</code> or <code className="bg-sky-900/40 px-1 rounded">&lt;body&gt;</code> tags.</p>
+          <p className="font-bold">Skript Əlavə Etmə Haqqında</p>
+          <p className="text-sky-400/80">Head skriptləri <code className="bg-sky-900/40 px-1 rounded">&lt;head&gt;</code> teqinin daxilinə, Body skriptləri isə açılış <code className="bg-sky-900/40 px-1 rounded">&lt;body&gt;</code> teqindən dərhal sonra əlavə olunur. Əlavə <code className="bg-sky-900/40 px-1 rounded">&lt;html&gt;</code> və ya <code className="bg-sky-900/40 px-1 rounded">&lt;body&gt;</code> teqləri yazmayın.</p>
         </div>
       </div>
 
@@ -85,8 +85,8 @@ export default function ScriptsTab({ scripts, isSaving, onSave, onDirty }: Scrip
               <Code className="w-3.5 h-3.5 text-violet-400" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-200">Head Scripts</h3>
-              <p className="text-[10px] text-slate-500">Analytics, verification tags, Meta Pixel, etc.</p>
+              <h3 className="text-xs font-bold text-slate-200">Head Skriptləri</h3>
+              <p className="text-[10px] text-slate-500">Analitika, doğrulama teqləri, Meta Pixel və s.</p>
             </div>
           </div>
           <textarea
@@ -106,8 +106,8 @@ export default function ScriptsTab({ scripts, isSaving, onSave, onDirty }: Scrip
               <Code className="w-3.5 h-3.5 text-teal-400" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-200">Body Scripts</h3>
-              <p className="text-[10px] text-slate-500">GTM body snippet, Intercom, Hotjar, etc.</p>
+              <h3 className="text-xs font-bold text-slate-200">Body Skriptləri</h3>
+              <p className="text-[10px] text-slate-500">GTM body kodu, Intercom, Hotjar və s.</p>
             </div>
           </div>
           <textarea
@@ -128,14 +128,14 @@ export default function ScriptsTab({ scripts, isSaving, onSave, onDirty }: Scrip
           disabled={isSaving || !isDirty}
           className="px-5 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          {isSaving ? 'Saving…' : 'Save Scripts'}
+          {isSaving ? 'Saxlanılır…' : 'Skriptləri Yadda Saxla'}
         </button>
         <button
           onClick={handleReset}
           disabled={!isDirty}
           className="px-5 py-2 bg-[#1b1c2b] hover:bg-[#222437] disabled:opacity-40 disabled:cursor-not-allowed border border-[#2e3146] text-slate-300 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
         >
-          Cancel
+          Ləğv et
         </button>
       </div>
     </div>

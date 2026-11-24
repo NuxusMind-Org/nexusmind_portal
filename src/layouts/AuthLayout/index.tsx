@@ -8,7 +8,7 @@ export default function AuthLayout() {
       </div>
       
       <footer className="py-2 text-[10px] font-semibold text-slate-500 hover:text-slate-400/80 transition-colors uppercase tracking-wider select-none">
-        NexusMind Enterprise v1.0 | Terms & Privacy
+        NexusMind v1.0 | İstifadə Şərtləri və Məxfilik
       </footer>
     </div>
   )

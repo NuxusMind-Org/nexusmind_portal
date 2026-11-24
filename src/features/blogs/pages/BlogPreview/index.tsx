@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { 
-  ArrowLeft, 
-  FileText, 
-  Globe, 
-  Tag, 
-  Loader2, 
-  AlertCircle, 
-  Share2, 
-  Check, 
-  User
+import {
+  ArrowLeft,
+  FileText,
+  Globe,
+  Tag,
+  Loader2,
+  AlertCircle,
+  Share2,
+  Check,
+  User,
 } from 'lucide-react'
 import { contentService } from '../../../../api/services/contentService'
 import type { BlogResponse } from '../../../../types/portalDtos'
@@ -26,7 +26,7 @@ export default function BlogPreview() {
 
   useEffect(() => {
     if (!id) {
-      setError('No blog ID provided.')
+      setError('Bloq ID-si göstərilməyib.')
       setIsLoading(false)
       return
     }
@@ -39,11 +39,11 @@ export default function BlogPreview() {
         if (data) {
           setItem(data)
         } else {
-          setError('Blog post not found.')
+          setError('Bloq yazısı tapılmadı.')
         }
       } catch (err: any) {
         console.error('Failed to fetch blog post details', err)
-        setError(err?.response?.data?.message || 'Failed to load blog post.')
+        setError(err?.response?.data?.message || 'Bloq yazısını yükləmək mümkün olmadı.')
       } finally {
         setIsLoading(false)
       }
@@ -62,7 +62,7 @@ export default function BlogPreview() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-slate-400">
         <Loader2 className="w-9 h-9 animate-spin text-purple-400" />
-        <span className="text-sm font-semibold">Loading blog post reader...</span>
+        <span className="text-sm font-semibold">Bloq yazısı yüklənir...</span>
       </div>
     )
   }
@@ -73,14 +73,14 @@ export default function BlogPreview() {
         <div className="p-4 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
           <AlertCircle className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-white">Post Not Found</h2>
-        <p className="text-xs text-slate-400 max-w-md">{error || 'The requested blog post could not be retrieved.'}</p>
+        <h2 className="text-xl font-bold text-white">Yazı Tapılmadı</h2>
+        <p className="text-xs text-slate-400 max-w-md">{error || 'İstənilən bloq yazısı əldə edilə bilmədi.'}</p>
         <button
           onClick={() => navigate('/org/blogs')}
           className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-2"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Blogs</span>
+          <span>Bloqlara Qayıt</span>
         </button>
       </div>
     )
@@ -99,7 +99,7 @@ export default function BlogPreview() {
             className="p-2 rounded-xl bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="font-semibold">Back to Blogs</span>
+            <span className="font-semibold">Bloqlara Qayıt</span>
           </button>
           <span className="text-slate-600">/</span>
           <span className="text-slate-400 truncate max-w-xs sm:max-w-md font-medium">
@@ -117,7 +117,7 @@ export default function BlogPreview() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Post Reader
+              Yazı Oxuyucusu
             </button>
             <button
               onClick={() => setActiveTab('seo')}
@@ -127,17 +127,17 @@ export default function BlogPreview() {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              SEO & Schema
+              SEO və Sxem
             </button>
           </div>
 
           <button
             onClick={handleCopyLink}
             className="p-2 rounded-xl bg-[#1b1c2b] hover:bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-medium"
-            title="Copy URL"
+            title="Linki kopyala"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
-            <span className="hidden sm:inline">{copied ? 'Copied' : 'Share'}</span>
+            <span className="hidden sm:inline">{copied ? 'Kopyalandı' : 'Paylaş'}</span>
           </button>
         </div>
       </div>
@@ -165,11 +165,11 @@ export default function BlogPreview() {
           <div className="px-6 sm:px-12 space-y-5">
             <div className="flex flex-wrap items-center gap-2.5">
               <span className="px-3.5 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 font-bold text-xs uppercase tracking-wider">
-                {item.category || 'General'}
+                {item.category || 'Ümumi'}
               </span>
               <span className="px-3.5 py-1 rounded-full bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5">
                 <User className="w-3.5 h-3.5 text-purple-400" />
-                <span>{item.authorName || 'NexusMind Editorial'}</span>
+                <span>{item.authorName || 'NexusMind Redaksiya'}</span>
               </span>
               {item.slug && (
                 <span className="px-3.5 py-1 rounded-full bg-slate-800/60 text-slate-400 font-mono text-xs">
@@ -215,7 +215,7 @@ export default function BlogPreview() {
                 ))}
               </div>
             ) : (
-              <div className="whitespace-pre-line">{item.body || 'No detailed content available.'}</div>
+              <div className="whitespace-pre-line">{item.body || 'Ətraflı məzmun mövcud deyil.'}</div>
             )}
           </div>
         </article>
@@ -225,13 +225,13 @@ export default function BlogPreview() {
           <div className="flex items-center gap-3 pb-4 border-b border-[#222437]">
             <Globe className="w-6 h-6 text-purple-400" />
             <div>
-              <h2 className="text-lg font-bold text-white">Blog Post SEO & Schema Settings</h2>
-              <p className="text-xs text-slate-400">Search keywords, URL canonicalization, and JSON-LD schema metadata.</p>
+              <h2 className="text-lg font-bold text-white">Bloq Yazısı SEO və Sxem Tənzimləmələri</h2>
+              <p className="text-xs text-slate-400">Axtarış açar sözləri, URL slug və JSON-LD sxem metaməlumatları.</p>
             </div>
           </div>
 
           <div className="p-5 bg-[#0e0f19] border border-[#222437] rounded-2xl space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Google SERP Snippet Preview</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Google Axtarış Nəticəsi Önizləməsi</span>
             <div className="space-y-1">
               <p className="text-xs text-emerald-400 font-mono">
                 https://nexusmind.az/blogs/{item.slug || id}
@@ -240,26 +240,26 @@ export default function BlogPreview() {
                 {item.metaTitle || localizedTitle}
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                {getLocalizedTitle(item.metaDescription) || getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || 'No meta description provided.'}
+                {getLocalizedTitle(item.metaDescription) || getLocalizedTitle(item.shortDescription) || getLocalizedTitle(item.introText) || 'Meta təsvir əlavə edilməyib.'}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div className="p-4 bg-[#1b1c2b] rounded-xl border border-[#2e3146] space-y-1">
-              <span className="text-slate-400 font-semibold">Custom Slug:</span>
-              <p className="text-white font-mono">{item.slug ? `/${item.slug}` : 'Default (by ID)'}</p>
+              <span className="text-slate-400 font-semibold">Xüsusi Slug:</span>
+              <p className="text-white font-mono">{item.slug ? `/${item.slug}` : 'Standart (ID üzrə)'}</p>
             </div>
             <div className="p-4 bg-[#1b1c2b] rounded-xl border border-[#2e3146] space-y-1">
-              <span className="text-slate-400 font-semibold">Author Credits:</span>
-              <p className="text-white font-semibold">{item.authorName || 'NexusMind Editorial'}</p>
+              <span className="text-slate-400 font-semibold">Müəllif:</span>
+              <p className="text-white font-semibold">{item.authorName || 'NexusMind Redaksiya'}</p>
             </div>
           </div>
 
           {/* Keywords */}
           {((item.metaKeywords && item.metaKeywords.length > 0) || (item.meta_keywords && item.meta_keywords.length > 0)) && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">Indexed Search Keywords:</span>
+              <span className="text-xs font-semibold text-slate-300">İndekslənmiş Açar Sözlər:</span>
               <div className="flex flex-wrap gap-2">
                 {(item.metaKeywords || item.meta_keywords || []).map((kw, i) => (
                   <span
@@ -277,7 +277,7 @@ export default function BlogPreview() {
           {/* Schema JSON-LD */}
           {(item.schemaMarkup || item.schema_markup) && (
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300 block">Structured Data Graph (JSON-LD):</span>
+              <span className="text-xs font-semibold text-slate-300 block">Strukturlaşdırılmış Məlumat (JSON-LD):</span>
               <pre className="p-4 bg-[#0a0b12] rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto border border-[#222437]">
                 {item.schemaMarkup || item.schema_markup}
               </pre>
