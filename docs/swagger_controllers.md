@@ -26,7 +26,7 @@ This document provides a comprehensive and up-to-date technical reference of all
 | **Trainings (`/trainings/*`)** | Full Access | Full Access | Full Access (Create/Edit) | Search, Calendar, Register | Search, Calendar |
 | **Appointments (`/appointments/*`)** | Read Stats | Read Stats | View, Status, Notes, LiveKit Token, Image | Create, Cancel, Join LiveKit | No Access |
 | **Call Invites (`/api/calls/*`)** | Full Access | Full Access | Invite, Extend, Join | Join by Invite Token | Join by Invite Token |
-| **Doctor Profiles & Hours (`/doctors/*`)** | Read All, Delete Doctor | Read Doctors | Manage Date Ranges (`/me/working-hours`), View Patients | View Profiles, View Slots | View Profiles, Register Doctor |
+| **Doctor Profiles & Hours (`/doctors/*`)** | Read All, Delete Doctor | Read Doctors | Manage Date Ranges & Batch Hours (`/me/working-hours`, `/me/working-hours/batch`), View Patients | View Profiles, View Slots | View Profiles, Register Doctor |
 | **Doctor Prices (`/doctors/{doctorId}/prices/*`)** | Full CRUD | Full CRUD | Full CRUD (Own Tariffs) | Read Prices (`?age`) | Read Prices (`?age`) |
 | **Payments (`/api/payments/*`)** | View / Start | No Access | No Access | Start Payment | Gateway Callback |
 | **Password Reset (`/api/auth/*`)** | Full Access | Full Access | Full Access | Forgot / Reset Token | Forgot / Reset Token |
@@ -143,10 +143,10 @@ Manages general blog posts and educational reads under `/blog`. Root titles and 
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
 | `GET` | `/blog` | `getAll_2` | - | - | `BlogResponse[]` | Both |
-| `POST` | `/blog` | `create_4` | - | `BlogRequest` | `BlogResponse` | Portal |
+| `POST` | `/blog` | `create_5` | - | `BlogRequest` | `BlogResponse` | Portal |
 | `GET` | `/blog/{id}` | `getById_2` | Path: `id` (int64) | - | `BlogResponse` | Both |
-| `PUT` | `/blog/{id}` | `update_4` | Path: `id` (int64) | `BlogRequest` | `BlogResponse` | Portal |
-| `DELETE` | `/blog/{id}` | `delete_4` | Path: `id` (int64) | - | `200 OK` | Portal |
+| `PUT` | `/blog/{id}` | `update_5` | Path: `id` (int64) | `BlogRequest` | `BlogResponse` | Portal |
+| `DELETE` | `/blog/{id}` | `delete_5` | Path: `id` (int64) | - | `200 OK` | Portal |
 | `GET` | `/blog/search` | `search_3` | Query: `keyword` (string), `pageable` (`Pageable`) | - | `PageBlogResponse` | Both |
 | `GET` | `/blog/category/{category}` | `getByCategory_2` | Path: `category` (string)<br>Query: `pageable` (`Pageable`) | - | `PageBlogResponse` | Both |
 
@@ -210,7 +210,7 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 | Method | Endpoint | Operation ID | Parameters | Request Body | Response Schema | Scope |
 |---|---|---|---|---|---|---|
 | `POST` | `/doctors/register` | `registerDoctor` | - | `multipart/form-data`: `DoctorRegisterDto` | `string` | Web |
-| `GET` | `/doctors/me/patients` | `getMyPatients` | - | - | `PasientRegisterEntity[]` | Portal |
+| `GET` | `/doctors/me/patients` | `getMyPatients` | - | - | `PasientResponseDto[]` | Portal |
 | `GET` | `/doctors/doctors` | `getAllDoctors_2` | - | - | `DoctorResponseDto[]` | Portal |
 
 #### Doctor Profile Controller (`doctor-profile-controller`)
@@ -232,6 +232,7 @@ Handles patient-doctor consultations, status transitions, SOAP notes, LiveKit vi
 |---|---|---|---|---|---|---|
 | `GET` | `/doctors/me/working-hours` | `getMyRanges` | Query: `from` (date, required)<br>Query: `to` (date, required) | - | `WorkingRangeDto[]` | Portal |
 | `POST` | `/doctors/me/working-hours` | `addMyRange` | - | `WorkingHourRangeRequest` | `200 OK` | Portal |
+| `POST` | `/doctors/me/working-hours/batch` | `addMyWorkingHoursBatch` | - | `WorkingHoursBatchRequest` | `200 OK` | Portal |
 | `DELETE` | `/doctors/me/working-hours/{rangeId}` | `deleteMyRange` | Path: `rangeId` (int64) | - | `200 OK` | Portal |
 | `GET` | `/doctors/{doctorId}/working-hours/available` | `getAvailableSlots` | Path: `doctorId` (int64)<br>Query: `from` (date, required)<br>Query: `to` (date, required) | - | `AvailableSlotDto[]` | Both |
 
@@ -254,8 +255,8 @@ Used by NexusMind super administrators to manage all platform doctors and patien
 
 | Method | Endpoint | Operation ID | Parameters | Response Schema | Scope |
 |---|---|---|---|---|---|
-| `GET` | `/nexusmind/patients` | `getAllPatients` | - | `object[]` | Portal |
-| `GET` | `/nexusmind/doctors` | `getAllDoctors` | - | `DoctorEntity[]` | Portal |
+| `GET` | `/nexusmind/patients` | `getAllPatients` | - | `PasientResponseDto[]` | Portal |
+| `GET` | `/nexusmind/doctors` | `getAllDoctors` | - | `DoctorResponseDto[]` | Portal |
 | `DELETE` | `/nexusmind/doctors/{id}` | `deleteDoctor` | Path: `id` (int64) | `200 OK` | Portal |
 
 ---
@@ -467,6 +468,18 @@ export interface PasientRegisterEntity {
   language?: 'AZ' | 'EN' | 'RU'
   twoFactorEnabled?: boolean
   appointments?: AppointmentEntity[]
+  verified?: boolean
+}
+
+export interface PasientResponseDto {
+  id: number
+  username?: string
+  name?: string
+  surname?: string
+  email?: string
+  age?: number
+  phone?: string
+  role?: 'SUPER_ADMIN' | 'BPM' | 'DOCTOR' | 'PATIENT' | 'SEO'
   verified?: boolean
 }
 ```
@@ -802,6 +815,15 @@ export interface WorkingHourRangeRequest {
   endTime?: string // HH:mm, e.g. "11:00"
 }
 
+export interface WorkingDayRequest {
+  date?: string // YYYY-MM-DD
+  times?: LocalTime[]
+}
+
+export interface WorkingHoursBatchRequest {
+  days?: WorkingDayRequest[]
+}
+
 export interface WorkingRangeDto {
   id: number
   date?: string // DD.MM.YYYY, e.g. "20.11.2026"
@@ -855,13 +877,14 @@ export interface DoctorPriceEntity extends DoctorPriceRequest {
 export interface CreateAppointmentRequest {
   doctorId: number
   appointmentDate: string // YYYY-MM-DD
-  appointmentTime: LocalTime
+  appointmentTime: string // HH:mm:ss (format: time)
   mode: 'VR' | 'VIDEO_CALL' | 'APP'
   durationMinutes?: number
   sessionsType?: 'INDIVIDUAL' | 'COUPLE'
 }
 
 export interface StartPaymentRequest {
+  appointmentId?: number
   amount?: number
   description?: string
 }
@@ -872,7 +895,7 @@ export interface ResetPasswordRequest {
 }
 
 export interface UpdateUserStatusRequest {
-  status: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING_PAYMENT'
 }
 
 export interface AppointmentDto {
@@ -884,7 +907,7 @@ export interface AppointmentDto {
   doctorProfileImageUrl?: string
   appointmentDate?: string
   appointmentTime?: LocalTime
-  status?: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status?: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING_PAYMENT'
   mode?: 'VR' | 'VIDEO_CALL' | 'APP'
   roomUrl?: string
   hasNote?: boolean
@@ -930,9 +953,10 @@ export interface AppointmentEntity {
   finishTime?: string
   durationMinutes?: number
   sessionsType?: 'INDIVIDUAL' | 'COUPLE'
-  status?: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status?: 'SCHEDULED' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING_PAYMENT'
   mode?: 'VR' | 'VIDEO_CALL' | 'APP'
   roomUrl?: string
+  createdAt?: string
   note?: SessionNote
 }
 ```

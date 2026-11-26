@@ -20,6 +20,8 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
         return 'Gözləyir'
       case 'Cancelled':
         return 'Ləğv edilib'
+      case 'PendingPayment':
+        return 'Ödəniş gözləyir'
       default:
         return 'Planlaşdırılıb'
     }
@@ -33,6 +35,8 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
         return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
       case 'Cancelled':
         return 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+      case 'PendingPayment':
+        return 'text-amber-400 bg-amber-500/10 border-amber-500/20'
       default:
         return 'text-violet-400 bg-violet-500/10 border-violet-500/20'
     }
@@ -79,7 +83,7 @@ export default function SessionItem({ session, onJoinRoom, onCancelSession, onVi
 
       {/* Action Buttons */}
       <div className="shrink-0 flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 border-[#222437] pt-3 md:pt-0">
-        {session.status !== 'Completed' && session.status !== 'Cancelled' && (
+        {session.status !== 'Completed' && session.status !== 'Cancelled' && session.status !== 'PendingPayment' && (
           <button
             onClick={(e) => {
               e.stopPropagation()

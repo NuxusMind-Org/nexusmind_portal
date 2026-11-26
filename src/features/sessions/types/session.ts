@@ -11,7 +11,7 @@ export interface Session {
   date: string // ISO string "YYYY-MM-DD"
   dateLabel: string // user friendly date label like "Today", "Tomorrow", "July 3, 2026"
   type: string
-  status: 'Completed' | 'Waiting' | 'Scheduled' | 'Cancelled'
+  status: 'Completed' | 'Waiting' | 'Scheduled' | 'Cancelled' | 'PendingPayment'
   rawStatus?: AppointmentStatus
   deliveryMethod: 'Online Meeting' | 'VR Session'
   rawMode?: AppointmentMode

@@ -184,6 +184,8 @@ export function mapAppointmentToSession(app: AppointmentDto, defaultDuration = 6
       ? 'Waiting'
       : rawStatusUpper === 'CANCELLED'
       ? 'Cancelled'
+      : rawStatusUpper === 'PENDING_PAYMENT'
+      ? 'PendingPayment'
       : 'Scheduled'
 
 

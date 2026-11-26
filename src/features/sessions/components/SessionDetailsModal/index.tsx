@@ -114,6 +114,8 @@ export default function SessionDetailsModal({
         return 'Gözləyir'
       case 'Cancelled':
         return 'Ləğv edilib'
+      case 'PendingPayment':
+        return 'Ödəniş gözləyir'
       default:
         return 'Planlaşdırılıb'
     }
@@ -127,6 +129,8 @@ export default function SessionDetailsModal({
         return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
       case 'Cancelled':
         return 'text-rose-400 bg-rose-500/10 border-rose-500/20'
+      case 'PendingPayment':
+        return 'text-amber-400 bg-amber-500/10 border-amber-500/20'
       default:
         return 'text-violet-400 bg-violet-500/10 border-violet-500/20'
     }
@@ -398,6 +402,13 @@ export default function SessionDetailsModal({
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
               <span>
                 {t('sessions.sessionCancelled')}
+              </span>
+            </div>
+          ) : session.status === 'PendingPayment' ? (
+            <div className="flex items-center gap-1.5 p-3 bg-amber-500/5 text-amber-400 rounded-xl border border-amber-500/20 text-xs leading-relaxed">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+              <span>
+                {t('sessions.sessionPendingPayment')}
               </span>
             </div>
           ) : session.status === 'Waiting' ? (

@@ -5,20 +5,11 @@ import PatientCard from '../../components/PatientCard'
 import PatientDetailsModal from '../../components/PatientDetailsModal'
 import type { Patient } from '../../types/patient'
 import { doctorService } from '../../../../api'
-import type { PasientRegisterEntity } from '../../../../types/portalDtos'
+import type { PasientResponseDto } from '../../../../types/portalDtos'
 
-const formatMoodLabel = (mood?: string): string => {
-  switch (mood?.toUpperCase()) {
-    case 'HAPPY': return 'Şən'
-    case 'SAD': return 'Kədərli'
-    case 'CALM': return 'Sakit'
-    case 'TIRED': return 'Yorğun'
-    default: return mood || 'Stabil'
-  }
-}
-
-const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patient => {
-  const name = [entity.name, entity.surname].filter(Boolean).join(' ') || `Pasiyent #${entity.id}`
+const mapDtoToPatient = (dto: PasientResponseDto, index: number): Patient => {
+  const fullName = [dto.name, dto.surname].filter(Boolean).join(' ').trim()
+  const name = fullName || dto.username || `Pasiyent #${dto.id}`
   const avatarColors = [
     'from-teal-500/20 to-emerald-500/20 text-emerald-400',
     'from-slate-700/50 to-slate-800/50 text-slate-400',
@@ -27,24 +18,23 @@ const mapEntityToPatient = (entity: PasientRegisterEntity, index: number): Patie
     'from-purple-600/20 to-pink-600/20 text-purple-400',
   ]
   const avatarColor = avatarColors[index % avatarColors.length]
-  const moodStr = formatMoodLabel(entity.mood)
-  const priority: 'High' | 'Medium' | 'Normal' =
-    entity.mood === 'SAD' ? 'High' : entity.mood === 'TIRED' ? 'Medium' : 'Normal'
-  const statusTag =
-    entity.status === 'TELEBE' ? 'Tələbə' : entity.status === 'ISCI' ? 'İşçi' : 'Pasiyent'
+  const tagParts = [
+    dto.age ? `Yaş ${dto.age}` : null,
+    dto.username ? `@${dto.username}` : null,
+  ].filter(Boolean)
 
   return {
-    id: String(entity.id),
+    id: String(dto.id),
     name,
-    email: entity.email || '—',
-    phone: entity.phone || '—',
+    email: dto.email || '—',
+    phone: dto.phone || '—',
     avatarColor,
-    status: 'Active',
-    priority,
-    tag: statusTag,
-    lastSession: entity.moodUpdatedDate ? `Əhval yeniləndi: ${entity.moodUpdatedDate}` : '—',
+    status: dto.verified === false ? 'On Hold' : 'Active',
+    priority: 'Normal',
+    tag: tagParts.length > 0 ? tagParts.join(' • ') : 'Pasiyent',
+    lastSession: '—',
     nextSession: 'Planlaşdırılıb',
-    mood: moodStr,
+    mood: 'Stabil',
   }
 }
 
@@ -63,7 +53,7 @@ export default function PatientsList() {
     setLoadError(null)
     try {
       const data = await doctorService.getMyPatients()
-      setPatients(Array.isArray(data) ? data.map(mapEntityToPatient) : [])
+      setPatients(Array.isArray(data) ? data.map(mapDtoToPatient) : [])
     } catch (err) {
       console.warn('Could not load live patients list from /doctors/me/patients:', err)
       setLoadError('Təyin edilmiş pasiyentlər yüklənə bilmədi.')
@@ -125,9 +115,12 @@ export default function PatientsList() {
 
   // Filter patients based on search query and priority dropdown
   const filteredPatients = patients.filter(patient => {
-    const matchesSearch = 
-      patient.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      patient.tag.toLowerCase().includes(searchQuery.toLowerCase())
+    const q = searchQuery.toLowerCase()
+    const matchesSearch =
+      patient.name.toLowerCase().includes(q) ||
+      patient.tag.toLowerCase().includes(q) ||
+      patient.email.toLowerCase().includes(q) ||
+      patient.phone.toLowerCase().includes(q)
     
     const matchesPriority = 
       selectedPriority === 'All' || 

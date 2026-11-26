@@ -21,7 +21,7 @@ import {
 import type { Psychologist, PsychologistStatus } from '../../types/psychologist'
 import { orgAdminService } from '../../../../api/services/orgAdminService'
 import { useUserStore } from '../../../../store/userStore'
-import type { DoctorEntity, DoctorResponseDto } from '../../../../types/portalDtos'
+import type { DoctorResponseDto } from '../../../../types/portalDtos'
 import { getLocalizedTitle } from '../../../../utils/multilingual'
 import { DoctorPricesPanel } from '../../components/DoctorPricesPanel'
 
@@ -65,9 +65,17 @@ function PsychologistCard({
       {/* Header */}
       <div className="space-y-4">
         <div className="flex items-start gap-3.5">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${psy.avatarColor} border border-white/5 flex items-center justify-center font-bold text-sm shrink-0 shadow-inner`}>
-            {psy.avatarInitials}
-          </div>
+          {psy.profileImageUrl ? (
+            <img
+              src={psy.profileImageUrl}
+              alt={psy.name}
+              className="w-12 h-12 rounded-xl object-cover border border-white/10 shrink-0 shadow-inner"
+            />
+          ) : (
+            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${psy.avatarColor} border border-white/5 flex items-center justify-center font-bold text-sm shrink-0 shadow-inner`}>
+              {psy.avatarInitials}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-bold text-white truncate group-hover:text-violet-300 transition-colors">
@@ -84,6 +92,11 @@ function PsychologistCard({
           </div>
         </div>
 
+        {/* Bio summary (DoctorResponseDto.bio) */}
+        {psy.bio && (
+          <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">{psy.bio}</p>
+        )}
+
         {/* Specializations */}
         <div className="flex flex-wrap gap-1.5">
           {psy.specializations.map((spec) => (
@@ -97,11 +110,11 @@ function PsychologistCard({
         <div className="grid grid-cols-3 gap-2 py-3 border-y border-[#222437] bg-[#10111a]/40 rounded-xl px-2">
           <div className="text-center">
             <p className="text-base font-bold text-white">{psy.patientCount}</p>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Pasiyentlər</p>
+            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Tariflər</p>
           </div>
           <div className="text-center border-x border-[#222437]">
-            <p className="text-base font-bold text-white">{psy.sessionCount}</p>
-            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Sessiyalar</p>
+            <p className="text-sm font-bold text-emerald-400 truncate px-1">{psy.startingPrice || '—'}</p>
+            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Başlanğıc</p>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-0.5">
@@ -182,12 +195,11 @@ export default function PsychologistsList() {
     setIsLoading(true)
     setError(null)
     try {
-      const doctorsList: Array<DoctorEntity | DoctorResponseDto> = isPlatformAdmin
+      const doctorsList: DoctorResponseDto[] = isPlatformAdmin
         ? await orgAdminService.getNexusmindDoctors()
         : await orgAdminService.getBpmDoctors()
 
       const mapped: Psychologist[] = doctorsList.map((doc, idx) => {
-        const entity = doc as DoctorEntity
         const fullName = [doc.name, doc.surname].filter(Boolean).join(' ').trim()
         const rawName = fullName || doc.username || `Dr. Mütəxəssis #${doc.id}`
         const initials = rawName
@@ -207,31 +219,38 @@ export default function PsychologistsList() {
         const avatarColor = colorPalettes[idx % colorPalettes.length]
 
         const majorLabel = doc.major ? getLocalizedTitle(doc.major) : ''
-        const rawSpecs = Array.isArray(entity.specializations) && entity.specializations.length > 0
-          ? entity.specializations
-          : majorLabel
-            ? [majorLabel]
-            : []
-        const specs =
-          rawSpecs.length > 0
-            ? rawSpecs.flatMap((s) => (typeof s === 'string' ? s.split(',') : [])).map((s) => s.trim()).filter(Boolean)
-            : ['Klinik Psixologiya']
+        const bioLabel = doc.bio ? getLocalizedTitle(doc.bio) : ''
+        const specs = majorLabel
+          ? majorLabel
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : ['Klinik Psixologiya']
+
+        const prices = Array.isArray(doc.prices) ? doc.prices : []
+        const numericAmounts = prices
+          .map((p) => (typeof p.amount === 'number' ? p.amount : Number(p.amount)))
+          .filter((n) => !Number.isNaN(n))
+        const minAmount = numericAmounts.length > 0 ? Math.min(...numericAmounts) : undefined
+        const currency = prices.find((p) => p.currency)?.currency || 'AZN'
+        const startingPrice = minAmount !== undefined ? `${minAmount} ${currency}` : undefined
 
         return {
           id: String(doc.id),
           name: rawName,
-          email: entity.email || (doc.username ? `@${doc.username}` : '—'),
-          phone: entity.university || (doc.prices?.length ? `${doc.prices.length} tarif` : '—'),
+          email: doc.username ? `@${doc.username}` : '—',
+          phone: prices.length > 0 ? `${prices.length} aktiv tarif` : '—',
           avatarInitials: initials || 'DR',
           avatarColor,
+          profileImageUrl: doc.profileImageUrl || undefined,
+          bio: bioLabel || undefined,
+          startingPrice,
           status: 'Active' as PsychologistStatus,
           specializations: specs,
-          patientCount: doc.prices?.length ?? 0,
-          sessionCount: entity.experienceYear ?? 0,
+          patientCount: prices.length,
+          sessionCount: prices.length,
           satisfactionRate: 95,
-          nextAvailability: entity.languages?.length
-            ? `Dillər: ${entity.languages.join(', ')}`
-            : 'Mövcuddur',
+          nextAvailability: startingPrice ? `${startingPrice}-dən` : 'Mövcuddur',
           joinedDate: '2026',
           licenseNumber: doc.username ? `@${doc.username}` : `PSY-AZ-${String(doc.id).padStart(4, '0')}`,
         }
@@ -337,7 +356,7 @@ export default function PsychologistsList() {
           { label: 'Ümumi Psixoloqlar', value: stats.total, icon: UserSquare2, color: 'text-violet-400', bg: 'bg-violet-500/10 border-violet-500/20' },
           { label: 'Aktiv Heyət', value: stats.active, icon: Activity, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
           { label: 'Məzuniyyətdə', value: stats.onLeave, icon: Calendar, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-          { label: 'Keçirilmiş Sessiyalar', value: stats.totalSessions, icon: TrendingUp, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
+          { label: 'Ümumi Tariflər', value: stats.totalSessions, icon: TrendingUp, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
         ].map(({ label, value, icon: Icon, color, bg }) => (
           <div key={label} className="bg-[#141521] border border-[#222437] rounded-2xl p-4 flex items-center gap-3 shadow-sm">
             <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${bg}`}>

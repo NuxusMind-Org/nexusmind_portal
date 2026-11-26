@@ -142,6 +142,13 @@ export function formatAppointmentStatus(status?: AppointmentStatus | string) {
         text: 'text-rose-400',
         border: 'border-rose-500/20',
       }
+    case 'PENDING_PAYMENT':
+      return {
+        label: 'Ödəniş gözləyir',
+        bg: 'bg-amber-500/10',
+        text: 'text-amber-400',
+        border: 'border-amber-500/20',
+      }
     default:
       return {
         label: status || 'Planlaşdırılıb',

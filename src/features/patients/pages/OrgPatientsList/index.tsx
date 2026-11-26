@@ -17,13 +17,14 @@ import {
 } from 'lucide-react'
 import { orgAdminService } from '../../../../api/services/orgAdminService'
 import { useUserStore } from '../../../../store/userStore'
-import type { PasientRegisterEntity, PatientDto, PatientMood } from '../../../../types/portalDtos'
+import type { PasientRegisterEntity, PasientResponseDto, PatientMood } from '../../../../types/portalDtos'
 
 type Priority = 'High' | 'Medium' | 'Normal'
 type PatientStatus = 'Active' | 'Inactive' | 'Discharged'
 
 interface OrgPatient {
   id: string
+  username?: string
   name: string
   email: string
   phone: string
@@ -34,13 +35,24 @@ interface OrgPatient {
   treatmentTag: string
   assignedPsychologist: string
   mood?: PatientMood | string
-  gender?: string
-  birthDate?: string
-  address?: string
+  age?: number
+  verified?: boolean
   lastSession: string
   nextSession: string
   sessionsTotal: number
   joinedDate: string
+}
+
+function isPasientRegisterEntity(
+  raw: PasientResponseDto | PasientRegisterEntity
+): raw is PasientRegisterEntity {
+  return (
+    'appointments' in raw ||
+    'mood' in raw ||
+    'deletedAt' in raw ||
+    'moodUpdatedDate' in raw ||
+    'status' in raw
+  )
 }
 
 const PRIORITY_STYLES: Record<Priority, string> = {
@@ -125,15 +137,15 @@ export default function OrgPatientsList() {
     setIsLoading(true)
     setError(null)
     try {
-      const patientsList: Array<PasientRegisterEntity | PatientDto> = isPlatformAdmin
+      const patientsList: Array<PasientResponseDto | PasientRegisterEntity> = isPlatformAdmin
         ? await orgAdminService.getNexusmindPatients()
         : await orgAdminService.getBpmPatients()
 
       const mapped: OrgPatient[] = patientsList.map((raw, idx) => {
-        const entity = raw as PasientRegisterEntity
-        const dto = raw as PatientDto
-        const combinedName = [entity.name, entity.surname].filter(Boolean).join(' ').trim()
-        const rawName = combinedName || dto.fullName || `Pasiyent #${raw.id}`
+        const isEntity = isPasientRegisterEntity(raw)
+        const username = !isEntity ? raw.username : undefined
+        const combinedName = [raw.name, raw.surname].filter(Boolean).join(' ').trim()
+        const rawName = combinedName || username || `Pasiyent #${raw.id}`
         const initials = rawName
           .split(' ')
           .map((n) => n[0])
@@ -150,47 +162,52 @@ export default function OrgPatientsList() {
         ]
         const avatarColor = colorPalettes[idx % colorPalettes.length]
 
-        const statusLabel: PatientStatus = entity.deletedAt
-          ? 'Inactive'
-          : entity.verified === false
-            ? 'Inactive'
-            : 'Active'
+        const statusLabel: PatientStatus =
+          (isEntity && raw.deletedAt) || raw.verified === false ? 'Inactive' : 'Active'
 
-        const priority: Priority =
-          entity.mood === 'SAD' ? 'High' : entity.mood === 'TIRED' ? 'Medium' : 'Normal'
+        const priority: Priority = isEntity
+          ? raw.mood === 'SAD'
+            ? 'High'
+            : raw.mood === 'TIRED'
+              ? 'Medium'
+              : 'Normal'
+          : 'Normal'
 
-        const statusTag =
-          entity.status === 'TELEBE'
+        const statusTag = isEntity
+          ? raw.status === 'TELEBE'
             ? 'Tələbə'
-            : entity.status === 'ISCI'
+            : raw.status === 'ISCI'
               ? 'İşçi'
-              : entity.status === 'DIGER'
+              : raw.status === 'DIGER'
                 ? 'Digər'
-                : dto.treatmentTag || 'Pasiyent'
+                : 'Pasiyent'
+          : raw.verified === false
+            ? 'Təsdiqlənməyib'
+            : 'Təsdiqlənib'
 
         return {
           id: String(raw.id),
+          username,
           name: rawName,
           email: raw.email || '—',
           phone: raw.phone || '—',
           avatarInitials: initials || 'PT',
           avatarColor,
           status: statusLabel,
-          priority: (dto.priority as Priority) || priority,
+          priority,
           treatmentTag: statusTag,
-          assignedPsychologist:
-            dto.assignedPsychologist ||
-            (entity.age ? `Yaş ${entity.age} • ${statusTag}` : statusTag),
-          mood: raw.mood,
-          gender: dto.gender,
-          birthDate: dto.birthDate,
-          address: dto.address,
-          lastSession: entity.moodUpdatedDate || dto.lastSession || '—',
-          nextSession: dto.nextSession || '—',
-          sessionsTotal: Array.isArray(entity.appointments)
-            ? entity.appointments.length
-            : (dto.sessionsTotal ?? 0),
-          joinedDate: entity.moodUpdatedDate || dto.registeredAt || dto.createdAt || '—',
+          assignedPsychologist: raw.age ? `Yaş ${raw.age} • ${statusTag}` : statusTag,
+          mood: isEntity ? raw.mood : undefined,
+          age: raw.age,
+          verified: raw.verified,
+          lastSession: isEntity && raw.moodUpdatedDate ? raw.moodUpdatedDate : '—',
+          nextSession: '—',
+          sessionsTotal: isEntity && Array.isArray(raw.appointments) ? raw.appointments.length : 0,
+          joinedDate: isEntity
+            ? raw.moodUpdatedDate || '—'
+            : username
+              ? `@${username}`
+              : '—',
         }
       })
 
@@ -221,7 +238,7 @@ export default function OrgPatientsList() {
         p.email.toLowerCase().includes(q) ||
         p.phone.toLowerCase().includes(q) ||
         p.treatmentTag.toLowerCase().includes(q) ||
-        (p.address && p.address.toLowerCase().includes(q))
+        Boolean(p.username && p.username.toLowerCase().includes(q))
       const matchStatus = statusFilter === 'All' || p.status === statusFilter
       const matchPriority = priorityFilter === 'All' || p.priority === priorityFilter
       const matchPsych = psychFilter === 'All' || p.assignedPsychologist === psychFilter
@@ -398,7 +415,10 @@ export default function OrgPatientsList() {
                           <p className="font-bold text-white group-hover:text-teal-300 transition-colors">
                             {patient.name}
                           </p>
-                          <p className="text-[10px] text-slate-500 font-mono">ID: #{patient.id}</p>
+                          <p className="text-[10px] text-slate-500 font-mono">
+                            ID: #{patient.id}
+                            {patient.username ? ` • @${patient.username}` : ''}
+                          </p>
                         </div>
                       </div>
                     </td>

@@ -5,11 +5,13 @@ import type {
   DoctorDto,
   DoctorResponseDto,
   AvailableSlotDto,
+  LocalTime,
   WorkingHourRangeRequest,
+  WorkingHoursBatchRequest,
   WorkingRangeDto,
   DoctorPriceRequest,
   DoctorPriceResponse,
-  PasientRegisterEntity,
+  PasientResponseDto,
 } from '../../types/portalDtos'
 
 export const doctorService = {
@@ -59,6 +61,32 @@ export const doctorService = {
     await api.post(API_ENDPOINTS.DOCTORS.WORKING_HOURS_ME, payload)
   },
 
+  // Batch add working hours across multiple dates (POST /doctors/me/working-hours/batch)
+  addMyWorkingHoursBatch: async (data: WorkingHoursBatchRequest): Promise<void> => {
+    const toHHmmss = (val: LocalTime | string): string => {
+      if (typeof val === 'string') {
+        const [hs = '00', ms = '00', ss = '00'] = val.split(':')
+        return `${hs.padStart(2, '0')}:${ms.padStart(2, '0')}:${ss.padStart(2, '0')}`
+      }
+      const hh = String(val.hour ?? 0).padStart(2, '0')
+      const mm = String(val.minute ?? 0).padStart(2, '0')
+      const ss = String(val.second ?? 0).padStart(2, '0')
+      return `${hh}:${mm}:${ss}`
+    }
+
+    const payload = {
+      days: (data.days ?? [])
+        .filter((d) => Boolean(d.date) && Array.isArray(d.times) && d.times.length > 0)
+        .map((d) => ({
+          date: d.date,
+          times: (d.times ?? []).map(toHHmmss),
+        })),
+    }
+
+    if (payload.days.length === 0) return
+    await api.post(API_ENDPOINTS.DOCTORS.WORKING_HOURS_BATCH, payload)
+  },
+
   // Delete one of my working ranges (DELETE /doctors/me/working-hours/{rangeId})
   deleteMyWorkingRange: async (rangeId: number | string): Promise<void> => {
     await api.delete(API_ENDPOINTS.DOCTORS.WORKING_HOURS_RANGE(rangeId))
@@ -96,15 +124,15 @@ export const doctorService = {
   },
 
   // Get Assigned Patients for currently authenticated doctor (GET /doctors/me/patients)
-  getMyPatients: async (): Promise<PasientRegisterEntity[]> => {
+  getMyPatients: async (): Promise<PasientResponseDto[]> => {
     const response = await api.get<unknown>(API_ENDPOINTS.DOCTORS.ME_PATIENTS)
     const data = response.data
 
     if (Array.isArray(data)) {
-      return data as PasientRegisterEntity[]
+      return data as PasientResponseDto[]
     }
     if (data && typeof data === 'object' && 'content' in data && Array.isArray((data as { content: unknown[] }).content)) {
-      return (data as { content: PasientRegisterEntity[] }).content
+      return (data as { content: PasientResponseDto[] }).content
     }
     return []
   },

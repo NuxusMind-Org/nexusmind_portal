@@ -1,4 +1,9 @@
-import type { LocalTime, LocalTimeValue, WorkingRangeDto } from '../../../types/portalDtos'
+import type {
+  LocalTime,
+  LocalTimeValue,
+  WorkingHoursBatchRequest,
+  WorkingRangeDto,
+} from '../../../types/portalDtos'
 import { extractHourMinute } from './appointmentUtils'
 
 const pad = (n: number) => n.toString().padStart(2, '0')
@@ -7,6 +12,29 @@ const pad = (n: number) => n.toString().padStart(2, '0')
 export function toLocalTimeString(hour: number, minute = 0): string {
   const safeHour = Math.min(23, Math.max(0, hour))
   return `${pad(safeHour)}:${pad(minute)}`
+}
+
+/** Serializes hour/minute to ISO LocalTime wire format "HH:mm:ss" (e.g. "09:00:00"). */
+export function toIsoLocalTimeString(hour: number, minute = 0): string {
+  const safeHour = Math.min(23, Math.max(0, hour))
+  return `${pad(safeHour)}:${pad(minute)}:00`
+}
+
+/** Builds a WorkingHoursBatchRequest payload for POST /doctors/me/working-hours/batch. */
+export function buildWorkingHoursBatchPayload(
+  entries: Array<{ date: string; hours: number[] }>
+): WorkingHoursBatchRequest {
+  return {
+    days: entries
+      .map(({ date, hours }) => ({
+        date,
+        times: [...new Set(hours)]
+          .filter((h) => h >= 0 && h <= 22)
+          .sort((a, b) => a - b)
+          .map((h) => toIsoLocalTimeString(h, 0)),
+      }))
+      .filter((day) => day.times.length > 0),
+  }
 }
 
 /** Serializes hour/minute to short "HH:mm" string. */

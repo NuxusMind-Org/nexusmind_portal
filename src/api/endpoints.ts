@@ -64,8 +64,9 @@ export const API_ENDPOINTS = {
     REGISTER: '/doctors/register',
     ME_PATIENTS: '/doctors/me/patients',
     ALL_DOCTORS: '/doctors/doctors',
-    // Date-based working ranges (GET ?from&to, POST WorkingHourRangeRequest)
+    // Date-based working ranges & batch working hours (GET ?from&to, POST WorkingHourRangeRequest, POST WorkingHoursBatchRequest)
     WORKING_HOURS_ME: '/doctors/me/working-hours',
+    WORKING_HOURS_BATCH: '/doctors/me/working-hours/batch',
     WORKING_HOURS_RANGE: (rangeId: number | string) => `/doctors/me/working-hours/${rangeId}`,
     WORKING_HOURS_AVAILABLE: (doctorId: number | string) => `/doctors/${doctorId}/working-hours/available`,
     PRICES: (doctorId: number | string) => `/doctors/${doctorId}/prices`,

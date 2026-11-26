@@ -18,14 +18,12 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import { doctorService } from '../../../../api';
 import type { WorkingRangeDto } from '../../../../types/portalDtos';
 import {
+  buildWorkingHoursBatchPayload,
   extractBackendError,
   groupRangesByDate,
-  hoursToBlocks,
-  rangeMatchesBlock,
+  rangeToHours,
   rangesToHourMap,
   sameHours,
-  toEndLocalTimeString,
-  toLocalTimeString,
 } from '../../utils/workingHoursUtils';
 
 dayjs.extend(isoWeek);
@@ -194,47 +192,55 @@ export function PsychologistCalendar() {
     }
   };
 
-  // Persists changed days using diff-sync: preserves unchanged ranges, deletes removed ones, and posts only new blocks.
+  // Persists changed days: preserves untouched ranges, deletes removed ones, and submits all new hours in a single batch call.
   const handleSave = async () => {
     if (!isDirty) return;
     setIsSaving(true);
     setFeedback(null);
-    const failed: string[] = [];
+
+    const rangesToDelete: WorkingRangeDto[] = [];
+    const batchEntries: Array<{ date: string; hours: number[] }> = [];
+
     for (const date of dirtyDates) {
-      try {
-        const dayObj = dayjs(date);
-        const existing = rangesByDate[date] ?? [];
-        const desiredHours = (selected[date] ?? []).filter(
-          (hr) => !isPastSlot(dayObj, hr) || (originalMap[date] ?? []).includes(hr)
-        );
-        const desiredBlocks = hoursToBlocks(desiredHours);
+      const dayObj = dayjs(date);
+      const existing = rangesByDate[date] ?? [];
+      const desiredHours = (selected[date] ?? []).filter(
+        (hr) => !isPastSlot(dayObj, hr) || (originalMap[date] ?? []).includes(hr)
+      );
 
-        const toDelete = existing.filter(
-          (range) => !desiredBlocks.some((block) => rangeMatchesBlock(range, block))
-        );
-        const toCreate = desiredBlocks.filter(
-          (block) =>
-            !existing.some((range) => rangeMatchesBlock(range, block)) &&
-            !isPastSlot(dayObj, block.startHour)
-        );
+      // Keep existing ranges whose hours are still entirely selected (protects past hours on today)
+      const keptRanges = existing.filter((range) => {
+        const rangeHours = rangeToHours(range);
+        return rangeHours.length > 0 && rangeHours.every((h) => desiredHours.includes(h));
+      });
+      const keptIds = new Set(keptRanges.map((r) => r.id));
+      const toDelete = existing.filter((range) => !keptIds.has(range.id));
+      rangesToDelete.push(...toDelete);
 
-        await Promise.all(toDelete.map((r) => doctorService.deleteMyWorkingRange(r.id)));
-        for (const block of toCreate) {
-          await doctorService.addMyWorkingRange({
-            date,
-            startTime: toLocalTimeString(block.startHour),
-            endTime: toEndLocalTimeString(block.endHour),
-          });
-        }
-      } catch (error: unknown) {
-        console.error(`Failed to save working ranges for ${date}:`, error);
-        failed.push(`${dayjs(date).format('D MMM')}: ${extractBackendError(error, 'xəta')}`);
+      const keptHours = new Set(keptRanges.flatMap((range) => rangeToHours(range)));
+      const hoursToAdd = desiredHours.filter((hr) => !keptHours.has(hr) && !isPastSlot(dayObj, hr));
+      if (hoursToAdd.length > 0) {
+        batchEntries.push({ date, hours: hoursToAdd });
       }
     }
+
+    const failed: string[] = [];
+    try {
+      if (rangesToDelete.length > 0) {
+        await Promise.all(rangesToDelete.map((r) => doctorService.deleteMyWorkingRange(r.id)));
+      }
+      if (batchEntries.length > 0) {
+        await doctorService.addMyWorkingHoursBatch(buildWorkingHoursBatchPayload(batchEntries));
+      }
+    } catch (error: unknown) {
+      console.error('Failed to save working hours batch:', error);
+      failed.push(extractBackendError(error, 'İş qrafikini yadda saxlamaq mümkün olmadı.'));
+    }
+
     await fetchWeek(weekStart);
     setIsSaving(false);
     if (failed.length) {
-      setFeedback({ type: 'error', message: `Bəzi günlər yadda saxlanılmadı — ${failed.join('; ')}` });
+      setFeedback({ type: 'error', message: `Dəyişikliklər yadda saxlanılmadı — ${failed.join('; ')}` });
     } else {
       setFeedback({ type: 'success', message: 'İş qrafiki uğurla yadda saxlanıldı! Seçilmiş tarixlər pasiyentlər üçün aktivdir.' });
       setTimeout(() => setFeedback(null), 5000);

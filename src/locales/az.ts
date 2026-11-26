@@ -273,6 +273,7 @@ export const az = {
     statusInProgress: 'Davam edir',
     statusCompleted: 'Tamamlandı',
     statusCancelled: 'Ləğv edilib',
+    statusPendingPayment: 'Ödəniş gözləyir',
   },
   pricing: {
     tabLabel: 'Seans Tarifləri',
@@ -395,6 +396,7 @@ export const az = {
     appointmentStatus: 'Görüş Statusu',
     sessionCancelled: 'Bu sessiya ləğv edilib və başladıla bilməz.',
     sessionCompleted: 'Bu sessiya artıq tamamlanıb.',
+    sessionPendingPayment: 'Bu sessiya üçün ödəniş hələ tamamlanmayıb.',
   },
   auth: {
     signIn: 'Daxil ol',

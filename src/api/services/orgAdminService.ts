@@ -1,9 +1,8 @@
 import api from '../axios'
 import { API_ENDPOINTS } from '../endpoints'
 import type {
-  PatientDto,
   PasientRegisterEntity,
-  DoctorEntity,
+  PasientResponseDto,
   DoctorResponseDto,
   PageableParams,
 } from '../../types/portalDtos'
@@ -24,14 +23,14 @@ function normalizeListResponse<T>(data: unknown): T[] {
 
 export const orgAdminService = {
   // --- NEXUSMIND SUPER ADMIN ENDPOINTS (super-admin-controller) ---
-  getNexusmindPatients: async (params?: PageableParams): Promise<PatientDto[]> => {
+  getNexusmindPatients: async (params?: PageableParams): Promise<PasientResponseDto[]> => {
     const response = await api.get<unknown>(API_ENDPOINTS.NEXUSMIND_ADMIN.PATIENTS, { params })
-    return normalizeListResponse<PatientDto>(response.data)
+    return normalizeListResponse<PasientResponseDto>(response.data)
   },
 
-  getNexusmindDoctors: async (params?: PageableParams): Promise<DoctorEntity[]> => {
+  getNexusmindDoctors: async (params?: PageableParams): Promise<DoctorResponseDto[]> => {
     const response = await api.get<unknown>(API_ENDPOINTS.NEXUSMIND_ADMIN.DOCTORS, { params })
-    return normalizeListResponse<DoctorEntity>(response.data)
+    return normalizeListResponse<DoctorResponseDto>(response.data)
   },
 
   deleteDoctorByNexusmindAdmin: async (id: number | string): Promise<void> => {

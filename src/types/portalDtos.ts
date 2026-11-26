@@ -379,6 +379,16 @@ export interface WorkingHourRangeRequest {
   endTime: string // HH:mm, e.g. "11:00"
 }
 
+/** POST /doctors/me/working-hours/batch */
+export interface WorkingDayRequest {
+  date?: string // YYYY-MM-DD
+  times?: Array<LocalTime | string> // Backend LocalTime wire format ("HH:mm:ss")
+}
+
+export interface WorkingHoursBatchRequest {
+  days?: WorkingDayRequest[]
+}
+
 /** GET /doctors/me/working-hours?from&to */
 export interface WorkingRangeDto {
   id: number
@@ -463,6 +473,7 @@ export type CallInviteResponse = Record<string, string>
 
 // Payment DTOs (payment-controller) — used by the patient web app; typed for completeness
 export interface StartPaymentRequest {
+  appointmentId?: number
   amount?: number
   description?: string
 }
@@ -536,6 +547,19 @@ export interface PasientRegisterEntity {
   [key: string]: unknown
 }
 
+/** GET /nexusmind/patients and GET /doctors/me/patients */
+export interface PasientResponseDto {
+  id: number
+  username?: string
+  name?: string
+  surname?: string
+  email?: string
+  age?: number
+  phone?: string
+  role?: BackendRole
+  verified?: boolean
+}
+
 export interface DoctorDto {
   id: number
   username?: string
@@ -563,7 +587,7 @@ export interface DoctorDto {
   education?: string[]
   certificates?: string[]
   trainings?: string[]
-  /** Present on DoctorResponseDto (/bpm/doctors, /doctors/doctors) and DoctorEntity (/nexusmind/doctors) */
+  /** Present on DoctorResponseDto (/nexusmind/doctors, /bpm/doctors, /doctors/doctors) */
   prices?: Array<DoctorPriceDto & { id?: number }>
   [key: string]: unknown
 }
@@ -717,6 +741,7 @@ export type AppointmentStatus =
   | 'IN_PROGRESS'
   | 'COMPLETED'
   | 'CANCELLED'
+  | 'PENDING_PAYMENT'
 
 export type AppointmentMode = 'VR' | 'VIDEO_CALL' | 'APP'
 
@@ -738,8 +763,8 @@ export interface AppointmentDto {
 
 export interface CreateAppointmentRequest {
   doctorId: number
-  appointmentDate: string
-  appointmentTime: LocalTime | string
+  appointmentDate: string // YYYY-MM-DD
+  appointmentTime: string // HH:mm:ss (format: time)
   mode: AppointmentMode
   durationMinutes?: number
   sessionsType?: 'INDIVIDUAL' | 'COUPLE'
@@ -821,6 +846,7 @@ export interface AppointmentEntity {
   status?: AppointmentStatus
   mode?: AppointmentMode
   roomUrl?: string
+  createdAt?: string
   note?: SessionNote
 }
 

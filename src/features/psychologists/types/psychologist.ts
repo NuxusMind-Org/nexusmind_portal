@@ -21,6 +21,9 @@ export interface Psychologist {
   phone: string
   avatarInitials: string
   avatarColor: string
+  profileImageUrl?: string
+  bio?: string
+  startingPrice?: string
   status: PsychologistStatus
   specializations: Specialization[]
   patientCount: number

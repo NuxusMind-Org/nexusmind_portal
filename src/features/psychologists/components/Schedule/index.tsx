@@ -67,6 +67,7 @@ export default function Schedule({ psychologistId }: ScheduleProps = {}) {
       case 'IN_PROGRESS': return t('psychologistDashboard.statusInProgress')
       case 'COMPLETED': return t('psychologistDashboard.statusCompleted')
       case 'CANCELLED': return t('psychologistDashboard.statusCancelled')
+      case 'PENDING_PAYMENT': return t('psychologistDashboard.statusPendingPayment')
       default: return status || t('psychologistDashboard.statusScheduled')
     }
   }
